@@ -1,0 +1,1054 @@
+[
+    {
+        "RD": -214193,
+        "EphemerisCorrection": "0.214169",
+        "EquationOfTime": "-0.001190",
+        "SolarLongitude": "119.473431",
+        "Next-Season-rd": "-214131.147334",
+        "DawnParis": {
+            "Fraction": "0.095285",
+            "HMS": "02:17:13"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.504216",
+            "HMS": "12:06:04"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.780556",
+            "HMS": "18:44:00"
+        },
+        "Moon-Longitude-Degree": "244.853905",
+        "Moon-Latitude-Degree": "2.452759",
+        "Moon-Altitude-Degree": "-13.163184",
+        "NextNewMood-rd": "-214174.605828",
+        "Mecca-Moonrise": {
+            "Fraction": "0.645260",
+            "HMS": "15:29:10"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.084225",
+            "HMS": "02:01:17"
+        },
+        "Flags": []
+    },
+    {
+        "RD": -61387,
+        "EphemerisCorrection": "0.143632",
+        "EquationOfTime": "0.003159",
+        "SolarLongitude": "254.248961",
+        "Next-Season-rd": "-61371.053052",
+        "DawnParis": {
+            "Fraction": "0.277372",
+            "HMS": "06:39:25"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.499952",
+            "HMS": "11:59:56"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.697324",
+            "HMS": "16:44:09"
+        },
+        "Moon-Longitude-Degree": "208.856738",
+        "Moon-Latitude-Degree": "-4.902230",
+        "Moon-Altitude-Degree": "-7.281426",
+        "NextNewMood-rd": "-61382.995328",
+        "Mecca-Moonrise": {
+            "Fraction": "0.146650",
+            "HMS": "03:31:11"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.627607",
+            "HMS": "15:03:45"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 25469,
+        "EphemerisCorrection": "0.114444",
+        "EquationOfTime": "0.005373",
+        "SolarLongitude": "181.435996",
+        "Next-Season-rd": "25556.789090",
+        "DawnParis": {
+            "Fraction": "0.203569",
+            "HMS": "04:53:08"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.497556",
+            "HMS": "11:56:29"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.734889",
+            "HMS": "17:38:14"
+        },
+        "Moon-Longitude-Degree": "213.746842",
+        "Moon-Latitude-Degree": "-2.939469",
+        "Moon-Altitude-Degree": "-77.149900",
+        "NextNewMood-rd": "25495.809776",
+        "Mecca-Moonrise": {
+            "Fraction": "0.365595",
+            "HMS": "08:46:27"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.842646",
+            "HMS": "20:13:25"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 49217,
+        "EphemerisCorrection": "0.107183",
+        "EquationOfTime": "0.006791",
+        "SolarLongitude": "188.663922",
+        "Next-Season-rd": "49297.584568",
+        "DawnParis": {
+            "Fraction": "0.212231",
+            "HMS": "05:05:37"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.496143",
+            "HMS": "11:54:27"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.728514",
+            "HMS": "17:29:04"
+        },
+        "Moon-Longitude-Degree": "292.046243",
+        "Moon-Latitude-Degree": "5.001904",
+        "Moon-Altitude-Degree": "-30.401178",
+        "NextNewMood-rd": "49238.502448",
+        "Mecca-Moonrise": {
+            "Fraction": "0.582553",
+            "HMS": "13:58:53"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.030307",
+            "HMS": "00:43:39"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 171307,
+        "EphemerisCorrection": "0.069498",
+        "EquationOfTime": "-0.007231",
+        "SolarLongitude": "289.091566",
+        "Next-Season-rd": "171378.539292",
+        "DawnParis": {
+            "Fraction": "0.286370",
+            "HMS": "06:52:22"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.510331",
+            "HMS": "12:14:53"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.708788",
+            "HMS": "17:00:39"
+        },
+        "Moon-Longitude-Degree": "156.819014",
+        "Moon-Latitude-Degree": "-3.208909",
+        "Moon-Altitude-Degree": "71.848578",
+        "NextNewMood-rd": "171318.435313",
+        "Mecca-Moonrise": {
+            "Fraction": "0.926722",
+            "HMS": "22:14:29"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.419886",
+            "HMS": "10:04:38"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 210155,
+        "EphemerisCorrection": "0.057506",
+        "EquationOfTime": "0.004410",
+        "SolarLongitude": "59.119741",
+        "Next-Season-rd": "210187.908137",
+        "DawnParis": {
+            "Fraction": "0.096280",
+            "HMS": "02:18:39"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.498595",
+            "HMS": "11:57:59"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.774201",
+            "HMS": "18:34:51"
+        },
+        "Moon-Longitude-Degree": "108.055632",
+        "Moon-Latitude-Degree": "0.894361",
+        "Moon-Altitude-Degree": "-43.798579",
+        "NextNewMood-rd": "210180.691849",
+        "Mecca-Moonrise": {
+            "Fraction": "0.391565",
+            "HMS": "09:23:51"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.965784",
+            "HMS": "23:10:44"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 253427,
+        "EphemerisCorrection": "0.044758",
+        "EquationOfTime": "0.009897",
+        "SolarLongitude": "228.314554",
+        "Next-Season-rd": "253468.413001",
+        "DawnParis": {
+            "Fraction": "0.253730",
+            "HMS": "06:05:22"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.493137",
+            "HMS": "11:50:07"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.700877",
+            "HMS": "16:49:16"
+        },
+        "Moon-Longitude-Degree": "39.356097",
+        "Moon-Latitude-Degree": "-3.863335",
+        "Moon-Altitude-Degree": "40.653204",
+        "NextNewMood-rd": "253442.859367",
+        "Mecca-Moonrise": {
+            "Fraction": "0.737227",
+            "HMS": "17:41:36"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.252852",
+            "HMS": "06:04:06"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 369740,
+        "EphemerisCorrection": "0.017397",
+        "EquationOfTime": "0.001987",
+        "SolarLongitude": "34.460769",
+        "Next-Season-rd": "369798.559125",
+        "DawnParis": {
+            "Fraction": "0.149472",
+            "HMS": "03:35:14"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.500958",
+            "HMS": "12:01:23"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.762736",
+            "HMS": "18:18:20"
+        },
+        "Moon-Longitude-Degree": "98.565851",
+        "Moon-Latitude-Degree": "-2.522444",
+        "Moon-Altitude-Degree": "-40.278725",
+        "NextNewMood-rd": "369763.746413",
+        "Mecca-Moonrise": {
+            "Fraction": "0.434271",
+            "HMS": "10:25:21"
+        },
+        "Mecca-Moonset": null,
+        "Flags": [
+            "bogus"
+        ]
+    },
+    {
+        "RD": 400085,
+        "EphemerisCorrection": "0.012796",
+        "EquationOfTime": "0.003478",
+        "SolarLongitude": "63.187995",
+        "Next-Season-rd": "400113.618511",
+        "DawnParis": {
+            "Fraction": "0.088486",
+            "HMS": "02:07:25"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.499538",
+            "HMS": "11:59:20"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.776777",
+            "HMS": "18:38:34"
+        },
+        "Moon-Longitude-Degree": "332.958296",
+        "Moon-Latitude-Degree": "1.032069",
+        "Moon-Altitude-Degree": "29.611156",
+        "NextNewMood-rd": "400091.578343",
+        "Mecca-Moonrise": {
+            "Fraction": "0.028119",
+            "HMS": "00:40:30"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.528119",
+            "HMS": "12:40:30"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 434355,
+        "EphemerisCorrection": "0.008869",
+        "EquationOfTime": "-0.004947",
+        "SolarLongitude": "2.457591",
+        "Next-Season-rd": "434446.328561",
+        "DawnParis": {
+            "Fraction": "0.209217",
+            "HMS": "05:01:16"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.507865",
+            "HMS": "12:11:20"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.748088",
+            "HMS": "17:57:15"
+        },
+        "Moon-Longitude-Degree": "92.259651",
+        "Moon-Latitude-Degree": "3.005689",
+        "Moon-Altitude-Degree": "-19.973178",
+        "NextNewMood-rd": "434376.578106",
+        "Mecca-Moonrise": {
+            "Fraction": "0.501712",
+            "HMS": "12:02:28"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.052493",
+            "HMS": "01:15:35"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 452605,
+        "EphemerisCorrection": "0.007262",
+        "EquationOfTime": "-0.007588",
+        "SolarLongitude": "350.475934",
+        "Next-Season-rd": "452615.134851",
+        "DawnParis": {
+            "Fraction": "0.228552",
+            "HMS": "05:29:07"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.510516",
+            "HMS": "12:15:09"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.742536",
+            "HMS": "17:49:15"
+        },
+        "Moon-Longitude-Degree": "78.132029",
+        "Moon-Latitude-Degree": "1.613843",
+        "Moon-Altitude-Degree": "-23.740743",
+        "NextNewMood-rd": "452627.191972",
+        "Mecca-Moonrise": {
+            "Fraction": "0.494050",
+            "HMS": "11:51:26"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.037996",
+            "HMS": "00:54:43"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 470160,
+        "EphemerisCorrection": "0.005979",
+        "EquationOfTime": "-0.002369",
+        "SolarLongitude": "13.498220",
+        "Next-Season-rd": "470240.017391",
+        "DawnParis": {
+            "Fraction": "0.189859",
+            "HMS": "04:33:24"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.505289",
+            "HMS": "12:07:37"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.753102",
+            "HMS": "18:04:28"
+        },
+        "Moon-Longitude-Degree": "274.946995",
+        "Moon-Latitude-Degree": "4.766741",
+        "Moon-Altitude-Degree": "30.956688",
+        "NextNewMood-rd": "470167.578360",
+        "Mecca-Moonrise": {
+            "Fraction": "0.013196",
+            "HMS": "00:19:00"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.493177",
+            "HMS": "11:50:11"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 473837,
+        "EphemerisCorrection": "0.005740",
+        "EquationOfTime": "0.002140",
+        "SolarLongitude": "37.403920",
+        "Next-Season-rd": "473892.432571",
+        "DawnParis": {
+            "Fraction": "0.143920",
+            "HMS": "03:27:15"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.500814",
+            "HMS": "12:01:10"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.764402",
+            "HMS": "18:20:44"
+        },
+        "Moon-Longitude-Degree": "128.362844",
+        "Moon-Latitude-Degree": "4.899203",
+        "Moon-Altitude-Degree": "-18.888690",
+        "NextNewMood-rd": "473858.853276",
+        "Mecca-Moonrise": {
+            "Fraction": "0.519306",
+            "HMS": "12:27:48"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.060322",
+            "HMS": "01:26:52"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 507850,
+        "EphemerisCorrection": "0.003875",
+        "EquationOfTime": "0.001195",
+        "SolarLongitude": "81.028130",
+        "Next-Season-rd": "507859.911980",
+        "DawnParis": {
+            "Fraction": null,
+            "HMS": null
+        },
+        "MiddayTehran": {
+            "Fraction": "0.501853",
+            "HMS": "12:02:40"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.784041",
+            "HMS": "18:49:01"
+        },
+        "Moon-Longitude-Degree": "89.518450",
+        "Moon-Latitude-Degree": "4.838474",
+        "Moon-Altitude-Degree": "-32.161162",
+        "NextNewMood-rd": "507878.666842",
+        "Mecca-Moonrise": {
+            "Fraction": "0.259826",
+            "HMS": "06:14:09"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.856017",
+            "HMS": "20:32:40"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 524156,
+        "EphemerisCorrection": "0.003157",
+        "EquationOfTime": "-0.010356",
+        "SolarLongitude": "313.860498",
+        "Next-Season-rd": "524202.622400",
+        "DawnParis": {
+            "Fraction": "0.272361",
+            "HMS": "06:32:12"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.513383",
+            "HMS": "12:19:16"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.722535",
+            "HMS": "17:20:27"
+        },
+        "Moon-Longitude-Degree": "24.607322",
+        "Moon-Latitude-Degree": "2.301475",
+        "Moon-Altitude-Degree": "-45.680919",
+        "NextNewMood-rd": "524179.247062",
+        "Mecca-Moonrise": {
+            "Fraction": "0.452190",
+            "HMS": "10:51:09"
+        },
+        "Mecca-Moonset": null,
+        "Flags": [
+            "bogus"
+        ]
+    },
+    {
+        "RD": 544676,
+        "EphemerisCorrection": "0.002393",
+        "EquationOfTime": "-0.001013",
+        "SolarLongitude": "19.954430",
+        "Next-Season-rd": "544749.318739",
+        "DawnParis": {
+            "Fraction": "0.178067",
+            "HMS": "04:16:25"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.503941",
+            "HMS": "12:05:41"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.756134",
+            "HMS": "18:08:50"
+        },
+        "Moon-Longitude-Degree": "53.485956",
+        "Moon-Latitude-Degree": "-0.890563",
+        "Moon-Altitude-Degree": "-50.292110",
+        "NextNewMood-rd": "544702.753873",
+        "Mecca-Moonrise": {
+            "Fraction": "0.343276",
+            "HMS": "08:14:19"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.908706",
+            "HMS": "21:48:32"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 567118,
+        "EphemerisCorrection": "0.001731",
+        "EquationOfTime": "0.004277",
+        "SolarLongitude": "176.059431",
+        "Next-Season-rd": "567122.512168",
+        "DawnParis": {
+            "Fraction": "0.196839",
+            "HMS": "04:43:27"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.498637",
+            "HMS": "11:58:02"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.739658",
+            "HMS": "17:45:06"
+        },
+        "Moon-Longitude-Degree": "187.898520",
+        "Moon-Latitude-Degree": "4.765784",
+        "Moon-Altitude-Degree": "-54.345305",
+        "NextNewMood-rd": "567146.513181",
+        "Mecca-Moonrise": {
+            "Fraction": "0.300431",
+            "HMS": "07:12:37"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.818009",
+            "HMS": "19:37:56"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 569477,
+        "EphemerisCorrection": "0.001669",
+        "EquationOfTime": "-0.008429",
+        "SolarLongitude": "344.922951",
+        "Next-Season-rd": "569492.673245",
+        "DawnParis": {
+            "Fraction": "0.236578",
+            "HMS": "05:40:40"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.511368",
+            "HMS": "12:16:22"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.739663",
+            "HMS": "17:45:07"
+        },
+        "Moon-Longitude-Degree": "320.172362",
+        "Moon-Latitude-Degree": "-2.737358",
+        "Moon-Altitude-Degree": "-34.566000",
+        "NextNewMood-rd": "569479.203258",
+        "Mecca-Moonrise": {
+            "Fraction": "0.231763",
+            "HMS": "05:33:44"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.714185",
+            "HMS": "17:08:26"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 601716,
+        "EphemerisCorrection": "0.000615",
+        "EquationOfTime": "0.000943",
+        "SolarLongitude": "79.964921",
+        "Next-Season-rd": "601727.018725",
+        "DawnParis": {
+            "Fraction": "0.045748",
+            "HMS": "01:05:53"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.502105",
+            "HMS": "12:03:02"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.784057",
+            "HMS": "18:49:03"
+        },
+        "Moon-Longitude-Degree": "314.042566",
+        "Moon-Latitude-Degree": "-4.035652",
+        "Moon-Altitude-Degree": "44.131989",
+        "NextNewMood-rd": "601727.033557",
+        "Mecca-Moonrise": {
+            "Fraction": "0.973015",
+            "HMS": "23:21:09"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.416862",
+            "HMS": "10:00:17"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 613424,
+        "EphemerisCorrection": "0.000177",
+        "EquationOfTime": "-0.002039",
+        "SolarLongitude": "99.302317",
+        "Next-Season-rd": "613508.259061",
+        "DawnParis": {
+            "Fraction": null,
+            "HMS": null
+        },
+        "MiddayTehran": {
+            "Fraction": "0.505088",
+            "HMS": "12:07:20"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.787086",
+            "HMS": "18:53:24"
+        },
+        "Moon-Longitude-Degree": "145.474065",
+        "Moon-Latitude-Degree": "-3.157214",
+        "Moon-Altitude-Degree": "-57.539862",
+        "NextNewMood-rd": "613449.762129",
+        "Mecca-Moonrise": {
+            "Fraction": "0.394417",
+            "HMS": "09:27:58"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.932503",
+            "HMS": "22:22:48"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 626596,
+        "EphemerisCorrection": "0.000101",
+        "EquationOfTime": "-0.004076",
+        "SolarLongitude": "121.535304",
+        "Next-Season-rd": "626656.970915",
+        "DawnParis": {
+            "Fraction": "0.105595",
+            "HMS": "02:32:03"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.507082",
+            "HMS": "12:10:12"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.781969",
+            "HMS": "18:46:02"
+        },
+        "Moon-Longitude-Degree": "185.030507",
+        "Moon-Latitude-Degree": "-1.879614",
+        "Moon-Altitude-Degree": "-62.082439",
+        "NextNewMood-rd": "626620.369801",
+        "Mecca-Moonrise": {
+            "Fraction": "0.450518",
+            "HMS": "10:48:45"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.956378",
+            "HMS": "22:57:11"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 645554,
+        "EphemerisCorrection": "0.000171",
+        "EquationOfTime": "-0.000541",
+        "SolarLongitude": "88.567428",
+        "Next-Season-rd": "645556.001954",
+        "DawnParis": {
+            "Fraction": null,
+            "HMS": null
+        },
+        "MiddayTehran": {
+            "Fraction": "0.503594",
+            "HMS": "12:05:11"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.786308",
+            "HMS": "18:52:17"
+        },
+        "Moon-Longitude-Degree": "142.189132",
+        "Moon-Latitude-Degree": "-3.379519",
+        "Moon-Altitude-Degree": "-54.072091",
+        "NextNewMood-rd": "645579.076748",
+        "Mecca-Moonrise": {
+            "Fraction": "0.416008",
+            "HMS": "09:59:03"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.952629",
+            "HMS": "22:51:47"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 664224,
+        "EphemerisCorrection": "0.000136",
+        "EquationOfTime": "-0.004143",
+        "SolarLongitude": "129.289884",
+        "Next-Season-rd": "664276.907718",
+        "DawnParis": {
+            "Fraction": "0.122462",
+            "HMS": "02:56:21"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.507129",
+            "HMS": "12:10:16"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.778132",
+            "HMS": "18:40:31"
+        },
+        "Moon-Longitude-Degree": "253.743375",
+        "Moon-Latitude-Degree": "-4.398341",
+        "Moon-Altitude-Degree": "-16.120452",
+        "NextNewMood-rd": "664242.886718",
+        "Mecca-Moonrise": {
+            "Fraction": "0.657391",
+            "HMS": "15:46:39"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.070965",
+            "HMS": "01:42:11"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 671401,
+        "EphemerisCorrection": "0.000061",
+        "EquationOfTime": "-0.004008",
+        "SolarLongitude": "6.146910",
+        "Next-Season-rd": "671488.166885",
+        "DawnParis": {
+            "Fraction": "0.202856",
+            "HMS": "04:52:07"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.506931",
+            "HMS": "12:09:59"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.749687",
+            "HMS": "17:59:33"
+        },
+        "Moon-Longitude-Degree": "151.648685",
+        "Moon-Latitude-Degree": "2.099198",
+        "Moon-Altitude-Degree": "23.864594",
+        "NextNewMood-rd": "671418.970538",
+        "Mecca-Moonrise": {
+            "Fraction": "0.686259",
+            "HMS": "16:28:13"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.200419",
+            "HMS": "04:48:36"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 694799,
+        "EphemerisCorrection": "0.000014",
+        "EquationOfTime": "0.000392",
+        "SolarLongitude": "28.251993",
+        "Next-Season-rd": "694863.628311",
+        "DawnParis": {
+            "Fraction": "0.162579",
+            "HMS": "03:54:07"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.502551",
+            "HMS": "12:03:40"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.760231",
+            "HMS": "18:14:44"
+        },
+        "Moon-Longitude-Degree": "287.987743",
+        "Moon-Latitude-Degree": "5.268746",
+        "Moon-Altitude-Degree": "32.950146",
+        "NextNewMood-rd": "694807.563371",
+        "Mecca-Moonrise": {
+            "Fraction": "0.008243",
+            "HMS": "00:11:52"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.489200",
+            "HMS": "11:44:27"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 704424,
+        "EphemerisCorrection": "0.000276",
+        "EquationOfTime": "-0.001555",
+        "SolarLongitude": "151.780633",
+        "Next-Season-rd": "704453.536160",
+        "DawnParis": {
+            "Fraction": "0.163289",
+            "HMS": "03:55:08"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.504488",
+            "HMS": "12:06:28"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.761909",
+            "HMS": "18:17:09"
+        },
+        "Moon-Longitude-Degree": "25.626707",
+        "Moon-Latitude-Degree": "-1.672299",
+        "Moon-Altitude-Degree": "72.691651",
+        "NextNewMood-rd": "704433.491182",
+        "Mecca-Moonrise": {
+            "Fraction": "0.916779",
+            "HMS": "22:00:10"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.429962",
+            "HMS": "10:19:09"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 708842,
+        "EphemerisCorrection": "0.000296",
+        "EquationOfTime": "0.006529",
+        "SolarLongitude": "185.945867",
+        "Next-Season-rd": "708926.239052",
+        "DawnParis": {
+            "Fraction": "0.208698",
+            "HMS": "05:00:32"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.496387",
+            "HMS": "11:54:48"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.730647",
+            "HMS": "17:32:08"
+        },
+        "Moon-Longitude-Degree": "290.288300",
+        "Moon-Latitude-Degree": "4.682012",
+        "Moon-Altitude-Degree": "-29.849481",
+        "NextNewMood-rd": "708863.597000",
+        "Mecca-Moonrise": {
+            "Fraction": "0.586590",
+            "HMS": "14:04:41"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.031414",
+            "HMS": "00:45:14"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 709409,
+        "EphemerisCorrection": "0.000302",
+        "EquationOfTime": "0.000427",
+        "SolarLongitude": "28.555607",
+        "Next-Season-rd": "709473.300039",
+        "DawnParis": {
+            "Fraction": "0.162020",
+            "HMS": "03:53:19"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.502516",
+            "HMS": "12:03:37"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.760390",
+            "HMS": "18:14:58"
+        },
+        "Moon-Longitude-Degree": "189.913142",
+        "Moon-Latitude-Degree": "3.705518",
+        "Moon-Altitude-Degree": "31.610644",
+        "NextNewMood-rd": "709424.404929",
+        "Mecca-Moonrise": {
+            "Fraction": "0.742587",
+            "HMS": "17:49:20"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.224521",
+            "HMS": "05:23:19"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 709580,
+        "EphemerisCorrection": "0.000302",
+        "EquationOfTime": "0.008180",
+        "SolarLongitude": "193.347892",
+        "Next-Season-rd": "709656.728163",
+        "DawnParis": {
+            "Fraction": "0.216912",
+            "HMS": "05:12:21"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.494746",
+            "HMS": "11:52:26"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.724012",
+            "HMS": "17:22:35"
+        },
+        "Moon-Longitude-Degree": "284.931730",
+        "Moon-Latitude-Degree": "2.493964",
+        "Moon-Altitude-Degree": "-42.219689",
+        "NextNewMood-rd": "709602.082686",
+        "Mecca-Moonrise": {
+            "Fraction": "0.555246",
+            "HMS": "13:19:33"
+        },
+        "Mecca-Moonset": null,
+        "Flags": [
+            "bogus"
+        ]
+    },
+    {
+        "RD": 727274,
+        "EphemerisCorrection": "0.000675",
+        "EquationOfTime": "-0.005843",
+        "SolarLongitude": "357.151254",
+        "Next-Season-rd": "727277.366581",
+        "DawnParis": {
+            "Fraction": "0.217687",
+            "HMS": "05:13:28"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.508771",
+            "HMS": "12:12:38"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.745361",
+            "HMS": "17:53:19"
+        },
+        "Moon-Longitude-Degree": "152.339044",
+        "Moon-Latitude-Degree": "-4.167774",
+        "Moon-Altitude-Degree": "28.647809",
+        "NextNewMood-rd": "727291.209400",
+        "Mecca-Moonrise": {
+            "Fraction": "0.719220",
+            "HMS": "17:15:41"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.214825",
+            "HMS": "05:09:21"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 728714,
+        "EphemerisCorrection": "0.000712",
+        "EquationOfTime": "-0.009214",
+        "SolarLongitude": "336.170692",
+        "Next-Season-rd": "728738.335351",
+        "DawnParis": {
+            "Fraction": "0.247980",
+            "HMS": "05:57:06"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.512176",
+            "HMS": "12:17:32"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.734750",
+            "HMS": "17:38:02"
+        },
+        "Moon-Longitude-Degree": "51.662265",
+        "Moon-Latitude-Degree": "-2.873757",
+        "Moon-Altitude-Degree": "-38.950553",
+        "NextNewMood-rd": "728737.447691",
+        "Mecca-Moonrise": {
+            "Fraction": "0.466211",
+            "HMS": "11:11:21"
+        },
+        "Mecca-Moonset": null,
+        "Flags": [
+            "bogus"
+        ]
+    },
+    {
+        "RD": 744313,
+        "EphemerisCorrection": "0.000963",
+        "EquationOfTime": "0.011238",
+        "SolarLongitude": "228.184879",
+        "Next-Season-rd": "744354.792807",
+        "DawnParis": {
+            "Fraction": "0.251890",
+            "HMS": "06:02:43"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.491786",
+            "HMS": "11:48:10"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.699821",
+            "HMS": "16:47:45"
+        },
+        "Moon-Longitude-Degree": "26.682060",
+        "Moon-Latitude-Degree": "-4.667251",
+        "Moon-Altitude-Degree": "27.601977",
+        "NextNewMood-rd": "744329.573999",
+        "Mecca-Moonrise": {
+            "Fraction": "0.705999",
+            "HMS": "16:56:38"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.211858",
+            "HMS": "05:05:05"
+        },
+        "Flags": []
+    },
+    {
+        "RD": 764652,
+        "EphemerisCorrection": "0.002913",
+        "EquationOfTime": "-0.004466",
+        "SolarLongitude": "116.439352",
+        "Next-Season-rd": "764718.468836",
+        "DawnParis": {
+            "Fraction": "0.094955",
+            "HMS": "02:16:44"
+        },
+        "MiddayTehran": {
+            "Fraction": "0.507483",
+            "HMS": "12:10:47"
+        },
+        "SunsetJerusalem": {
+            "Fraction": "0.784480",
+            "HMS": "18:49:39"
+        },
+        "Moon-Longitude-Degree": "175.500822",
+        "Moon-Latitude-Degree": "5.138562",
+        "Moon-Altitude-Degree": "-54.854681",
+        "NextNewMood-rd": "764676.191273",
+        "Mecca-Moonrise": {
+            "Fraction": "0.436806",
+            "HMS": "10:29:00"
+        },
+        "Mecca-Moonset": {
+            "Fraction": "0.963174",
+            "HMS": "23:06:58"
+        },
+        "Flags": []
+    }
+]

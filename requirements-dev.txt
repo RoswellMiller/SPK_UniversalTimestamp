@@ -1,0 +1,32 @@
+# Development Requirements
+# Install with: pip install -r requirements-dev.txt
+
+# Core dependencies
+convertdate>=2.4.0
+astropy>=5.0.0
+
+# Testing
+pytest>=7.0
+pytest-cov>=4.0
+pytest-mock>=3.10
+
+# Code Quality
+black>=23.0
+isort>=5.12
+flake8>=6.0
+flake8-docstrings>=1.7
+mypy>=1.0
+pre-commit>=3.0
+
+# Documentation
+sphinx>=5.0
+sphinx-rtd-theme>=1.2
+myst-parser>=1.0
+
+# Build and Packaging
+build>=0.10
+twine>=4.0
+
+# Utilities
+tox>=4.0
+bandit>=1.7  # Security linting
