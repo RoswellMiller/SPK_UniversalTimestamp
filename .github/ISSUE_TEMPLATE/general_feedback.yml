@@ -1,0 +1,28 @@
+name: 🧠 General Feedback
+description: Share ideas, modeling philosophy, or usability notes
+labels: [feedback]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We welcome thoughtful feedback on the design, scope, and usability of SPK Universal Timestamp.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context or Perspective
+      description: Are you a scientist, historian, developer, or something else?
+      placeholder: Briefly describe your background or interest in the project.
+
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Your Feedback
+      description: Share your thoughts on the timestamp system, calendar logic, documentation, or anything else.
+      placeholder: What works well? What could be improved?
+
+  - type: textarea
+    id: suggestions
+    attributes:
+      label: Suggestions or Questions
+      description: Optional—any ideas, questions, or philosophical thoughts you'd like to share?

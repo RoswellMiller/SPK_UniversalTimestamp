@@ -1,0 +1,26 @@
+name: 🐞 Bug Report
+description: Report a reproducible bug or unexpected behavior
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the details below.
+
+  - type: input
+    id: timestamp-version
+    attributes:
+      label: Timestamp Version
+      placeholder: e.g. v1.0.0-beta
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      placeholder: What happened? What did you expect?
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: 1. Run function X with input Y\n2. Observe output Z
