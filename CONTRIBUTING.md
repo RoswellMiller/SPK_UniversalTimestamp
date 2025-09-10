@@ -31,6 +31,9 @@ Before submitting a PR:
 - Include tests or validation logic if applicable
 - Reference related issues in your PR description
 
+### 🔧 Current Development Branch
+All fixes and enhancements should target `release/v1.1.0` until the next stable release is tagged.
+
 ## 📚 Documentation Contributions
 
 Improving clarity, structure, or examples in the README or supporting docs is highly encouraged. Please open an issue first if you're proposing major changes.
