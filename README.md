@@ -216,6 +216,11 @@ twine upload --repository testpypi dist/*
 twine upload dist/*
 ```
 
+## 🚧 Active Development Branch
+
+We are currently working on `release/v1.1.0`.  
+Please submit bug fixes and enhancements to this branch until the next stable release.
+
 ## Contributing
 
 1. Fork the repository
@@ -243,7 +248,7 @@ For commercial use, enterprise deployment, or integration into sold software pro
 - 🔄 SaaS platforms and commercial services
 - 📦 Commercial software packages
 
-**Contact for Commercial Licensing:** [roswellmiller@gmail.com]
+**Contact for Commercial Licensing:** [roswellmiller@sarek.ai]
 
 See the [LICENSE](LICENSE) file for complete terms and conditions.
 

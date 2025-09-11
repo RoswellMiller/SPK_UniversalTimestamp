@@ -9,8 +9,8 @@ Comprehensive multi-scale time system for knowledge bases:
 """
 
 __version__ = "0.1.0"
-__author__ = "Roswell C. Miller"
-__email__ = "roswellmiller@gmail.com"
+__author__ = "Roswell C Miller"
+__email__ = "support@sarek.ai"
 __description__ = "Comprehensive multi-scale timestamp system"
 
 from .UnivDecimalLibrary import *
