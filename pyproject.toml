@@ -10,10 +10,10 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "Custom Dual License (Single Use Free / Commercial Paid)"}
 authors = [
-    {name = "Roswell C. Miller", email = "roswellmiller@gmail.com"}
+    {name = "Roswell C. Miller", email = "support@sarek.ai"}
 ]
 maintainers = [
-    {name = "Roswell C. Miller", email = "roswellmiller@gmail.com"}
+    {name = "Roswell C. Miller", email = "support@sarek.ai"}
 ]
 keywords = ["timestamp", "datetime", "geological", "astronomical", "calendars", "precision", "scientific", "julian", "knowledge-base", "multi-scale"]
 classifiers = [
