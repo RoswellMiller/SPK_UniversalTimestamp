@@ -3,7 +3,6 @@ import re
 import os
 from io import StringIO
 from contextlib import redirect_stdout
-import sys
 
 class TestActualReadmeExamples:
     """Tests that execute the actual code blocks from README.md"""
