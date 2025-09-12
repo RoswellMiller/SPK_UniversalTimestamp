@@ -1,0 +1,29 @@
+
+{
+    "celestial-stem": [
+        {"index": 1, "pinyin": "Jiˇa", "hanzi": "甲", "japanese": "Kō", "english": "First"},
+        {"index": 2, "pinyin": "Yˇı", "hanzi": "乙", "japanese": "Otsu", "english": "Second"},
+        {"index": 3, "pinyin": "Bˇıng", "hanzi": "丙", "japanese": "Hei", "english": "Third"},
+        {"index": 4, "pinyin": "D¯ıng", "hanzi": "丁", "japanese": "Tei", "english": "Fourth"},
+        {"index": 5, "pinyin": "Wù", "hanzi": "戊", "japanese": "Bo", "english": "Fifth"},
+        {"index": 6, "pinyin": "Jˇı", "hanzi": "己", "japanese": "Ki", "english": "Sixth"},
+        {"index": 7, "pinyin": "G¯eng", "hanzi": "庚", "japanese": "Kō", "english": "Seventh"},
+        {"index": 8, "pinyin": "X¯ın", "hanzi": "辛", "japanese": "Shin", "english": "Eighth"},
+        {"index": 9, "pinyin": "Rén", "hanzi": "壬", "japanese": "Jin", "english": "Ninth"},
+        {"index":10, "pinyin": "Guˇı", "hanzi": "癸", "japanese": "Ki", "english": "Tenth"}
+    ],
+    "terrestrial-branch": [
+        {"index": 1, "pinyin": "Z¯ı", "hanzi": "子", "japanese": "Shi", "english": "Rat"},
+        {"index": 2, "pinyin": "Ch¯ou", "hanzi": "丑", "japanese": "Ushi", "english": "Ox"},
+        {"index": 3, "pinyin": "Yín", "hanzi": "寅", "japanese": "Tora", "english": "Tiger"},
+        {"index": 4, "pinyin": "Mˇao", "hanzi": "卯", "japanese": "U", "english": "Rabbit"},
+        {"index": 5, "pinyin": "Chén", "hanzi": "辰", "japanese": "Tatsu", "english": "Dragon"},
+        {"index": 6, "pinyin": "S¯ı", "hanzi": "巳", "japanese": "Mi", "english": "Snake"},
+        {"index": 7, "pinyin": "W¯u", "hanzi": "午", "japanese": "Uma", "english": "Horse"},
+        {"index": 8, "pinyin": "Wèi", "hanzi": "未", "japanese": "Hitsuji", "english": "Goat"},
+        {"index": 9, "pinyin": "Sh¯en", "hanzi": "申", "japanese": "Saru", "english": "Monkey"},
+        {"index": 10, "pinyin": "Yóu", 	"hanzi":	"酉",	"japanese":"Tori","english":"Rooster"},
+        {"index": 11, "pinyin":"X¯u","hanzi":"戌","japanese":"Inu","english":"Dog"},
+        {"index": 12, "pinyin":"Hài","hanzi":"亥","japanese":"I","english":"Pig"}
+    ]
+}

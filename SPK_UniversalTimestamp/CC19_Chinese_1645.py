@@ -36,7 +36,7 @@ from .CC14_Time_and_Astronomy import *
 #     ( 12, 'Xiaohán',     '小寒',      'Shokan',   'Slight Cold',         285, 'January 6'),
 #     ( 12, 'Dàhán',       '大寒',      'Taikan',   'Great Cold',          300, 'January 20'),
 # ]
-with open('SPK_UniversalTimestamp/Table_19_1a.json', 'r', encoding='utf-8') as f:
+with open('SPK_UniversalTimestamp/CC19_Table_19_1a.json', 'r', encoding='utf-8') as f:
     Table_19_1 = json.load(f)
 Table_19_1_Dict = {}
 for i, tu in enumerate(Table_19_1):

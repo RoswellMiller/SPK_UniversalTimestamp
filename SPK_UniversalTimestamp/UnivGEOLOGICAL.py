@@ -54,7 +54,8 @@ class UnivGEOLOGICAL(UnivTimestamp):
             description=description
             )
         try:
-            self.sort, self.rd  = super()._calc_sort_value()
+            self.rd = self._self_rata_die()
+            self.sort  = super()._calc_sort_value()
         except Exception as e:
             raise ValueError(f"Failed to initialize sort value: {e}")
 
@@ -65,7 +66,7 @@ class UnivGEOLOGICAL(UnivTimestamp):
         For geological time, we assume a constant year length of 365.25 days.
         """
         return int(self.year * Decimal(365.25))  # * 1_00_00_00_000_000_000_000_000_000
-    def _self_utc(self) -> Tuple[int, int, Decimal]:
+    def _get_utc(self) -> Tuple[int, int, Decimal]:
         """
         Convert the time to UTC components (day_adjust, hour, minute, second).
         This method should be implemented in subclasses for specific calendar systems.

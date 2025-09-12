@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from .CC01_Calendar_Basics import Epoch_rd
 
 # "Calendrical Calculations" by Reingold and Dershowitz
@@ -70,11 +72,11 @@ def gregorian_year_from_rd(rd : int) -> int:
         raise ValueError(f"Invalid Rata Die date: {rd}: {e}")
 
 # p 62 (2.23)    
-def gregorian_from_rd(rd: int) -> dict:
+def gregorian_from_rd(rd: int) -> Tuple[int,int,int]:
     """
         Convert Rata Die (rd) fixed day number to Gregorian date
     """
-    # Convert rd to datetime
+    # Convert rd to date
     try:
         year = gregorian_year_from_rd(rd)
         prior_days = rd -  rd_from_gregorian(year, 1, 1)

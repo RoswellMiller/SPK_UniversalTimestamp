@@ -122,7 +122,29 @@ class UnivCHINESE(UnivCalendars):
         return self.month[1] if isinstance(self.month, Tuple) else False
 
     # FORMATTING METHODS ######################################################################################
+    """ General strftime modifiers_
+    Modifiers
+    %#m,%#d,%#j - eliminates leading 0s
+    """
+    # def _strftime_year(self, seg_type: str, language: str, eliminate_leading_zero: bool) -> str:
+    #     """
+    #     Format the year component based on the segment type and language.
+    #     Directive	Meaning	                            Example
+    #                 YEAR
+    #     %Y	        Year long                   	    2025, 66.45 Gyr BCE
+    #     %y	        Year short                          25, -66.45 Gyr
+        
+    #     """
+    #     return result
     def _strftime_month(self, seg_type : str, language :str, eliminate_leading_zero: bool = False) -> str:
+        """
+        Format the month component based on seg_type, language, and modifiers.
+        Directive	Meaning	                            Example
+                    MONTH 
+        %m	        Month as a decimal number (01-12)	08
+        %B	        Full month name	                    August
+        %b	        Abbreviated month name	            Aug
+        """
         if self.month is None:
             return ""
         if isinstance(self.month, Tuple):
@@ -140,6 +162,17 @@ class UnivCHINESE(UnivCalendars):
             return Table_19_1_Dict[m_num][m_leap]['pinyin']  # Full month name
         return ""
 
+    # def _strftime_day(self, seg_type : str, language :str, eliminate_leading_zero: bool = False) -> str:
+    #     """
+    #     Format the day component based on the segment type and language and modifiers.
+    #     Directive	Meaning	                            Example
+    #                 DAY
+    #     %d	        Day of the month (01-31)	        02
+    #     %A	        Full weekday name	                Saturday
+    #     %a	        Abbreviated weekday name	        Sat
+    #     %j	        Day of the year (001-366)	        214
+
+    #     """
     def format_signature_date(self) -> str:
         """Format the date component based on calendar system and precision"""
         result = ""

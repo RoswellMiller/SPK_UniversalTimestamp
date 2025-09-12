@@ -107,7 +107,7 @@ class TestUniversalTimestamp:
             day = new_moon + 1
             
         return
-  
+
     def test_solar_longitude(self):
         ts = UnivGREGORIAN(1990, 12, 22, description="Winter Solstice 1990-12-22")
         for day in range(ts.rd, ts.rd + 365, 5):
@@ -502,5 +502,41 @@ class TestUniversalTimestamp:
         assert repr_str ==  need_str, "Repr string mismatch after reconstruction"
         
         print(f"✅ SUCCESS: {inspect.currentframe().f_code.co_name}")
+        return
+
+    def test_chinese_strftime(self):    
+        timestamp_a = UnivCHINESE(
+            63, 13, 4, 25,  
+            description="p 451 Reingold & Dershowitz"
+        )      
+        assert timestamp_a.rd == 400085
+        
+        timestamp_b = UnivCHINESE(
+            72, 25, (4,True), 20, 13, 36, 0, 
+            timezone='Asia/Shanghai',
+            accuracy=Decimal('0.01'),
+            description="p 451 Reingold & Dershowitz"
+        )      
+        assert timestamp_b.rd == 601716
+        
+        cases = [
+            (timestamp_a, "%Y-%m-%d", '3732-04-25'),
+            (timestamp_b, "%Y-%m-%d", '4284-04L-20'),
+            (timestamp_a, "%Y-%m-%d [%A, %B %d, %Y]", '3732-04-25 [Sunday, Xiǎomǎn 25, 3732]'),
+            (timestamp_b, "%Y-%m-%d %H:%M:%S %Z (%z) [%A, %B %d, %Y, %I:%M %p]", '4284-04L-20 13:36:00 Asia/Shanghai (+08:05) [Wednesday, Mángzhòng 20, 4284, 01:36 pm]'),
+        ]
+        
+        errors = 0
+        for ts, fmt, expected in cases:
+            formatted = ts.strftime(fmt)
+            if formatted != expected:
+                print(f"❌ Expected '{expected}' but got '{formatted}'")
+                errors += 1
+            else:
+                print(f"✅ SUCCESS: {ts.format_signature()} => '{formatted}'")
+            
+        if errors != 0 :
+            print(f"❌ {errors} ERRORS in {inspect.currentframe().f_code.co_name}")
+            assert False, "Errors found in chinese strftime tests"    
         return
 

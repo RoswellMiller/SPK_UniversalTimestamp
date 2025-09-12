@@ -224,16 +224,15 @@ class UnivTimestamp:
     #   x-from-rd, rd-from-x where x is the calendar system
     #############################################################################
     # Reference "Calendrical Calculations" by Edward M. Reingold and Nachum Dershowitz"
-    def _calc_sort_value(self) -> Tuple[int,int]:
+    def _calc_sort_value(self) -> int:
         """
         Return a large integer for precise sorting.
         If day or time is not present, fill with 0.
         """
-        rd = self._self_rata_die()
-        value = rd
+        value = self.rd
         # Convert local time to UTC if timezone is specified and time components exist
         # Note sort value maybe modified if the day changes due to timezone conversion
-        day_adjust, utc_hour, utc_minute, utc_second = self._self_utc()
+        day_adjust, utc_hour, utc_minute, utc_second = self._get_utc()
         value += day_adjust
         # pad the sort value with the utc time.
         value *= 100 # make room for 2-digit hour
@@ -248,7 +247,7 @@ class UnivTimestamp:
         value *= atto_multiplier  # Scale to attoseconds
         if utc_second is not None:
             value += int(utc_second * atto_multiplier)
-        return value, rd
+        return value
     
     # TIMESTAMP/RD METHODS ######################################################################################
     @abstractmethod
@@ -259,12 +258,12 @@ class UnivTimestamp:
         """
         raise NotImplementedError("Subclasses must implement _self_rata_die() method")
     @abstractmethod
-    def _self_utc(self) -> Tuple[int, int, int, Decimal]:
+    def _get_utc(self) -> Tuple[Optional[Tuple[int,int,Union[int,Decimal]]], int, int, int, Decimal]:
         """
         Convert the time to UTC components (day_adjust, hour, minute, second).
         This method should be implemented in subclasses for specific calendar systems.
         """
-        raise NotImplementedError("Subclasses must implement _self_utc() method")
+        raise NotImplementedError("Subclasses must implement _get_utc() method")
     @abstractmethod
     def _calc_rata_die(self, year: int, month: int, day: int) -> int:
         """
@@ -297,6 +296,8 @@ class UnivTimestamp:
         Date Components, Geological
         Directive	Meaning	                            Example
                     YEAR
+        %C          Cycle long (Chinese calendar)       
+        %c          Cycle short (Chinese calendar)      1
         %Y	        Year long                   	    2025, 66.45 Gyr BCE
         %y	        Year short                          25, -66.45 Gyr
         

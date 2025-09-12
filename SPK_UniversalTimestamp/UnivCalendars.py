@@ -11,10 +11,11 @@ from decimal import Decimal, getcontext, ROUND_DOWN
 from typing import Optional, Union, Tuple, Callable, List
 from abc import abstractmethod
 from zoneinfo import ZoneInfo
-from datetime import datetime, timedelta
+from datetime import datetime
+from SPK_UniversalTimestamp.CC02_Gregorian import gregorian_from_rd
+
 from SPK_UniversalTimestamp import UnivTimestamp, Precision, PrecisionAtts, Calendar, CalendarAtts
-from SPK_UniversalTimestamp.CC01_Calendar_Basics import Epoch_rd
-getcontext().prec = 50
+from SPK_UniversalTimestamp.CC01_Calendar_Basics import *
 
 ##################################################################################################################################################
 class UnivCalendars(UnivTimestamp):
@@ -23,6 +24,7 @@ class UnivCalendars(UnivTimestamp):
         calendar            : calendar system being used
         year, month, day    : date component
         hour, minute, second: time component
+        timezone,timezone_offset, fold : timezone and fold for ambiguous times
         precision           : precision level for this timestamp
         accuracy            : human-readable accuracy description
         description         : description of measurement/source
@@ -36,9 +38,10 @@ class UnivCalendars(UnivTimestamp):
     minute: Optional[int]
     second: Optional[Union[Decimal]]
     tz : Optional[str]
+    tz_offset : Optional[Tuple[int,int,Union[int,Decimal]]]
     fold: Optional[int]
     # IMMUTABLE #######################################################################################
-    __slots__ = ('_cnst_validated', 'month', 'day', 'hour', 'minute', 'second', 'tz', 'fold')
+    __slots__ = ('_cnst_validated', 'month', 'day', 'hour', 'minute', 'second', 'tz', 'tz_offset', 'fold')
     
     # CONSTANTS #########################################################################################
     Day_of_Week_Atts = {
@@ -175,23 +178,25 @@ class UnivCalendars(UnivTimestamp):
             power = PrecisionAtts[precision].get('power', 0)
             if power<0:
                 second = second.quantize(Decimal('1e' + str(power)), rounding=ROUND_DOWN) 
-        # Convert time components to UTC if timezone is specified and time components exist
         fold = fold if fold in (0,1) else 0
-        # if timezone and timezone != 'UTC' and hour is not None:
-        #     hour, minute, adj_day = self._init_convert_to_utc(hour, minute, timezone, fold, year, month, day)
-        #     if adj_day != 0:
-        #         rd = self._calc_rata_die(year, month, day) - adj_day
-        #         year, month, day = self._calc_date_from_rd(rd)
             
         super().__init__(calendar, year, precision=precision, accuracy=accuracy, description=description)
+        
         self.month = month
         self.day = day
         self.hour = hour
         self.minute = minute
         self.second = second
-        self.tz = timezone
+        self.tz = timezone if timezone is not None and timezone.upper()!='UTC' else 'UTC'
         self.fold = fold
-        self.sort, self.rd = super()._calc_sort_value()        
+        self.rd = self._self_rata_die()
+        if self.tz == 'UTC':
+            self.tz_offset = (0,0,0)
+        else:
+            greg_year, greg_month, greg_day = gregorian_from_rd(self.rd)
+            offset_hours, offset_minutes = UnivCalendars._get_timezone_offset(timezone, fold, greg_year, greg_month, greg_day, hour, minute)
+            self.tz_offset = (offset_hours, offset_minutes, 0)
+        self.sort = super()._calc_sort_value()        
         return
     
     ################################################################################
@@ -214,42 +219,9 @@ class UnivCalendars(UnivTimestamp):
     # NOTE : slots of the timestamp are local according to the timezone and fold
     # NOTE : the rata die (,rd) is local
     # NOTE : the sort value (.sort) is UTC
-    @staticmethod
-    def convert_to_utc(hour, minute, second, from_timezone : str, fold : int, year, month, day) -> Tuple[int, int, int, Decimal]:
-        """
-        Convert time components from source timezone to UTC
-        
-        Args:
-            source_timezone: Source timezone name
-            
-        Returns:
-            Tuple of (hour, minute, second) in UTC
-        """
-        if hour is None:
-            raise ValueError("Hour must be specified for conversion")
-        minute = minute if minute is not None else 0
-        # Get timezone offset in hours and minutes
-        offset_hours, offset_minutes = UnivCalendars._get_timezone_offset(from_timezone, fold, year, month, day, hour, minute)
-        # Calculate total minutes
-        total_minutes_source = hour * 60 + minute    
-        # Adjust by the timezone offset (subtract because we're converting to UTC)
-        total_minutes_utc = total_minutes_source - (offset_hours * 60 + offset_minutes)    
-        # Handle day boundary crossing
-        day_adjustment = 0
-        while total_minutes_utc < 0:
-            total_minutes_utc += 24 * 60
-            day_adjustment -= 1           
-        while total_minutes_utc >= 24 * 60:
-            total_minutes_utc -= 24 * 60
-            day_adjustment += 1       
-        # Convert back to hours and minutes
-        utc_hour = total_minutes_utc // 60
-        utc_minute = total_minutes_utc % 60 
-        # Return the converted time and day adjustment
-        return day_adjustment, utc_hour, utc_minute, second
 
     @staticmethod
-    def _get_timezone_offset(timezone_name : str, fold : int, year : int, month : int, day : int, hour : int, minute : int) -> Tuple[int, int]:
+    def _get_timezone_offset(timezone_name : str, fold : int, greg_year : int, greg_month : int, greg_day : int, hour : int, minute : int) -> Tuple[int, int]:
         """
         Get the offset (in hours and minutes) for a timezone
         
@@ -268,13 +240,17 @@ class UnivCalendars(UnivTimestamp):
             # NOTE you should never be here is year, month and day None
             # NOTE Assumes there was no such thing as daylight savings time before year 1
             # If year is 0 or negative, set it to 1 to avoid invalid datetime
-            year = max(1,year)
+            greg_year = max(1,greg_year)
             # delta = timedelta(days=0)
-            if isinstance(month, Tuple):
-                month = month[0]
+            if isinstance(greg_month, Tuple):
+                greg_month = greg_month[0]
                 # if month[1]:
                 #     delta = timedelta(days=30)
-            source_date = datetime(year, month, day, hour, minute, 0, tzinfo=tz, fold=fold) #+ delta
+            greg_month = max(1,min(12,greg_month if greg_month is not None else 1))
+            greg_day = max(1,min(28 if greg_month==2 else 30 if greg_month in (4,6,9,11) else 31, greg_day if greg_day is not None else 1))
+            hour = hour if hour is not None else 0
+            minute = minute if minute is not None else 0
+            source_date = datetime(greg_year, greg_month, greg_day, hour, minute, 0, tzinfo=tz, fold=fold) #+ delta
             # Get offset in seconds
             offset_seconds = source_date.utcoffset().total_seconds()            
             # Convert to hours and minutes
@@ -293,14 +269,34 @@ class UnivCalendars(UnivTimestamp):
         """
         raise NotImplementedError("Subclasses must implement _self_rata_die() method") 
     
-    def _self_utc(self) -> Tuple[int, int, int, Decimal]:
+    def _get_utc(self) -> Tuple[int, int, int, Decimal]:
         """
         Convert the time to UTC components (day_adjust, hour, minute, second).
         """
         if self.hour is None or self.tz == 'UTC':
             return 0, self.hour, self.minute, self.second
-        day_adjust, utc_hour, utc_minute, utc_second = UnivCalendars.convert_to_utc(self.hour, self.minute, self.second, self.tz, self.fold, self.year, self.month, self.day)
-        return day_adjust, utc_hour, utc_minute, utc_second
+        # Apply the time zone offset to obtain UTC time
+        minute = self.minute if self. minute is not None else 0
+        # Get timezone offset in hours and minutes
+        offset_hours = self.tz_offset[0]
+        offset_minutes = self.tz_offset[1]
+        # Calculate total minutes
+        total_minutes_source = self.hour * 60 + minute    
+        # Adjust by the timezone offset (subtract because we're converting to UTC)
+        total_minutes_utc = total_minutes_source - (offset_hours * 60 + offset_minutes)    
+        # Handle day boundary crossing
+        day_adjustment = 0
+        while total_minutes_utc < 0:
+            total_minutes_utc += 24 * 60
+            day_adjustment -= 1           
+        while total_minutes_utc >= 24 * 60:
+            total_minutes_utc -= 24 * 60
+            day_adjustment += 1       
+        # Convert back to hours and minutes
+        utc_hour = total_minutes_utc // 60
+        utc_minute = total_minutes_utc % 60 
+        utc_second = self.second if self.second is not None else Decimal(0)
+        return day_adjustment, utc_hour, utc_minute, utc_second
 
     @abstractmethod
     def _calc_rata_die(self, year: int, month: int, day: int) -> int:
@@ -342,59 +338,6 @@ class UnivCalendars(UnivTimestamp):
         """
         return UnivCalendars.Day_of_Week_Atts[language][(self.rd - 1) % 7][attr]
 
-    # def _get_timezone_info(self, format_tz_name: Optional[str] = None) -> dict:
-    #     """
-    #     Get timezone information for formatting
-        
-    #     Args:
-    #         format_tz_name: Optional timezone name to format in. If None, uses self.timezone_name
-        
-    #     Returns:
-    #         Dictionary with timezone details
-    #     """
-    #     # Use provided timezone for formatting or default to the timestamp's timezone
-    #     tz_name = format_tz_name or self.timezone_name or "UTC"
-        
-    #     try:
-    #         # Create timezone object
-    #         tz = ZoneInfo(tz_name)
-            
-    #         # Create a datetime object in this timezone (for calculating offsets)
-    #         dt_components = [
-    #             self.year if self.year is not None else 2000,
-    #             self.month if self.month is not None else 1,
-    #             self.day if self.day is not None else 1,
-    #             self.hour if self.hour is not None else 0,
-    #             self.minute if self.minute is not None else 0,
-    #             int(self.second) if self.second is not None else 0,
-    #         ]
-            
-    #         # Create datetime in UTC
-    #         utc_dt = datetime(*dt_components, tzinfo=timezone.utc)
-            
-    #         # Convert to target timezone
-    #         local_dt = utc_dt.astimezone(tz)
-            
-    #         # Extract timezone information
-    #         offset_str = local_dt.strftime("%z")
-    #         offset_with_colon = f"{offset_str[:3]}:{offset_str[3:]}"
-            
-    #         return {
-    #             "name": tz_name,
-    #             "abbr": local_dt.strftime("%Z"),
-    #             "offset": offset_str,
-    #             "offset_colon": offset_with_colon,
-    #             "tzinfo": tz
-    #         }
-    #     except Exception as e:
-    #         # Fallback if timezone not found
-    #         return {
-    #             "name": "UTC",
-    #             "abbr": "UTC",
-    #             "offset": "+0000",
-    #             "offset_colon": "+00:00",
-    #             "tzinfo": timezone.utc
-    #         }    
 
     # @staticmethod
     # def get_system_timezone() -> str:
@@ -538,34 +481,40 @@ class UnivCalendars(UnivTimestamp):
         if self.hour is None:
             return ""
         if seg_type == 'H':
-            fmt += f"{self.hour:02d}" if self.hour is not None else ".."   
+            fmt = f"{self.hour:02d}" if self.hour is not None else ".."   
         elif seg_type == 'I':
-            fmt += f"{self.hour % 12:02d}" if self.hour is not None else ".."
+            fmt = f"{self.hour % 12:02d}" if self.hour is not None else ".."
         elif seg_type == 'p':
             # AM/PM
             if self.hour is None:
                 pass #fmt += ""
             else:
-                fmt += "am" if self.hour < 12 else "pm"     
+                fmt = "am" if self.hour < 12 else "pm"     
         elif seg_type == 'M':
-            fmt +=  f"{self.minute:02d}" if self.minute is not None else ".."
+            fmt =  f"{self.minute:02d}" if self.minute is not None else ".."
         elif seg_type in 'S':
             if self.second is None:
                 pass #return ".."
             else:
                 int_part = int(self.second)
-                fmt += f"{int_part:02d}"  # Format seconds intger part                   
+                fmt = f"{int_part:02d}"  # Format seconds ineger part                   
         elif seg_type == 'f':
             if self.second is None:
                 pass #fmt += "000000"
             else:
-                fmt += self._format_seconds()[3:] # Format factional part
+                fmt = self._format_seconds()[3:] # Format factional part
         elif seg_type == 'z':
             # UTC offset, assuming no timezone information is available
-            fmt += "+0000"
+            if self.tz_offset is not None:
+                offset_hours, offset_minutes = self.tz_offset[0], self.tz_offset[1]
+                sign = '+' if (offset_hours > 0 or (offset_hours == 0 and offset_minutes >= 0)) else '-'
+                fmt = f"{sign}{abs(offset_hours):02d}:{abs(offset_minutes):02d}"
+
         elif seg_type == 'Z':
-            # Timezone name, assuming UTC
-            fmt += "UTC"
+            if self.tz is not None:
+                fmt = self.tz
+            else:
+                fmt = "UTC"
         return fmt
     
     def _strftime_compound(self, seg_type : str, language :str, eliminate_leading_zero: bool = False) -> str:
