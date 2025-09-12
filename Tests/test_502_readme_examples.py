@@ -5,8 +5,9 @@ from io import StringIO
 from contextlib import redirect_stdout
 
 class TestActualReadmeExamples:
-    """Tests that execute the actual code blocks from README.md"""
-    
+    """
+    Tests that execute the actual code blocks from README.md
+    """   
     @pytest.fixture
     def readme_content(self):
         """Read the README.md file content"""
