@@ -1,6 +1,6 @@
 
 {
-    "celestial-stem": [
+    "stem": [
         {"index": 1, "pinyin": "Jiˇa", "hanzi": "甲", "japanese": "Kō", "english": "First"},
         {"index": 2, "pinyin": "Yˇı", "hanzi": "乙", "japanese": "Otsu", "english": "Second"},
         {"index": 3, "pinyin": "Bˇıng", "hanzi": "丙", "japanese": "Hei", "english": "Third"},
@@ -12,7 +12,7 @@
         {"index": 9, "pinyin": "Rén", "hanzi": "壬", "japanese": "Jin", "english": "Ninth"},
         {"index":10, "pinyin": "Guˇı", "hanzi": "癸", "japanese": "Ki", "english": "Tenth"}
     ],
-    "terrestrial-branch": [
+    "branch": [
         {"index": 1, "pinyin": "Z¯ı", "hanzi": "子", "japanese": "Shi", "english": "Rat"},
         {"index": 2, "pinyin": "Ch¯ou", "hanzi": "丑", "japanese": "Ushi", "english": "Ox"},
         {"index": 3, "pinyin": "Yín", "hanzi": "寅", "japanese": "Tora", "english": "Tiger"},
