@@ -98,6 +98,18 @@ class TestUniversalTimestamp:
         print(f"✅ SUCCESS: {inspect.currentframe().f_code.co_name}")
         return
     
+    def test_beginning_of_time(self):
+        """Test the beginning of time representation."""
+        bot = UnivTimestampFactory.beginning_of_time()
+        bot_str = bot.format_signature()
+        print(f"Beginning of Time timestamp: {bot_str}")
+        assert isinstance(bot, UnivGEOLOGICAL)
+        assert bot.precision == Precision.YEAR
+        assert bot.year.is_infinite()
+        
+        print(f"✅ SUCCESS: {inspect.currentframe().f_code.co_name}")
+        return
+    
     def test_min_max_rata_die(self):
         """Test Minimium and Maxium Rata Diw (R.D.) for Gregorian Calendar."""
         # Test minimum R.D. for Julian calendar

@@ -584,11 +584,15 @@ class UnivGEOLOGICAL(UnivTimestamp):
             years_ago = -abs(years_ago)
         else:
             raise ValueError("years_ago must be an integer, float or decimal string")
-        if precision is None or PrecisionAtts[precision]['level'] > PrecisionAtts[Precision.YEAR]['level']:
-            raise ValueError(f"Invalid precision {precision} for geological time. Must be YEAR or higher.")
-        power = PrecisionAtts[precision]['power']
-        years_ago *= Decimal('1e' + str(power))  # Scale to the correct precision
-        years_ago = int(years_ago)
+        if years_ago != Decimal('-Infinity'):
+          if precision is None or PrecisionAtts[precision]['level'] > PrecisionAtts[Precision.YEAR]['level']:
+              raise ValueError(f"Invalid precision {precision} for geological time. Must be YEAR or higher.")
+          power = PrecisionAtts[precision]['power']
+          years_ago *= Decimal('1e' + str(power))
+          # Scale to the correct precision
+          years_ago = int(years_ago)
+        else:
+          precision = Precision.YEAR
         super().__init__(            
             Calendar.GEOLOGICAL,
             years_ago,
@@ -603,12 +607,17 @@ class UnivGEOLOGICAL(UnivTimestamp):
             raise ValueError(f"Failed to initialize sort value: {e}")
 
     # TIMESTAMP/RD METHODS ######################################################################################
-    def _self_rata_die(self) -> int:
+    def _self_rata_die(self) -> Union[int, Decimal]:
         """
         Convert the geological timestamp to Rata Die (fixed day number).
         For geological time, we assume a constant year length of 365.25 days.
         """
-        return int(self.year * Decimal(365.25))  # * 1_00_00_00_000_000_000_000_000_000
+        days = self.year * Decimal(365.25)
+        if days.is_finite():
+          return int(days)  # * 1_00_00_00_000_000_000_000_000_000
+        else:
+          return Decimal('-Infinity')
+        
     def _get_utc(self) -> Tuple[int, int, Decimal]:
         """
         Convert the time to UTC components (day_adjust, hour, minute, second).
@@ -616,12 +625,12 @@ class UnivGEOLOGICAL(UnivTimestamp):
         """
         return 0, 0, 0, Decimal('0')
 
-    def _calc_rata_die(self, year: int, month: int = 0, day: int = 0) -> int:
-        """
-        Convert geological date components (year) to Rata Die (fixed day number).
-        For geological time, we assume a constant year length of 365.25 days.
-        """
-        return int(year * Decimal(365.25)) * 1_00_00_00_000_000_000_000_000_000
+    # def _calc_rata_die(self, year: int, month: int = 0, day: int = 0) -> int:
+    #     """
+    #     Convert geological date components (year) to Rata Die (fixed day number).
+    #     For geological time, we assume a constant year length of 365.25 days.
+    #     """
+    #     return int(year * Decimal(365.25)) * 1_00_00_00_000_000_000_000_000_000
 
     # FORMATTING METHODS ########################################################################
     def __str__(self) -> str:
@@ -715,7 +724,7 @@ class UnivGEOLOGICAL(UnivTimestamp):
         result += f" {PrecisionAtts[self.precision]['abbrv']}"
         return result
     
-    def format_signature(self, include_precision: bool = False, include_accuracy: bool = False, include_confidence: bool = False ) -> str:
+    def format_signature(self, include_precision: bool = False, include_accuracy: bool = False) -> str:
         """Format complete timestamp for display"""
         date_part = self.format_signature_date()
         result = date_part
@@ -726,8 +735,8 @@ class UnivGEOLOGICAL(UnivTimestamp):
         if include_accuracy and self.accuracy:
             result += f" [{self.accuracy}]"
         # Add confidence level if requested
-        if include_confidence and self.confidence is not None:
-            result += f" ({self.confidence:.1%})"
+        # if include_confidence and self.confidence is not None:
+        #     result += f" ({self.confidence:.1%})"
         return result
     
     ############################################################################################### 

@@ -183,7 +183,7 @@ class UnivTimestamp:
     def __init__(
         self,
         calendar: Calendar,
-        year : Union[int, float, Decimal, str] = None,
+        year : Union[int, Decimal] = None,
         precision: Precision = None,
         accuracy: Decimal = None,
         description: str = ""
@@ -195,17 +195,19 @@ class UnivTimestamp:
             date component: year
             calendar: Calendar system being used
             precision: Precision level for this timestamp
-            accuracy: Human-readable accuracy description
+            accuracy: Value between 0 and 1 representing plus/minus accuracy as a decimal fraction
             source_description: Description of measurement/source
-            confidence_level: Statistical confidence level (0.0-1.0)
         """
         # Convert year to large integer
         if year is None:
             raise ValueError("Year must be specified")
         elif not isinstance(year,  (int, Decimal)):
             raise ValueError(f"Invalid year type: {type(year)}. Expected int or Decimal.")
-        if accuracy is not None and not (isinstance(accuracy, Decimal) and Decimal("0") <= accuracy <= Decimal("1")):
-            raise ValueError("Accuracy must be a Decimal between 0 and 1")
+        if isinstance(year, int) or year.is_finite():
+            if accuracy is not None and not (isinstance(accuracy, Decimal) and Decimal("0") <= accuracy <= Decimal("1")):
+                raise ValueError("Accuracy must be a Decimal between 0 and 1")
+        else:
+            accuracy = None
         self.calendar = calendar
         self.year = year
         self.precision = precision
@@ -224,7 +226,7 @@ class UnivTimestamp:
     #   x-from-rd, rd-from-x where x is the calendar system
     #############################################################################
     # Reference "Calendrical Calculations" by Edward M. Reingold and Nachum Dershowitz"
-    def _calc_sort_value(self) -> int:
+    def _calc_sort_value(self) -> Union[int, Decimal]:
         """
         Return a large integer for precise sorting.
         If day or time is not present, fill with 0.
@@ -232,6 +234,8 @@ class UnivTimestamp:
         value = self.rd
         # Convert local time to UTC if timezone is specified and time components exist
         # Note sort value maybe modified if the day changes due to timezone conversion
+        if isinstance(value, Decimal) and not value.is_finite():
+            return Decimal('-Infinity')
         day_adjust, utc_hour, utc_minute, utc_second = self._get_utc()
         value += day_adjust
         # pad the sort value with the utc time.

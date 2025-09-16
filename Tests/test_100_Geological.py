@@ -1,61 +1,12 @@
 import os
 import sys
-from datetime import datetime, timezone
 from decimal import Decimal
 import inspect
-from SPK_UniversalTimestamp import (
-    UnivTimestamp,
-    Calendar,
-    Precision,  
-    GEOLOGICAL_EONS,
-    MEASUREMENT_HISTORY,
-    #sort_timestamps_ascending,
-    #sort_timestamps_descending,
-    UnivCalendars,
-    UnivGREGORIAN,
-    UnivJULIAN,
-    UnivHEBREW,
-    UnivGEOLOGICAL,
-    UnivTimestampFactory,
-)
-#import pytest
+from SPK_UniversalTimestamp import *
 
-# Add the parent directory to Python path so we can import the package
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
-from SPK_UniversalTimestamp.CC01_Calendar_Basics import Epoch_rd
-from SPK_UniversalTimestamp.CC02_Gregorian import (
-    is_gregorian_leap_year,
-    rd_from_gregorian,
-    gregorian_from_rd,
-    gregorian_year_from_rd,
-    )
-from SPK_UniversalTimestamp.CC03_Julian import (
-    is_julian_leap_year,
-    rd_from_julian,
-    julian_from_rd,
-    )
-
-from SPK_UniversalTimestamp import (
-    UnivTimestamp, 
-    Calendar, 
-    Precision,
-    #sort_timestamps_ascending,
-    #sort_timestamps_descending,
-    
-    #UnivHEBREW,
-    #UnivGEOLOGICAL,   
-    #GEOLOGICAL_EONS,
-    
-    #MEASUREMENT_HISTORY
-)
-from SPK_UniversalTimestamp.UnivGREGORIAN import UnivGREGORIAN
-from SPK_UniversalTimestamp.UnivJULIAN import UnivJULIAN    
+from SPK_UniversalTimestamp import *
 from SPK_UniversalTimestamp.UnivTimestampFactory import UnivTimestampFactory
 from SPK_UniversalTimestamp.UnivGEOLOGICAL import UnivGEOLOGICAL
-from SPK_UniversalTimestamp.UnivHEBREW import UnivHEBREW
-from SPK_UniversalTimestamp.UnivCHINESE import UnivCHINESE
-#from SPK_UniversalTimestamp.UnivCalendars import UnivCalendars
 
 class TestUniversalTimestamp:
     """Test cases for UnivTimestamp class."""

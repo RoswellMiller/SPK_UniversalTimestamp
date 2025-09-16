@@ -29,6 +29,10 @@ class UnivTimestampFactory:
     def __init__(self):
         pass
     @staticmethod
+    def beginning_of_time() -> "UnivTimestamp":
+        """Get the beginning of time in the Gregorian calendar."""
+        return UnivGEOLOGICAL('-Infinity', description="Beginning of Time")
+    @staticmethod
     def now() -> "UnivTimestamp":
         """Get the current timestamp in the Gregorian calendar."""
         dt = datetime.now(timezone.utc)
