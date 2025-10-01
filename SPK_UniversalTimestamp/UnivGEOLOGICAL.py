@@ -1,9 +1,7 @@
-import os
-import json
 import bisect
 from decimal import Decimal
 from typing import Union, Tuple, List
-from SPK_UniversalTimestamp import UnivTimestamp, Calendar, CalendarAtts, Precision, PrecisionAtts
+from SPK_UniversalTimestamp import UnivTimestamp, Calendar, Precision, PrecisionAtts
 
 # Load geological time scale data from JSON file
 # cwd = os.getcwd()
@@ -247,8 +245,8 @@ GEOLOGICAL_TIME_STRUCTURE ={
                   "start": 393.3,
                   "end": 382.7,
                   "ages": [
-                    { "name": "eifelian", "start": 393.3, "end": 387.7 },
-                    { "name": "givetian", "start": 387.7, "end": 382.7 }
+                    { "name": "Eifelian", "start": 393.3, "end": 387.7 },
+                    { "name": "Givetian", "start": 387.7, "end": 382.7 }
                   ]
                 },
                 {
@@ -256,8 +254,8 @@ GEOLOGICAL_TIME_STRUCTURE ={
                   "start": 382.7,
                   "end": 358.9,
                   "ages": [
-                    { "name": "frasnian", "start": 382.7, "end": 372.2 },
-                    { "name": "famennian", "start": 372.2, "end": 358.9 }
+                    { "name": "Frasnian", "start": 382.7, "end": 372.2 },
+                    { "name": "Famennian", "start": 372.2, "end": 358.9 }
                   ]
                 }
               ]
@@ -362,7 +360,7 @@ GEOLOGICAL_TIME_STRUCTURE ={
                   "start": 237,
                   "end": 201.3,
                   "ages": [
-                    { "name": "carnian", "start": 237, "end": 227 },
+                    { "name": "Carnian", "start": 237, "end": 227 },
                     { "name": "Norian", "start": 227, "end": 208.5 },
                     { "name": "Rhaetian", "start": 208.5, "end": 201.3 }
                   ]
@@ -767,7 +765,7 @@ def main():
                     'end' : eon_end,
                 })
             if 'eras' in eon:
-                last_era = create_eras(eon_name, eras, periods, epochs, eon_start, eon.get('eras', []))
+                create_eras(eon_name, eras, periods, epochs, eon_start, eon.get('eras', []))
         return eon_end
         
     def create_eras(eon_name : str, eras : List, periods : List, epochs : List, start_date: "UnivGEOLOGICAL", era_list : List)->"UnivGEOLOGICAL":       
@@ -792,7 +790,7 @@ def main():
                     'end' : era_end
                 })
             if 'periods' in era:
-                last_period = create_periods(era, era_name, periods, epochs, era_start, era.get('periods', []))
+                create_periods(era, era_name, periods, epochs, era_start, era.get('periods', []))
         return era_end
         
     def create_periods(eon_name : str, era_name, periods : List, epochs : List, start_date: "UnivGEOLOGICAL", period_list : List)->"UnivGEOLOGICAL":       
@@ -818,7 +816,7 @@ def main():
                     'end' : period_end
                 })
             if 'epochs' in period:
-                last_period = create_epochs(eon_name, era_name, period_name, epochs, period_start, period.get('epochs', []))
+                create_epochs(eon_name, era_name, period_name, epochs, period_start, period.get('epochs', []))
         return period_end
         
     def create_epochs(eon_name : str, era_name, period_name : str, epochs : List, start_date: "UnivGEOLOGICAL", epoch_list : List)->"UnivGEOLOGICAL":       
@@ -836,7 +834,7 @@ def main():
                 epoch_end = UnivGEOLOGICAL(epoch_end, precision=Precision.MILLION_YEARS, description=epoch_name)
                 
             if 'ages' in epoch:
-                last_age = create_ages(eon_name, era_name, period_name, epoch_name, epochs, epoch_start, epoch.get('ages', []))
+                create_ages(eon_name, era_name, period_name, epoch_name, epochs, epoch_start, epoch.get('ages', []))
             else:
                 epochs.append(
                     { 

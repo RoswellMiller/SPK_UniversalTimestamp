@@ -7,13 +7,11 @@ Comprehensive multi-scale time system:
 - Scientific: High-precision measurements with uncertainty (universal_time.py)
 """
 
-from decimal import Decimal, getcontext, ROUND_DOWN
+from decimal import Decimal, getcontext
 from enum import Enum
-from typing import Optional, Union, Tuple, List
-import re
+from typing import Optional, Union, Tuple
+
 from abc import abstractmethod
-from zoneinfo import ZoneInfo, available_timezones
-from datetime import datetime
 # Set high precision Decimal computations
 getcontext().prec = 50
 
@@ -222,7 +220,7 @@ class UnivTimestamp:
     # The external routines are constructors
     # The internal routines will follow the pattern EMR and ND defined on p. 13
     #   y-from-x =(def) y-from-fixed(fixed-from-x(x-date)) where x,y are calendars
-    #   'fixed' here is the Rata Die (r.d.) fixed day number, we will adopt the naming conventiion
+    #   'fixed' here is the Rata Die (r.d.) fixed day number, we will adopt the naming convention
     #   x-from-rd, rd-from-x where x is the calendar system
     #############################################################################
     # Reference "Calendrical Calculations" by Edward M. Reingold and Nachum Dershowitz"

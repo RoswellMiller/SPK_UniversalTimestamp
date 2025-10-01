@@ -1,8 +1,8 @@
 from decimal import Decimal
 from typing import Union, Tuple
 
-from .UnivDecimalLibrary import *
-from .CC19_Chinese_1645 import *
+from .UnivDecimalLibrary import floor
+from .CC19_Chinese_1645 import rd_from_chinese, chinese_from_rd, chinese_new_moon_before, chinese_new_moon_on_or_after, Table_19_1_Dict
 
 from SPK_UniversalTimestamp import Calendar, Precision, CalendarAtts
 from SPK_UniversalTimestamp import UnivCalendars
@@ -10,7 +10,7 @@ from SPK_UniversalTimestamp import UnivCalendars
 
 class UnivCHINESE(UnivCalendars):
     """
-    This class represents a Hebrew timestamp.
+    This class represents a Chinese timestamp.
     It inherits from the UnivTimestamp class and is used to handle
     Chinese calendar data.
     """

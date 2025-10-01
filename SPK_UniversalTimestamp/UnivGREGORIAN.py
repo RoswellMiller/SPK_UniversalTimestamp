@@ -1,11 +1,8 @@
-from decimal import Decimal, ROUND_DOWN
-from datetime import datetime
+from decimal import Decimal
 from typing import Union, Tuple
 
-from SPK_UniversalTimestamp.CC01_Calendar_Basics import Epoch_rd
-
-from SPK_UniversalTimestamp import *
-from SPK_UniversalTimestamp.CC02_Gregorian import *
+from SPK_UniversalTimestamp import UnivCalendars, Calendar, Precision
+from SPK_UniversalTimestamp.CC02_Gregorian import is_gregorian_leap_year, rd_from_gregorian, gregorian_from_rd
 
 class UnivGREGORIAN(UnivCalendars):
     """

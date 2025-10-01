@@ -7,15 +7,14 @@ Comprehensive multi-scale time system:
 - Scientific: High-precision measurements with uncertainty (universal_time.py)
 """
 
-from decimal import Decimal, getcontext, ROUND_DOWN
-from typing import Optional, Union, Tuple, Callable, List
+from decimal import Decimal, ROUND_DOWN
+from typing import Optional, Union, Tuple, List
 from abc import abstractmethod
 from zoneinfo import ZoneInfo
 from datetime import datetime
 from SPK_UniversalTimestamp.CC02_Gregorian import gregorian_from_rd
 
 from SPK_UniversalTimestamp import UnivTimestamp, Precision, PrecisionAtts, Calendar, CalendarAtts
-from SPK_UniversalTimestamp.CC01_Calendar_Basics import *
 
 ##################################################################################################################################################
 class UnivCalendars(UnivTimestamp):
@@ -206,7 +205,7 @@ class UnivCalendars(UnivTimestamp):
     # The external routines are constructors
     # The internal routines will follow the pattern EMR and ND defined on p. 13
     #   y-from-x =(def) y-from-fixed(fixed-from-x(x-date)) where x,y are calendars
-    #   'fixed' here is the Rata Die (r.d.) fixed day number, we will adopt the naming conventiion
+    #   'fixed' here is the Rata Die (r.d.) fixed day number, we will adopt the naming convention
     #   x-from-rd, rd-from-x where x is the calendar system
     #############################################################################
     # Reference "Calendrical Calculations" by Edward M. Reingold and Nachum Dershowitz"
@@ -339,79 +338,6 @@ class UnivCalendars(UnivTimestamp):
         return UnivCalendars.Day_of_Week_Atts[language][(self.rd - 1) % 7][attr]
 
 
-    # @staticmethod
-    # def get_system_timezone() -> str:
-    #     """Get the system's local timezone"""
-    #     try:
-    #         from zoneinfo import ZoneInfo
-    #         from tzlocal import get_localzone
-    #         return str(get_localzone())
-    #     except ImportError:
-    #         # Fallback if tzlocal is not available
-    #         return "UTC"
-
-    # def as_timezone(self, target_timezone: str) -> dict:
-    #     """
-    #     Convert the timestamp to the specified timezone
-        
-    #     Args:
-    #         target_timezone: Target timezone name
-        
-    #     Returns:
-    #         Dictionary with date/time components in the target timezone
-    #     """
-    #     try:
-    #         # Create timezone objects
-    #         target_tz = ZoneInfo(target_timezone)
-    #         utc_tz = timezone.utc
-            
-    #         # Create a datetime object in UTC from our internal representation
-    #         dt_components = [
-    #             self.year if isinstance(self.year, int) else int(self.year),
-    #             self.month if self.month is not None else 1,
-    #             self.day if self.day is not None else 1,
-    #             self.hour if self.hour is not None else 0,
-    #             self.minute if self.minute is not None else 0,
-    #             int(self.second) if self.second is not None else 0,
-    #         ]
-            
-    #         # Create datetime in UTC
-    #         utc_dt = datetime(*dt_components, tzinfo=utc_tz)
-            
-    #         # Convert to target timezone
-    #         local_dt = utc_dt.astimezone(target_tz)
-            
-    #         # Extract components
-    #         result = {
-    #             "year": local_dt.year,
-    #             "month": local_dt.month,
-    #             "day": local_dt.day,
-    #             "hour": local_dt.hour,
-    #             "minute": local_dt.minute,
-    #             "second": local_dt.second,
-    #             "timezone": target_timezone,
-    #             "offset": local_dt.strftime("%z")
-    #         }
-        
-    #         # If original seconds had a fractional part, preserve it
-    #         if self.second is not None and isinstance(self.second, (Decimal, float)) and self.second != int(self.second):
-    #             frac_part = Decimal(str(self.second)) - int(self.second)
-    #             result["second"] = Decimal(local_dt.second) + frac_part
-                
-    #         return result
-    #     except Exception as e:
-    #         # If conversion fails, return original values
-    #         return {
-    #             "year": self.year,
-    #             "month": self.month,
-    #             "day": self.day,
-    #             "hour": self.hour,
-    #             "minute": self.minute,
-    #             "second": self.second,
-    #             "timezone": "UTC",
-    #             "offset": "+0000"
-    #         }   
-
     # FORMATTING METHODS ######################################################################################
     def __str__(self) -> str:
         return self.format_signature()
@@ -497,7 +423,7 @@ class UnivCalendars(UnivTimestamp):
                 pass #return ".."
             else:
                 int_part = int(self.second)
-                fmt = f"{int_part:02d}"  # Format seconds ineger part                   
+                fmt = f"{int_part:02d}"  # Format seconds integer part                   
         elif seg_type == 'f':
             if self.second is None:
                 pass #fmt += "000000"
