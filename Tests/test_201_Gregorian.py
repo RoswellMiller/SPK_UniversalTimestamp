@@ -1,12 +1,12 @@
-from datetime import datetime, timezone
+#from datetime import datetime, timezone
 from decimal import Decimal
 import inspect
 
-from SPK_UniversalTimestamp.CC01_Calendar_Basics import *
+#from SPK_UniversalTimestamp.CC01_Calendar_Basics import 
 
-from SPK_UniversalTimestamp import *
-from SPK_UniversalTimestamp.UnivGREGORIAN import *
-
+from SPK_UniversalTimestamp import Precision, Calendar
+from SPK_UniversalTimestamp.UnivGREGORIAN import UnivGREGORIAN
+from SPK_UniversalTimestamp.UnivTimestampFactory import UnivTimestampFactory
 
 class TestUniversalTimestamp:
     """Test cases for UnivTimestamp class."""
@@ -36,7 +36,7 @@ class TestUniversalTimestamp:
         assert rd == need_rd
         assert signature == "2024-07-15 14:30:25.123456" 
         assert _str == "2024-07-15 14:30:25.123456"
-        assert _repr == "{'class':'UnivGREGORIAN','ca':'GREGORIAN','yr':2024,'mo':7,'da':15,'hr':14,'mi':30,'sc':25.123456,'pr':'MICROSECOND','tz':'UTC','fo':0,'ac':None,'de':''}"
+        assert _repr == "{'class':'UnivGREGORIAN','ca':'GREGORIAN','yr':2024,'mo':7,'da':15,'hr':14,'mi':30,'sc':'25.123456','pr':'MICROSECOND','tz':'UTC','fo':0,'ac':None,'de':''}"
         
         # Test BCE date
         bce_timestamp = UnivGREGORIAN(
@@ -70,7 +70,7 @@ class TestUniversalTimestamp:
     def test_timezone_handling(self):
         """Test timezone handling in timestamps."""
         # Create a timestamp with UTC timezone
-        dt = datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        #dt = datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
         try:
             pt_timestamp = UnivGREGORIAN(
                 2024, 1, 1, 12, 0, 0,       # Noon PST
@@ -192,12 +192,12 @@ class TestUniversalTimestamp:
 
     def test_string__repr__(self):
         timestamp = UnivGREGORIAN(
-            2024, 7, 15, 11,
+            2024, 7, 15, 11, 10, Decimal('22.56'),
             description="Test timestamp"
         )         
         # Test __repr__
         repr_str = repr(timestamp)
-        assert repr_str ==  "{'class':'UnivGREGORIAN','ca':'GREGORIAN','yr':2024,'mo':7,'da':15,'hr':11,'mi':None,'sc':None,'pr':'HOUR','tz':'UTC','fo':0,'ac':None,'de':'Test timestamp'}"
+        assert repr_str ==  "{'class':'UnivGREGORIAN','ca':'GREGORIAN','yr':2024,'mo':7,'da':15,'hr':11,'mi':10,'sc':'22.56','pr':'SECOND','tz':'UTC','fo':0,'ac':None,'de':'Test timestamp'}"
         
         ts_repro = UnivTimestampFactory.parse_repr(repr_str)
         assert ts_repro == timestamp, "Repr conversion mismatch!"

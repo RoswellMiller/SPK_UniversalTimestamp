@@ -1,15 +1,18 @@
-
+from decimal import Decimal
 import inspect
 from SPK_UniversalTimestamp.UnivDecimalLibrary import to_roman_numeral
+from SPK_UniversalTimestamp import UnivTimestampFactory
 
-from SPK_UniversalTimestamp.CC01_Calendar_Basics import *
-from SPK_UniversalTimestamp.CC02_Gregorian import *
-from SPK_UniversalTimestamp.CC03_Julian import *
-from SPK_UniversalTimestamp.CC19_Chinese_1645 import *
+from SPK_UniversalTimestamp.CC01_Calendar_Basics import Epoch_rd
+from SPK_UniversalTimestamp.CC02_Gregorian import rd_from_gregorian, gregorian_from_rd
+from SPK_UniversalTimestamp.CC03_Julian import rd_from_julian
+from SPK_UniversalTimestamp.CC19_Chinese_1645 import Table_19_1, chinese_new_moon_on_or_after, solar_longitude, solar_longitude_after
+from SPK_UniversalTimestamp.CC19_Chinese_1645 import chinese_from_rd, chinese_new_year_in_sui, rd_from_chinese
+from SPK_UniversalTimestamp.CC19_Chinese_1645 import season_in_gregorian, winter, spring, summer, autumn
 
-from SPK_UniversalTimestamp import *
-from SPK_UniversalTimestamp.UnivGREGORIAN import *
-from SPK_UniversalTimestamp.UnivCHINESE import *
+from SPK_UniversalTimestamp import Precision, Calendar
+from SPK_UniversalTimestamp.UnivGREGORIAN import UnivGREGORIAN
+from SPK_UniversalTimestamp.UnivCHINESE import UnivCHINESE
 
 class TestUniversalTimestamp:
     """Test cases for UnivTimestamp class."""
@@ -39,8 +42,12 @@ class TestUniversalTimestamp:
         return
     
     def test_chinese_epoch(self):
-        """Test Chnese calendar conversion."""
-        # Reingold & Derhowitz p 316
+        """Test Chinese calendar conversion."""
+        # Reingold & # The code you provided is not valid Python code. It seems to contain some random
+        # text ("Dershowitz") and comment symbols ("#"). If you have a specific question
+        # or need help with Python code, please provide a valid code snippet or describe
+        # the issue you are facing.
+        # Dershowitz p 316
         chinese_epoch = rd_from_gregorian(-2636, 2, 15)
         univ_chinese_epoch = Epoch_rd['chinese']
         assert chinese_epoch == univ_chinese_epoch  # R.D. 
@@ -196,7 +203,7 @@ class TestUniversalTimestamp:
             m_leap = term['month']['leap']
             m_ch_name = term['pinyin']
             m_ch_writing = term['hanzi']
-            m_japan = term['japanese']
+            #m_japan = term['japanese']
             m_english = term['english']
             m_def_sl = term['solar_longitude']
             m_start = term['approximate_starting_date'] 
@@ -491,7 +498,7 @@ class TestUniversalTimestamp:
             timezone='Asia/Shanghai',
             description="Test timestamp"
         )      
-        need_str = "{'class':'UnivCHINESE','ca':'CHINESE','yr':4284,'mo':(4, True),'da':20,'hr':8,'mi':45,'sc':15,'pr':'SECOND','tz':'Asia/Shanghai','fo':0,'ac':None,'de':'Test timestamp'}" 
+        need_str = "{'class':'UnivCHINESE','ca':'CHINESE','yr':4284,'mo':(4, True),'da':20,'hr':8,'mi':45,'sc':'15','pr':'SECOND','tz':'Asia/Shanghai','fo':0,'ac':None,'de':'Test timestamp'}" 
         # Test __repr__
         repr_str = repr(timestamp)
         assert repr_str == need_str, "Repr string mismatch!" 

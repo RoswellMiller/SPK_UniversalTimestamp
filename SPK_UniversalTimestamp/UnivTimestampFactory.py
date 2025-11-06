@@ -448,6 +448,7 @@ class UnivTimestampFactory:
             # Use ast.literal_eval to safely parse the dictionary
             data = ast.literal_eval(repr_str)
             data['ac'] = None if data['ac'] is None else Decimal(data['ac'])
+            data['sc'] = None if data['sc'] is None else Decimal(data['sc'])
             # Convert string enum names back to enum values
             calendar = Calendar[data['ca']]
             precision = Precision[data['pr']]

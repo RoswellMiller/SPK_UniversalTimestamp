@@ -1,8 +1,6 @@
-import os
-import sys
 from decimal import Decimal
 
-from SPK_UniversalTimestamp.UnivDecimalLibrary import *
+from SPK_UniversalTimestamp.UnivDecimalLibrary import DEG2RAD, sin, cos, tan, sqrt, floor, ceil, mod_adj, MAX, MIN
 
 class TestDecimalLibrary:
     

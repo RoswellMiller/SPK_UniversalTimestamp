@@ -1,10 +1,11 @@
 import inspect
 
-from SPK_UniversalTimestamp.CC01_Calendar_Basics import *
-from SPK_UniversalTimestamp.CC02_Gregorian import *
-from SPK_UniversalTimestamp.CC03_Julian import *
+# from SPK_UniversalTimestamp.CC01_Calendar_Basics import *
+#from SPK_UniversalTimestamp.CC02_Gregorian import rd_from_gregorian
+from SPK_UniversalTimestamp.CC03_Julian import rd_from_julian
 
-from SPK_UniversalTimestamp import *
+from SPK_UniversalTimestamp import Precision, Calendar
+from SPK_UniversalTimestamp.CC01_Calendar_Basics import Epoch_rd
 from SPK_UniversalTimestamp.UnivTimestampFactory import UnivTimestampFactory
 from SPK_UniversalTimestamp.UnivHEBREW import UnivHEBREW
 
@@ -48,7 +49,6 @@ class TestUniversalTimestamp:
         assert heb_rd == 369710
         
         greg_ts = UnivTimestampFactory.convert(Calendar.GREGORIAN, timestamp)
-        gred_rd = greg_ts.rd
         
         heb_ts_back = UnivTimestampFactory.convert(Calendar.HEBREW, greg_ts)
         heb_rd_back = heb_ts_back.rd
@@ -79,7 +79,7 @@ class TestUniversalTimestamp:
         )         
         # Test __repr__
         repr_str = repr(timestamp)
-        assert repr_str ==  "{'class':'UnivHEBREW','ca':'HEBREW','yr':2024,'mo':7,'da':15,'hr':11,'mi':30,'sc':15,'pr':'SECOND','tz':'Asia/Jerusalem','fo':0,'ac':None,'de':'Test timestamp'}"
+        assert repr_str ==  "{'class':'UnivHEBREW','ca':'HEBREW','yr':2024,'mo':7,'da':15,'hr':11,'mi':30,'sc':'15','pr':'SECOND','tz':'Asia/Jerusalem','fo':0,'ac':None,'de':'Test timestamp'}"
         
         ts_repro = UnivTimestampFactory.parse_repr(repr_str)
         assert ts_repro == timestamp, "Repr conversion mismatch!"

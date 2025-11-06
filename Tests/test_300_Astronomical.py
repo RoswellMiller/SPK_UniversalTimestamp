@@ -9,10 +9,13 @@ from decimal import Decimal, ROUND_FLOOR
 #import matplotlib.pyplot as plt
 #import numpy as np
 
-from SPK_UniversalTimestamp.UnivDecimalLibrary import *
-from SPK_UniversalTimestamp.CC02_Gregorian import gregorian_from_rd, rd_from_gregorian, is_gregorian_leap_year
-from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import *
-from .PolynomialRegression import *
+#from SPK_UniversalTimestamp.UnivDecimalLibrary import location, direction
+from SPK_UniversalTimestamp.CC02_Gregorian import gregorian_from_rd
+from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import ephemeris_correction, equation_of_time, dynamical_from_universal
+from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import solar_longitude, solar_longitude_after, dms_from_degrees
+from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import hms_from_hours, universal_from_local, round_, degrees_from_dms
+from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import AST, standard_from_local, location, direction
+#from .PolynomialRegression import polynomial_regression
 
 from SPK_UniversalTimestamp.UnivGREGORIAN import UnivGREGORIAN
 

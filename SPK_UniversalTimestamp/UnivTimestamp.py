@@ -281,7 +281,7 @@ class UnivTimestamp:
     @abstractmethod
     def __repr__(self) -> str:
         """
-        Create a ast.literal_eval(repr_str) compatible string which cn be used to construct of new instance
+        Create a ast.literal_eval(repr_str) compatible string which can be used to construct a new instance
         of the sub-class of this Time stamp.
 
         Returns:

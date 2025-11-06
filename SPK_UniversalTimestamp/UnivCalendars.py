@@ -350,6 +350,7 @@ class UnivCalendars(UnivTimestamp):
         
         # Build the string with proper escaping
         class_name = self.__class__.__name__
+        secs = None if self.second is None else f"'{self.second}'"
         result = ("{"
                 f"'class':'{class_name}',"
                 f"'ca':'{self.calendar.name}',"
@@ -358,7 +359,7 @@ class UnivCalendars(UnivTimestamp):
                 f"'da':{self.day},"
                 f"'hr':{self.hour},"
                 f"'mi':{self.minute},"
-                f"'sc':{self.second},"
+                f"'sc':{secs},"
                 f"'pr':'{self.precision.name}',"
                 f"'tz':{repr(self.tz)},"
                 f"'fo':{self.fold},"

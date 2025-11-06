@@ -1,10 +1,7 @@
-import os
-import sys
 from decimal import Decimal
 import inspect
-from SPK_UniversalTimestamp import *
+from SPK_UniversalTimestamp import Precision, Calendar
 
-from SPK_UniversalTimestamp import *
 from SPK_UniversalTimestamp.UnivTimestampFactory import UnivTimestampFactory
 from SPK_UniversalTimestamp.UnivGEOLOGICAL import UnivGEOLOGICAL
 

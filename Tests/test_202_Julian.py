@@ -1,16 +1,16 @@
 
 from decimal import Decimal
-import convertdate as CVD
+#import convertdate as CVD
 import inspect
 
 # Add the parent directory to Python path so we can import the package
 #sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from SPK_UniversalTimestamp.CC01_Calendar_Basics import *
-from SPK_UniversalTimestamp.CC02_Gregorian import *
-from SPK_UniversalTimestamp.CC03_Julian import *
+#from SPK_UniversalTimestamp.CC01_Calendar_Basics import 
+# from SPK_UniversalTimestamp.CC02_Gregorian import *
+# from SPK_UniversalTimestamp.CC03_Julian import *
 
-from SPK_UniversalTimestamp import *
+from SPK_UniversalTimestamp import Precision, Calendar
 from SPK_UniversalTimestamp.UnivJULIAN import UnivJULIAN    
 from SPK_UniversalTimestamp.UnivTimestampFactory import UnivTimestampFactory
 
@@ -43,7 +43,7 @@ class TestUniversalTimestamp:
         assert rd == need_rd
         assert signature == "1739-07-15 JC 14:30:25.123"
         assert _str == "1739-07-15 JC 14:30:25.123"
-        assert _repr == "{'class':'UnivJULIAN','ca':'JULIAN','yr':1739,'mo':7,'da':15,'hr':14,'mi':30,'sc':25.123,'pr':'MILLISECOND','tz':'UTC','fo':0,'ac':None,'de':''}"
+        assert _repr == "{'class':'UnivJULIAN','ca':'JULIAN','yr':1739,'mo':7,'da':15,'hr':14,'mi':30,'sc':'25.123','pr':'MILLISECOND','tz':'UTC','fo':0,'ac':None,'de':''}"
         
         # Test BCE date
         bce_timestamp = UnivJULIAN(
@@ -100,20 +100,20 @@ class TestUniversalTimestamp:
         print("-" * 35)
         # Create Julian calendar timestamp (Old Style)
         washington_julian = UnivJULIAN(1731, 2, 11, description="George Washington's birthday")
-        print(f"Julian input: 1731-02-11 OS")
+        print("Julian input: 1731-02-11 OS")
         print(f"Created timestamp: {washington_julian.format_signature()}")
         #print(f"Internal date_value: {washington_julian.date_value}")
 
         # Test conversion to Gregorian
         washington_gregorian = UnivTimestampFactory.convert(Calendar.GREGORIAN, washington_julian)
-        print(f"Converted to Gregorian: {washington_gregorian.format_signature()}")
-        print(f"Expected: 1731-02-22 NS")
+        print("Converted to Gregorian: {washington_gregorian.format_signature()}")
+        print("Expected: 1731-02-22 NS")
 
         # Check if it matches expected
         actual_date = f"{washington_gregorian.year}-{washington_gregorian.month:02d}-{washington_gregorian.day:02d}"
         expected_date = "1731-02-22"
 
-        cvd_gregorian = CVD.julian.to_gregorian(1731, 2, 11)
+        #cvd_gregorian = CVD.julian.to_gregorian(1731, 2, 11)
         assert actual_date == expected_date
 
         # Test round-trip conversion
@@ -146,7 +146,7 @@ class TestUniversalTimestamp:
             print(f"      Round-trip back to Julian: {julian_back.format_signature()}") 
             
             assert julian_ts == julian_back, "Round-trip conversion mismatch!"
-            print(f"   ✅ SUCCESS")       
+            print("   ✅ SUCCESS")       
 
         print(f"✅ SUCCESS: {inspect.currentframe().f_code.co_name}")
         return
