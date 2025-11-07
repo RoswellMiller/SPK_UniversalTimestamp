@@ -176,6 +176,12 @@ class UnivTimestamp:
         return
     
     # CONSTANTS ##################################################################################################
+    @staticmethod 
+    def __version__():
+        return "1.0.1-beta"
+    @staticmethod
+    def __file__():
+        return "SPK_UniversalTimestamp\\UnivTimestamp.py"
     
     # CONSTRUCTOR ###################################################################################
     def __init__(

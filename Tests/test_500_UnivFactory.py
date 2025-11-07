@@ -95,6 +95,11 @@ class TestUniversalTimestamp:
         assert now.month == current_dt.month
         assert now.day == current_dt.day
         
+        repr = now.__repr__()
+        print(f"Repr: {repr}")
+        now_new = UnivTimestampFactory.parse_repr(repr)
+        assert now == now_new
+        
         print(f"✅ SUCCESS: {inspect.currentframe().f_code.co_name}")
         return
     

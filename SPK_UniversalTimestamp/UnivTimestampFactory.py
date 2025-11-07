@@ -25,6 +25,12 @@ class UnivTimestampFactory:
     and to convert between different calendar systems.
     NOTE : This is an abstract base class and should not be instantiated directly.
     """
+    @staticmethod 
+    def __version__():
+        return "1.0.1-beta"
+    @staticmethod
+    def __file__():
+        return "SPK_UniversalTimestamp\\UnivTimestampFactory.py"
     @abstractmethod
     def __init__(self):
         pass
