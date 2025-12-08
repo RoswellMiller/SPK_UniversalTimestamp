@@ -41,7 +41,7 @@ Improving clarity, structure, or examples in the README or supporting docs is hi
 ## 🧪 Modeling Philosophy
 
 This project values:
-- The currently uses long integers and Decimal types for extra precision.  It expects to promote the improvement of these number types in Python much in the same way long intgers are now a standard.
+- The currently uses long integers and Decimal types for extra precision.  It expects to promote the improvement of these number types in Python much in the same way long integers are now a standard.
 - The project is attempting to implement the documented historical and cultural concept of time in calendrical standards. The objective is knowing when things happened in a way that allows comparativeness across time and culture.
 
 If your contribution touches on these areas, include references and rationale.
