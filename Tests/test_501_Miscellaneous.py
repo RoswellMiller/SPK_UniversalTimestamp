@@ -1,10 +1,9 @@
 """
 Comprehensive tests for the UnivMoment class.
 """
-import os
-import sys
-import inspect
-
+from decimal import Decimal
+from SPK_UniversalTimestamp.Constants_aCommon import Precision
+from SPK_UniversalTimestamp.Moment_aUniversal  import UnivMoment
 
 # Add the parent directory to Python path so we can import the package
 #sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -12,7 +11,19 @@ import inspect
 #from SPK_UniversalTimestamp.UnivCommonConstants import Precision
 
 class TestUniversalTimestamp:
-    pass
+    
+    def Test_repr_UnivMoment(self):
+        moment = UnivMoment.from_gregorian(1947, 1, 20, 2, 36, 45, precision=Precision.SECOND, description='birthday')
+        repr_str = repr(moment)
+        recreated = UnivMoment.eval_repr(repr_str) 
+        assert moment == recreated
+        
+        bot = UnivMoment.beginning_of_time()
+        repr_str = repr(bot)
+        recreated = UnivMoment.eval_repr(repr_str) 
+        assert bot == recreated
+        return
+        
     """Test cases for UnivMoment class."""
     # def test_sorting_and_comparison(self):
     #     """Test timestamp sorting and comparison."""

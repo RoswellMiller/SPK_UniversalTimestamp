@@ -253,7 +253,12 @@ class UnivMoment:
         return self.format_signature()
 
     def __repr__(self) -> str:
-        raise self.format_signature()
+        return f"UnivMoment(Decimal({repr(str(self.rd_day))}), {self.rd_time}, {self.precision}, description={repr(getattr(self, 'description', None))})"
+
+    @staticmethod
+    def eval_repr(repr_str) -> "UnivMoment":
+        recreated = eval(repr_str, {'UnivMoment' : UnivMoment, 'Decimal' : Decimal, 'Precision' : Precision}) 
+        return recreated
 
     def present(self, calendar: Calendar, format: str, tz = 'UTC', language: str = 'en') -> str:
         """

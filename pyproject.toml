@@ -71,15 +71,15 @@ target-version = ['py38']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
+    # directories
+    \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | build
+    | dist
 )/
 '''
 
@@ -96,7 +96,7 @@ ensure_newline_before_comments = true
 # pytest configuration
 [tool.pytest.ini_options]
 minversion = "7.0"
-adopts = "-ra -q --strict-markers --strict-config"
+addopts = "-ra -q --strict-markers --strict-config"
 testpaths = ["Tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
