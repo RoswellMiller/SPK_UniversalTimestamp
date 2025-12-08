@@ -1,342 +1,11 @@
-import sys
-import json
-from typing import Tuple
 from decimal import Decimal
 
-from .UnivDecimalLibrary import *
-from .CC01_Calendar_Basics import *
+from .CC00_Decimal_library import mod_adj, floor, ceil, MIN, round
+from .CC01_Calendar_Basics import Epoch_rd
 from .CC02_Gregorian import gregorian_year_from_rd
-from .CC14_Time_and_Astronomy import *
-
-# with open('SPK_UniversalTimestamp/CC19_Table_19_1a.json', 'r', encoding='utf-8') as f:
-#     Table_19_1 = json.load(f)
-    
-Table_19_1 = [
-    {
-        "month": {
-            "index": 12,
-            "leap": True
-        },
-        "pinyin": "Lìchūn",
-        "hanzi": "立春",
-        "japanese": "Risshun",
-        "english": "Beginning of Spring",
-        "solar_longitude": 315,
-        "approximate_starting_date": "February 4"
-    },
-    {
-        "month": {
-            "index": 1,
-            "leap": False
-        },
-        "pinyin": "Yǔshuǐ",
-        "hanzi": "雨水",
-        "japanese": "Usui",
-        "english": "Rain Water",
-        "solar_longitude": 330,
-        "approximate_starting_date": "February 19"
-    },
-    {
-        "month": {
-            "index": 1,
-            "leap": True
-        },
-        "pinyin": "Jīngzhé",
-        "hanzi": "惊蛰",
-        "japanese": "Keichitsu",
-        "english": "Awakening of Insects",
-        "solar_longitude": 345,
-        "approximate_starting_date": "March 6"
-    },
-    {
-        "month": {
-            "index": 2,
-            "leap": False
-        },
-        "pinyin": "Chūnfēn",
-        "hanzi": "春分",
-        "japanese": "Shunbun",
-        "english": "Spring Equinox",
-        "solar_longitude": 0,
-        "approximate_starting_date": "March 21"
-    },
-    {
-        "month": {
-            "index": 2,
-            "leap": True
-        },
-        "pinyin": "Qīngmíng",
-        "hanzi": "清明",
-        "japanese": "Seimei",
-        "english": "Pure Brightness",
-        "solar_longitude": 15,
-        "approximate_starting_date": "April 5"
-    },
-    {
-        "month": {
-            "index": 3,
-            "leap": False
-        },
-        "pinyin": "Gǔyǔ",
-        "hanzi": "谷雨",
-        "japanese": "Kokuu",
-        "english": "Grain Rain",
-        "solar_longitude": 30,
-        "approximate_starting_date": "April 20"
-    },
-    {
-        "month": {
-            "index": 3,
-            "leap": True
-        },
-        "pinyin": "Lìxià",
-        "hanzi": "立夏",
-        "japanese": "Rikka",
-        "english": "Beginning of Summer",
-        "solar_longitude": 45,
-        "approximate_starting_date": "May 6"
-    },
-    {
-        "month": {
-            "index": 4,
-            "leap": False
-        },
-        "pinyin": "Xiǎomǎn",
-        "hanzi": "小满",
-        "japanese": "Shōman",
-        "english": "Grain Full",
-        "solar_longitude": 60,
-        "approximate_starting_date": "May 21"
-    },
-    {
-        "month": {
-            "index": 4,
-            "leap": True
-        },
-        "pinyin": "Mángzhòng",
-        "hanzi": "芒种",
-        "japanese": "Bōshu",
-        "english": "Grain in Ear",
-        "solar_longitude": 75,
-        "approximate_starting_date": "June 6"
-    },
-    {
-        "month": {
-            "index": 5,
-            "leap": False
-        },
-        "pinyin": "Xiàzhì",
-        "hanzi": "夏至",
-        "japanese": "Geshi",
-        "english": "Summer Solstice",
-        "solar_longitude": 90,
-        "approximate_starting_date": "June 21"
-    },
-    {
-        "month": {
-            "index": 5,
-            "leap": True
-        },
-        "pinyin": "Xiǎoshǔ",
-        "hanzi": "小暑",
-        "japanese": "Shosho",
-        "english": "Slight Heat",
-        "solar_longitude": 105,
-        "approximate_starting_date": "July 7"
-    },
-    {
-        "month": {
-            "index": 6,
-            "leap": False
-        },
-        "pinyin": "Dàshǔ",
-        "hanzi": "大暑",
-        "japanese": "Taisho",
-        "english": "Great Heat",
-        "solar_longitude": 120,
-        "approximate_starting_date": "July 23"
-    },
-    {
-        "month": {
-            "index": 6,
-            "leap": True
-        },
-        "pinyin": "Lìqiū",
-        "hanzi": "立秋",
-        "japanese": "Risshū",
-        "english": "Beginning of Autumn",
-        "solar_longitude": 135,
-        "approximate_starting_date": "August 8"
-    },
-    {
-        "month": {
-            "index": 7,
-            "leap": False
-        },
-        "pinyin": "Chǔshǔ",
-        "hanzi": "处暑",
-        "japanese": "Shosho",
-        "english": "Limit of Heat",
-        "solar_longitude": 150,
-        "approximate_starting_date": "August 23"
-    },
-    {
-        "month": {
-            "index": 7,
-            "leap": True
-        },
-        "pinyin": "Báilù",
-        "hanzi": "白露",
-        "japanese": "Hakuro",
-        "english": "White Dew",
-        "solar_longitude": 165,
-        "approximate_starting_date": "September 8"
-    },
-    {
-        "month": {
-            "index": 8,
-            "leap": False
-        },
-        "pinyin": "Qiūfēn",
-        "hanzi": "秋分",
-        "japanese": "Shūbun",
-        "english": "Autumnal Equinox",
-        "solar_longitude": 180,
-        "approximate_starting_date": "September 23"
-    },
-    {
-        "month": {
-            "index": 8,
-            "leap": True
-        },
-        "pinyin": "Hánlù",
-        "hanzi": "寒露",
-        "japanese": "Kanro",
-        "english": "Cold Dew",
-        "solar_longitude": 195,
-        "approximate_starting_date": "October 8"
-    },
-    {
-        "month": {
-            "index": 9,
-            "leap": False
-        },
-        "pinyin": "Shuāngjiàng",
-        "hanzi": "霜降",
-        "japanese": "Sōkō",
-        "english": "Descent of Frost",
-        "solar_longitude": 210,
-        "approximate_starting_date": "October 24"
-    },
-    {
-        "month": {
-            "index": 9,
-            "leap": True
-        },
-        "pinyin": "Lìdōng",
-        "hanzi": "立冬",
-        "japanese": "Rittō",
-        "english": "Beginning of Winter",
-        "solar_longitude": 225,
-        "approximate_starting_date": "November 8"
-    },
-    {
-        "month": {
-            "index": 10,
-            "leap": False
-        },
-        "pinyin": "Xiǎoxuě",
-        "hanzi": "小雪",
-        "japanese": "Shōsetsu",
-        "english": "Slight Snow",
-        "solar_longitude": 240,
-        "approximate_starting_date": "November 22"
-    },
-    {
-        "month": {
-            "index": 10,
-            "leap": True
-        },
-        "pinyin": "Dàxuě",
-        "hanzi": "大雪",
-        "japanese": "Taisetsu",
-        "english": "Great Snow",
-        "solar_longitude": 255,
-        "approximate_starting_date": "December 7"
-    },
-    {
-        "month": {
-            "index": 11,
-            "leap": False
-        },
-        "pinyin": "Dōngzhì",
-        "hanzi": "冬至",
-        "japanese": "Tōji",
-        "english": "Winter Solstice",
-        "solar_longitude": 270,
-        "approximate_starting_date": "December 22"
-    },
-    {
-        "month": {
-            "index": 11,
-            "leap": True
-        },
-        "pinyin": "Xiǎohán",
-        "hanzi": "小寒",
-        "japanese": "Shōkan",
-        "english": "Slight Cold",
-        "solar_longitude": 285,
-        "approximate_starting_date": "January 6"
-    },
-    {
-        "month": {
-            "index": 12,
-            "leap": False
-        },
-        "pinyin": "Dàhán",
-        "hanzi": "大寒",
-        "japanese": "Taikan",
-        "english": "Great Cold",
-        "solar_longitude": 300,
-        "approximate_starting_date": "January 20"
-    }
-]    
-Table_19_1_Dict = {}
-for i, tu in enumerate(Table_19_1):
-    if tu['month']['index'] not in Table_19_1_Dict:
-        Table_19_1_Dict[tu['month']['index']] = {}
-    Table_19_1_Dict[tu['month']['index']][tu['month']['leap']] = tu
-    
-# with open('SPK_UniversalTimestamp/CC19_Sexagesimal_Names.json', 'r', encoding='utf-8') as f:
-#     Sexagesimal_Names = json.load(f)
-Sexagesimal_Names = {
-    "stem": [
-        {"index": 1, "pinyin": "Jiˇa", "hanzi": "甲", "japanese": "Kō", "english": "First"},
-        {"index": 2, "pinyin": "Yˇı", "hanzi": "乙", "japanese": "Otsu", "english": "Second"},
-        {"index": 3, "pinyin": "Bˇıng", "hanzi": "丙", "japanese": "Hei", "english": "Third"},
-        {"index": 4, "pinyin": "D¯ıng", "hanzi": "丁", "japanese": "Tei", "english": "Fourth"},
-        {"index": 5, "pinyin": "Wù", "hanzi": "戊", "japanese": "Bo", "english": "Fifth"},
-        {"index": 6, "pinyin": "Jˇı", "hanzi": "己", "japanese": "Ki", "english": "Sixth"},
-        {"index": 7, "pinyin": "G¯eng", "hanzi": "庚", "japanese": "Kō", "english": "Seventh"},
-        {"index": 8, "pinyin": "X¯ın", "hanzi": "辛", "japanese": "Shin", "english": "Eighth"},
-        {"index": 9, "pinyin": "Rén", "hanzi": "壬", "japanese": "Jin", "english": "Ninth"},
-        {"index":10, "pinyin": "Guˇı", "hanzi": "癸", "japanese": "Ki", "english": "Tenth"}
-    ],
-    "branch": [
-        {"index": 1, "pinyin": "Z¯ı", "hanzi": "子", "japanese": "Shi", "english": "Rat"},
-        {"index": 2, "pinyin": "Ch¯ou", "hanzi": "丑", "japanese": "Ushi", "english": "Ox"},
-        {"index": 3, "pinyin": "Yín", "hanzi": "寅", "japanese": "Tora", "english": "Tiger"},
-        {"index": 4, "pinyin": "Mˇao", "hanzi": "卯", "japanese": "U", "english": "Rabbit"},
-        {"index": 5, "pinyin": "Chén", "hanzi": "辰", "japanese": "Tatsu", "english": "Dragon"},
-        {"index": 6, "pinyin": "S¯ı", "hanzi": "巳", "japanese": "Mi", "english": "Snake"},
-        {"index": 7, "pinyin": "W¯u", "hanzi": "午", "japanese": "Uma", "english": "Horse"},
-        {"index": 8, "pinyin": "Wèi", "hanzi": "未", "japanese": "Hitsuji", "english": "Goat"},
-        {"index": 9, "pinyin": "Sh¯en", "hanzi": "申", "japanese": "Saru", "english": "Monkey"},
-        {"index": 10, "pinyin": "Yóu", 	"hanzi":	"酉",	"japanese":"Tori","english":"Rooster"},
-        {"index": 11, "pinyin":"X¯u","hanzi":"戌","japanese":"Inu","english":"Dog"},
-        {"index": 12, "pinyin":"Hài","hanzi":"亥","japanese":"I","english":"Pig"}
-    ]
-}
+from .CC14_Time_and_Astronomy import solar_longitude, universal_from_standard, location, solar_longitude_after, standard_from_universal
+from .CC14_Time_and_Astronomy import estimate_prior_solar_longitude, new_moon_at_or_after, new_moon_before, mean_synodic_month, mean_tropical_year
+from .CC14_Time_and_Astronomy import winter
 
 # page 306 (19.1)
 def current_major_solar_term(date : Decimal) -> int:
@@ -355,7 +24,7 @@ def current_major_solar_term(date : Decimal) -> int:
 def chinese_location(date: Decimal) -> Decimal:
     """ The location, Beijing, used for Chinese calendar calculations
         year < 1929 uses Beijing lat,long, altitude with UT +7hr 45min 40sec = 1397/180
-        otherwie    ........                        with UT +8hr = 120 meridian
+        otherwise    ........                        with UT +8hr = 120 meridian
 
     Args:
         date (Decimal): _description_
@@ -389,7 +58,7 @@ def current_minor_solar_term(date : Decimal) -> Decimal:
     return mod_adj(_lambda, 12)
 
 # p 308 (19.6)
-def minor_soloar_term_on_or_after(date: Decimal) -> Decimal:
+def minor_solar_term_on_or_after(date: Decimal) -> Decimal:
     s = solar_longitude(midnight_in_china(date))
     _lambda = (30 * ceil( (s -15)/ 30) + 15) % 360
     return chinese_solar_longitude_on_or_after(_lambda, date)
@@ -438,7 +107,7 @@ def chinese_new_year_in_sui(date : Decimal) -> Decimal:
     m12 = chinese_new_moon_on_or_after(s1 + 1)
     m13 = chinese_new_moon_on_or_after(m12 + 1)
     next_m11 = chinese_new_moon_before(s2 + 1)
-    if round_((next_m11 - m12) / mean_synodic_month()) == 12 and (is_chinese_no_major_solar_term(m12) or is_chinese_no_major_solar_term(m13)):
+    if round((next_m11 - m12) / mean_synodic_month()) == 12 and (is_chinese_no_major_solar_term(m12) or is_chinese_no_major_solar_term(m13)):
         return chinese_new_moon_on_or_after(m13 + 1)
     else:
         return m13
@@ -455,7 +124,7 @@ def chinese_new_year_on_or_before(date: Decimal) -> Decimal:
 # p 316 (19.15)  see Epoch_rd['chinese']  in CC01_Calendar_Basics.py
 
 # p 317 (19.16)
-def chinese_from_rd(date : Decimal) -> Tuple[int, int, int, bool, int]:
+def chinese_from_rd(date : Decimal) -> tuple[int, int, int, bool, int]:
     """Convert R.D. to a Chinese date."""
     s1 = chinese_winter_solstice_on_or_before(date)
     s2 = chinese_winter_solstice_on_or_before(s1 + 370)
@@ -463,9 +132,9 @@ def chinese_from_rd(date : Decimal) -> Tuple[int, int, int, bool, int]:
     next_m11 = chinese_new_moon_before(s2 + 1)
     m = chinese_new_moon_before(date + 1)
     
-    leap_year = round_((next_m11 - m12) / mean_synodic_month()) == 12
+    leap_year = round((next_m11 - m12) / mean_synodic_month()) == 12
     
-    month = round_((m - m12) / mean_synodic_month())
+    month = round((m - m12) / mean_synodic_month())
     if leap_year and is_chinese_prior_leap_month(m12,m):
         month -= 1
     month = mod_adj(month, 12)   
@@ -493,14 +162,14 @@ def rd_from_chinese(cycle: Decimal, year: Decimal, month: Decimal, leap_month: b
     return prior_new_moon + day - 1
 
 # p 319 (19.18)
-def chinese_sexagesimal_tuple(n : int) -> Tuple[int,int]:
+def chinese_sexagesimal_tuple(n : int) -> tuple[int,int]:
     """Return the sexagesimal name for the given index."""
     stem = mod_adj(n, 10)
     branch = mod_adj(n, 12)
     return stem, branch
 
 # p 319 (19.19)
-def chinese_name_difference(name1 : Tuple[int,int], name2 : Tuple[int,int]) -> int:
+def chinese_name_difference(name1 : tuple[int,int], name2 : tuple[int,int]) -> int:
     """Return the difference between two sexagesimal names."""
     stem1, branch1 = name1
     stem2, branch2 = name2
@@ -528,11 +197,11 @@ def chinese_day_epoch() -> int:
     return 45  # R.D.
 
 # p 321 (19.24)
-def chinese_day_tuple(date_rd : int) -> Tuple[int,int]:
+def chinese_day_tuple(date_rd : int) -> tuple[int,int]:
     return chinese_sexagesimal_tuple(date_rd - chinese_day_epoch())
 
 # p 321 (19.25)
-def chinese_day_tuple_on_or_before(name : Tuple[int,int], date : int) -> Decimal:
+def chinese_day_tuple_on_or_before(name : tuple[int,int], date : int) -> Decimal:
     """Return the last date on or before the given date with the given sexagesimal name."""
     d = chinese_day_tuple(0)
     diff = chinese_name_difference(d, name)

@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from SPK_UniversalTimestamp.UnivDecimalLibrary import DEG2RAD, sin, cos, tan, sqrt, floor, ceil, mod_adj, MAX, MIN
+from SPK_UniversalTimestamp.CC00_Decimal_library import DEG2RAD, sin, cos, tan, sqrt, floor, ceil, mod_adj, MAX, MIN, within_precision
 
 class TestDecimalLibrary:
     
@@ -80,4 +80,22 @@ class TestDecimalLibrary:
         assert n == Decimal('9'), f"MAX result = {n}"
         n = MIN(1, lambda x: x > 10)
         assert n == Decimal('11'), f"MIN result = {n}"
+            
+    def test_within_precision(self):
+        a = Decimal('1.0001')
+        b = Decimal('1.0002')
+        assert within_precision(a, b, -3)  # 10^-3 = 0.001
+        assert not within_precision(a, b, -5)  # 10^-5 = 0.00001
         
+    def test_round_(self):
+        n = Decimal('12.345')
+        n_r = round(n)
+        #print(f"Original(n): {n}, round(n): {n_r}")
+        assert n_r == Decimal('12'), "Round function failed"
+        
+        n = Decimal('12.545')
+        n_r = round(n)
+        #print(f"Original(n): {n}, round(n): {n_r}")
+        assert n_r == Decimal('13'), "Round function failed"
+        return
+    

@@ -25,7 +25,7 @@ print("\n" + "="*60)
 
 # Test specific imports
 utilities_to_test = [
-    'UnivTimestamp',
+    'UnivMoment',
     'CalendarSystem', 
     'PrecisionLevel',
     'sort_timestamps_ascending',
@@ -63,11 +63,11 @@ except ImportError as e:
     print(f"✗ Failed to import sort_timestamps_ascending: {e}")
 
 # try:
-#     from SPK_UniversalTimestamp import UnivTimestamp, CalendarSystem
-#     print("✓ Successfully imported UnivTimestamp and CalendarSystem")
+#     from SPK_UniversalTimestamp import UnivMoment, CalendarSystem
+#     print("✓ Successfully imported UnivMoment and CalendarSystem")
     
 #     # Create a test timestamp
-#     ts = UnivTimestamp.create_from_gregorian_date(2023, 12, 25, 12, 0, 0)
+#     ts = UnivMoment.create_from_gregorian_date(2023, 12, 25, 12, 0, 0)
 #     print(f"Created test timestamp: {ts}")
     
 # except ImportError as e:

@@ -12,11 +12,13 @@ A comprehensive multi-scale timestamp system for knowledge bases that handles ti
 - 🌍 **Geological Time Scales** - Handle billions of years with appropriate precision levels
 - 📅 **Cultural Calendars** - Support for Gregorian, Julian, Hebrew, and Chinese calendars
 - 🔄 **Uniform sorting** - Sort time stamps across all calendars achieving order within the precision of each time stamp
-- 🌟 **Astronomical Time** - Julian Day Numbers and coordinate time
+- 🌟 **Astronomical Time** - Julian Day Numbers
 - ⚗️ **Scientific Measurements** - High-precision timestamps with uncertainty tracking
 - ⚡ **Ultra-High Precision** - From attoseconds to billion-year scales
 - 🔄 **Calendar Conversions** - Seamless conversion between calendar systems
 - 📖 **Type Safety** - Full type annotations for better IDE experience
+- 📖 **Multi-lingual** - For some calendars there is English, French, German, Italian
+
 
 ## Installation
 
@@ -38,52 +40,42 @@ pip install -e .
 
 ```python
 from SPK_UniversalTimestamp import (
-    UnivTimestampFactory,
+    UnivMoment,
     Calendar, 
-    Precision,
-    UnivGREGORIAN
+    Precision
 )
 from decimal import Decimal
 
 # Get current time
-now = UnivTimestampFactory.now()
+now = UnivMoment.now()
 print(f"Current time: {now.format_signature()}")
 
 # Create timestamps for different calendar systems
-greg_date = UnivGREGORIAN(2025, 9, 8, description="Example date")
-print(f"Gregorian date: {greg_date.strftime('%A, %B %d, %Y')}")
+greg_date = UnivMoment.from_gregorian(2025, 9, 8, description="Example date")
+print(f"Gregorian date: {greg_date.present(Calendar.GREGORIAN, '%A, %B %d, %Y')}")
 
 # Create timestamp with scientific precision
-scientific_ts = UnivTimestampFactory.for_SCIENTIFIC(
+scientific_ts = UnivMoment.from_gregorian(
     2035, 7, 28, 21, 47, Decimal("30.123_123_123_123_123_123"),
+    precision=Precision.ATTOSECOND,
     description="Quantum experiment measurement"
 )
 print(f"Scientific timestamp: {scientific_ts.format_signature()}")
 
-# Create timestamp from Unix timestamp
-unix_ts = UnivTimestampFactory.from_unix_timestamp(
-    1640995200.123456789,
-    description="Unix timestamp example"
-)
-print(f"From Unix timestamp: {unix_ts.format_signature()}")
-
 # Format timestamps in different languages
-print(now.strftime("%A, %B %d, %Y %H:%M:%S", language='en'))
-print(now.strftime("%A %d %B %Y %H:%M:%S", language='fr'))
-print(now.strftime("%A %d %B %Y %H:%M:%S", language='de'))
+print(now.present(Calendar.GREGORIAN, "%A, %B %d, %Y %H:%M:%S", language='en'))
+print(now.present(Calendar.GREGORIAN, "%A %d %B %Y %H:%M:%S", language='fr'))
+print(now.present(Calendar.GREGORIAN, "%A %d %B %Y %H:%M:%S", language='de'))
 
 ```
 ## API Reference
-The `UnivTimestamp` is a python class intended to support a time stamp the can be universally ordered.  The underlying notion
+The `UnivMoment` is a python class intended to support a time stamp the can be universally ordered.  The underlying notion
 of ordering is the rata die(rd) developed by Reingold and Dershowitz in their book "Calendrical Calculations : The Ultimate Edition".  While
 the rd maps human calendars to a unique day number as does the modern Julian Day number, we have extended the notion to UTC attosecond enabling
 timestamps to be accurately sorted and distinguished.  The extensions make extensive use of Python's long integer and Decimal numbers
 and functional calculations with the current precision for Decimal set to 35. 
 
-Each calendar is an subclass of `UnivTimestamp` either `UnivGEOLOGICAL` or `UnivCalendars` which is further subclassed into `UnivGREGORIAN`,
-`UnivJULIAN`, `UnivHEBREW` and `UnivCHINESE`.  The components of the time stamp are added as follows: `UnivTimestamp` maintains a year.  `The UnivCalendar` maintains month, day, hour, minute, seconds and timezone. Geological time does not have a UTC time stamp as there is no current need nor perhaps method of accurately telling time of day in the time periods covered by Geological time.  It should be further noted that while the time is kept in local time in the time stamp it is converted to UTC time for sorting.  This sorting value is the field/slot sortvalue.
-
-When specifying a timestamp the elements of the time stamp must be stated top(year) down with no intervening type None values. Specifying a precision is therefore unnecessary unless your using geological time or needing seconds to be more precise, more accurate than seconds e.g. when using `UnivTimestampFactory.from_ms_datetime(ms : DateTime)` the UnivTimestamp constructor will pick microseconds as the precision, unless you override it. 
+When specifying a timestamp the elements of the time stamp must be stated top(year) down with no intervening type None values. Specifying a precision is therefore unnecessary unless your using geological time or needing seconds to be more precise, more accurate than seconds . The UnivMoment constructor will pick microseconds as the precision, unless you override it. 
 
 There are known problems with some of the astronomy calculations used in the Appendix C of "Calendrical Calculations".  The test cases highlight these
 known issues.  The correct fix for these errors and for errors that will appear in other astronomically based calendars is to convert them all to JPL's DE422.
@@ -109,29 +101,19 @@ the science based numbers and apply them to a period in history in which they wo
 
 ### Class Methods
 
-#### UnivTimestamp
+#### UnivMoment
 ##### Constructors
-UnivGEOLOGICAL(years_ago, precision, description)
-UnivGREGORIAN(year, month, day, hour, minute, second, precision, description)
-UnivJULIAN(year, month, day, hour, minute, second, precision, description)
-UnivHEBREW(year, month, day, hour, minute, second, precision, description)
-UnivCHINESE(cycle, year, (leap,term), day, hour, minute, second, precision, description)
+UnivMoment.from_geological(years_ago, precision, description=)
+UnivMoment.from_gregorian(year, month, day, hour, minute, second, precision, description=)
+UnivMoment.from_julian(year, month, day, hour, minute, second, precision, description=)
+UnivMoment.from_hebrew(year, month, day, hour, minute, second, precision, description=)
+UnivMoment.from_chinese(cycle, year, (leap,term), day, hour, minute, second, precision, description=)
+UnivMoment.now()
 
 ##### Standard
-strftime(format)
+present(calandar, format, language=)
 __str__
 __repr__
-
-
-#### UnivTimestampFactory
-##### Utilities
-UnivTimestampFactory.now()
-UnivTimestampFactory.convert(to_calendar, from_timestamp)
-parse(string)
-parse_repr(string)
-UnivTimestampFactory.from_unix_timestamp(timestamp, precision)
-UnivTimestampFactory.from_ISO_timestamp(timestamp, precision)
-UnivTimestampFactory.for_SCIENTIFIC(year, month, day, hour, minute, second, description)
 
 
 ##### Predefined Constants
@@ -142,14 +124,6 @@ GEOLOGICAL_PERIODS = {
     "Proterozoic": ...,
     # ... more geological periods
 }
-
-MEASUREMENT_HISTORY = {
-    "meter_definition_1793": ...,
-    "atomic_second_1967": ...,
-    "si_redefinition_2019": ...,
-    # ... more measurement milestones
-}
-
 
 ## Development
 

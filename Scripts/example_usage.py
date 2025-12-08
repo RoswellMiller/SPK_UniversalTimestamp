@@ -11,15 +11,12 @@ import os
 
 # Add the parent directory to Python path so we can import the package
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
 from SPK_UniversalTimestamp import (
-    UnivTimestamp, 
+    UnivMoment,
+    Calendar, 
     Precision,
-    GEOLOGICAL_EONS,
-    MEASUREMENT_HISTORY,
-    sort_timestamps_ascending
+    GEOLOGICAL_EONS
 )
-
 
 def main():
     """Demonstrate UniversalTimestamp functionality across time scales."""
@@ -30,47 +27,42 @@ def main():
     print("\n1. Geological Time Scales:")
     print("-" * 25)
     
-    big_bang = UnivTimestamp.GEOLOGICAL(
-        13.8e9, 
+    big_bang = UnivMoment.from_geological(
+        13.8, 
         precision=Precision.BILLION_YEARS,
-        accuracy="±1%",
         description="Big Bang"
     )
-    print(f"   Big Bang: {big_bang.format_for_display()}")
+    print(f"   Big Bang: {big_bang.format_signature()}")
     
-    earth_formation = UnivTimestamp.GEOLOGICAL(
-        4.54e9,
+    earth_formation = UnivMoment.from_geological(
+        4.54e3,
         precision=Precision.MILLION_YEARS,
-        accuracy="±0.05%",
         description="Earth formation"
     )
-    print(f"   Earth formation: {earth_formation.format_for_display()}")
+    print(f"   Earth formation: {earth_formation.format_signature()}")
     
-    dinosaur_extinction = UnivTimestamp.GEOLOGICAL(
-        66e6,
+    dinosaur_extinction = UnivMoment.from_geological(
+        66.0,
         precision=Precision.MILLION_YEARS, 
-        accuracy="±0.1%",
         description="K-Pg extinction event"
     )
-    print(f"   Dinosaur extinction: {dinosaur_extinction.format_for_display()}")
+    print(f"   Dinosaur extinction: {dinosaur_extinction.present(Calendar.GEOLOGICAL, '%y %O %R %P %a')}")
     
-    # 2. Scientific Measurements
-    print("\n2. High-Precision Scientific Measurements:")
+    # 2. Conversion from standard datetime
+    print("\n2. Standard conversions:")
     print("-" * 40)
     
-    # Nanosecond precision measurement
-    measurement_time = datetime.datetime(2024, 7, 15, 14, 30, 25, 123456)
-    scientific_measurement = UnivTimestamp.SCIENTIFIC(
+    # Microsecond precision Datetime measurement
+    measurement_time = datetime.datetime(2024, 7, 15, 14, 30, 25, 123_456)
+    scientific_measurement = UnivMoment.from_datetime(
         measurement_time,
-        precision_ns=1,
-        accuracy_description="atomic clock synchronization",
-        measurement_description="quantum coherence experiment"
+        description="quantum coherence experiment"
     )
-    print(f"   Quantum experiment: {scientific_measurement.format_for_display()}")
+    print(f"   Quantum experiment: {scientific_measurement.present(Calendar.GREGORIAN, '%Y-%m-%d %H:%M:%S')}")
     
-    # Unix timestamp with nanosecond precision  
-    unix_precise = UnivTimestamp.UNIX_EPOCH(
-        1640995200.123456789,
+    # Nanosecond Unix timestamp  
+    unix_precise = UnivMoment.from_unix_timestamp(
+        1_640_995_200.123_456_789,
         precision_time=Precision.NANOSECOND,
         description="High-precision system measurement"
     )
@@ -82,52 +74,42 @@ def main():
     
     # Hebrew calendar (if convertdate available)
     try:
-        hebrew_date = UnivTimestamp.from_hebrew_calendar_accurate(
+        hebrew_date = UnivMoment.from_hebrew(
             5784, 7, 15,  # Tu BiShvat 5784
             description="Tu BiShvat (New Year of the Trees)"
         )
-        print(f"   Hebrew calendar: {hebrew_date.format_for_display()}")
+        print(f"   Hebrew calendar: {hebrew_date.present(Calendar.HEBREW, '%A %d %m, %Y')}")
     except ImportError:
         print("   Hebrew calendar: (convertdate library not available)")
     
     # Julian calendar historical date
     try:
-        julian_date = UnivTimestamp.from_julian_calendar_accurate(
+        julian_date = UnivMoment.from_julian(
             1582, 10, 4,  # Last day of Julian calendar
             description="Last day before Gregorian calendar reform"
         )
-        print(f"   Julian calendar: {julian_date.format_for_display()}")
+        print(f"   Julian calendar: {julian_date.present(Calendar.JULIAN, '%A %d %m, %Y')}")
     except ImportError:
         print("   Julian calendar: (convertdate library not available)")
     
     # BCE dates
-    bce_date = UnivTimestamp.GREGORIAN(
+    bce_date = UnivMoment.from_gregorian(
         -44, 3, 15,  # 44 BCE - Ides of March
         description="Assassination of Julius Caesar"
     )
-    print(f"   Ancient history: {bce_date.format_for_display()}")
+    print(f"   Ancient history: {bce_date.present(Calendar.GREGORIAN, '%A %d %m, %Y')}")
     
     # 4. Astronomical Time
     print("\n4. Astronomical Time Systems:")
     print("-" * 28)
     
     # Julian Day Number
-    j2000_epoch = UnivTimestamp.from_julian_date(
+    j2000_epoch = UnivMoment.from_julian_date(
         2451545.0,  # J2000.0 epoch
         description="Standard astronomical epoch J2000.0"
     )
     print(f"   J2000.0 epoch: {j2000_epoch.format_for_display()}")
-    
-    # Using Astropy if available
-    try:
-        astropy_jd = UnivTimestamp.from_julian_date_astropy(
-            2451545.0,
-            description="J2000.0 with Astropy precision"
-        )
-        print(f"   Astropy JD: {astropy_jd.format_for_display()}")
-    except ImportError:
-        print("   Astropy JD: (astropy library not available)")
-    
+        
     # 5. Predefined Constants
     print("\n5. Predefined Geological Periods:")
     print("-" * 32)
@@ -135,95 +117,70 @@ def main():
     for period_name, period_ts in list(GEOLOGICAL_EONS.items())[:3]:
         print(f"   {period_name}: {period_ts.format_compact()}")
     
-    print("\n6. Scientific Measurement History:")
-    print("-" * 34)
     
-    for measurement_name, measurement_ts in list(MEASUREMENT_HISTORY.items())[:3]:
-        print(f"   {measurement_name}: {measurement_ts.format_compact()}")
-    
-    # 7. Precision and Formatting Examples
-    print("\n7. Precision and Formatting Examples:")
+    # 6. Precision and Formatting Examples
+    print("\n6. Precision and Formatting Examples:")
     print("-" * 37)
     
     # Different precision levels
-    year_precision = UnivTimestamp.GREGORIAN(
-        2024, precision_date=Precision.YEAR
+    year_precision = UnivMoment.from_gregorian(
+        2024, precision=Precision.YEAR
     )
-    print(f"   Year precision: {year_precision.format_for_display()}")
+    print(f"   Year precision: {year_precision.present(Calendar.GREGORIAN, '%A %d %m, %Y')}")
     
-    microsecond_precision = UnivTimestamp.GREGORIAN(
+    microsecond_precision = UnivMoment.from_gregorian(
         2024, 7, 15, 14, 30, 25.123456,
         precision_time=Precision.MICROSECOND
     )
-    print(f"   Microsecond precision: {microsecond_precision.format_for_display()}")
+    print(f"   Microsecond precision: {microsecond_precision.present(Calendar.GREGORIAN, '%Y-%m-%d %H:%M:%S.%f')}")
     
     # Compact vs minimal formatting
-    timestamp = UnivTimestamp.GREGORIAN(
+    timestamp = UnivMoment.from_gregorian(
         2024, 7, 15, 12, 0, 0,
-        accuracy="GPS synchronization",
         description="Satellite measurement"
     )
-    print(f"   Full display: {timestamp.format_for_display()}")
-    print(f"   Compact: {timestamp.format_compact()}")
-    print(f"   Minimal: {timestamp.format_minimal()}")
+    print(f"   Full display: {timestamp.present(Calendar.GREGORIAN, '%Y-%B-%d %H:%M:%S')}")
+    print(f"   Compact: {timestamp.present(Calendar.GREGORIAN, '%Y-%b-%d')}")
+    print(f"   Minimal: {timestamp.present(Calendar.GREGORIAN, '%y-%m-%d')}")
     
-    # 8. Sorting Across Time Scales
-    print("\n8. Sorting Across Time Scales:")
+    # 7. Sorting Across Time Scales
+    print("\n7. Sorting Across Time Scales:")
     print("-" * 30)
     
     # Create mixed time scale timestamps
     timestamps = [
-        UnivTimestamp.GREGORIAN(2025, 1, 1, description="Future"),
+        UnivMoment.from_gregorian(2025, 1, 1, description="Future"),
         big_bang,
-        UnivTimestamp.GREGORIAN(2024, 7, 15, description="Present"),
+        UnivMoment.from_gregorian(2024, 7, 15, description="Present"),
         dinosaur_extinction,
-        UnivTimestamp.GREGORIAN(-44, 3, 15, description="Ancient")
+        UnivMoment.from_gregorian(-44, 3, 15, description="Ancient")
     ]
     
     # Sort chronologically
-    sorted_timestamps = sort_timestamps_ascending(timestamps)
+    sorted_timestamps = sorted(timestamps)
     
     print("   Chronological order (oldest to newest):")
     for i, ts in enumerate(sorted_timestamps):
-        print(f"   {i+1}. {ts.format_compact()}")
+        print(f"   {i+1}. {ts.format_signature()}")
     
-    # 9. Time Scale Conversions
-    print("\n9. Time Scale Conversions:")
+    # 8. Time Scale Conversions
+    print("\n8. Time Scale Conversions:")
     print("-" * 26)
     
     # Show approximate conversions
-    test_timestamp = UnivTimestamp.GREGORIAN(2024, 7, 15)
-    print(f"   Gregorian converted: {test_timestamp.to_gregorian().format_for_display()}")
-    print(f"   Sortable value: {test_timestamp.sort_value():.6f}")
-    
-    # Julian Day conversion
-    try:
-        julian_day = test_timestamp.to_julian_day_number()
-        print(f"   Julian Day Number: {julian_day:.1f}")
-    except Exception:
-        print("   Julian Day Number: (conversion not available)")
-    
-    # 10. Confidence and Uncertainty
-    print("\n10. Confidence and Uncertainty:")
-    print("-" * 31)
-    
-    uncertain_measurement = UnivTimestamp.from_nanoseconds_with_uncertainty(
-        123456789.123,  # nanoseconds since midnight
-        uncertainty_ns=0.001,
-        description="Ultra-precise atomic measurement"
-    )
-    print(f"   Uncertain measurement: {uncertain_measurement.format_for_display(include_confidence=True)}")
+    test_timestamp = UnivMoment.from_gregorian(2024, 7, 15)
+    print(f"   Gregorian converted: {test_timestamp.present(Calendar.GREGORIAN, '%Y-%B-%d')}")
+    print(f"   Sortable value: {test_timestamp.present(Calendar.HEBREW, '%Y-%B-%d')}")
     
     print("\n" + "=" * 50)
     print("Comprehensive example completed successfully!")
     print("\nKey Features Demonstrated:")
     print("✓ Geological time scales (billions of years)")
-    print("✓ Scientific precision (nanoseconds)")
-    print("✓ Cultural calendars (Hebrew, Julian)")
+    print("✓ Scientific precision (attoseconds)")
+    print("✓ Cultural calendars (Gregorian, Hebrew, Julian, Chinese)")
     print("✓ Astronomical time systems (Julian Day)")
     print("✓ Historical dates (BCE/CE)")
     print("✓ Multiple precision levels")
-    print("✓ Uncertainty tracking")
     print("✓ Cross-scale sorting")
     print("✓ Flexible formatting options")
 

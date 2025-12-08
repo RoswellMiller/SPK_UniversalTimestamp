@@ -1,25 +1,21 @@
 """
-Comprehensive tests for the UnivTimestamp class.
+Comprehensive tests for the UnivMoment class.
 """
 import os
 import sys
 import json
 from decimal import Decimal, ROUND_FLOOR
-#from datetime import datetime
-#import matplotlib.pyplot as plt
-#import numpy as np
 
-#from SPK_UniversalTimestamp.UnivDecimalLibrary import location, direction
 from SPK_UniversalTimestamp.CC02_Gregorian import gregorian_from_rd
 from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import ephemeris_correction, equation_of_time, dynamical_from_universal
 from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import solar_longitude, solar_longitude_after, dms_from_degrees
-from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import hms_from_hours, universal_from_local, round_, degrees_from_dms
+from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import hms_from_hours, universal_from_local, degrees_from_dms
 from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import AST, standard_from_local, location, direction
 #from .PolynomialRegression import polynomial_regression
 
-from SPK_UniversalTimestamp.UnivGREGORIAN import UnivGREGORIAN
+from SPK_UniversalTimestamp.Moment_aUniversal import UnivMoment
 
-class TestUniversalTimestamp:
+class TestTimeAndAstronomy:
     def setup_method(self):
         """Setup for each test method."""
         cwd = os.getcwd()
@@ -29,18 +25,6 @@ class TestUniversalTimestamp:
         with open("Tests\\RandD_Appendix_C_Lunisolar_table.json", "r") as f:
             self.lunisolar_table = json.load(f)
             
-    def test_round_(self):
-        n = Decimal('12.345')
-        n_r = round_(n)
-        #print(f"Original(n): {n}, round_(n): {n_r}")
-        assert n_r == Decimal('12'), "Round function failed"
-        
-        n = Decimal('12.545')
-        n_r = round_(n)
-        #print(f"Original(n): {n}, round_(n): {n_r}")
-        assert n_r == Decimal('13'), "Round function failed"
-        return
-    
     def test_degrees_from_dms(self):
         dms = Decimal('12.234')
         degrees = degrees_from_dms(dms)
@@ -155,9 +139,9 @@ class TestUniversalTimestamp:
         years = []
         corrections = []
         for year in range(-600, 2200, 1):
-            test_date = UnivGREGORIAN(year, 1, 1)
+            test_date = UnivMoment.from_gregorian(year, 1, 1)
             years.append(year)
-            corrections.append(float(ephemeris_correction(test_date.rd))*86400)
+            corrections.append(float(ephemeris_correction(test_date.rd_day))*86400)
         ex_years = []
         ex_corrections = []
         for i, entry in enumerate(self.lunisolar_table):
@@ -217,8 +201,8 @@ class TestUniversalTimestamp:
         days = []
         eot_values = []
         x_ticks = []
-        test_date = UnivGREGORIAN(2000, 1, 1)
-        start_rd = test_date.rd
+        test_date = UnivMoment.from_gregorian(2000, 1, 1)
+        start_rd = test_date.rd_day
         current_month = 1
         for day in range(0, 366, 1):
             eot = equation_of_time(start_rd + day)
@@ -300,9 +284,9 @@ class TestUniversalTimestamp:
     #     ]
         
     #     for year, expected_seconds in test_cases:
-    #         stamp = UnivGREGORIAN(year, 1, 1)
+    #         stamp = UnivMoment.from_gregorian(year, 1, 1)
     #         #print(f"Testing year {year} with rd={stamp.rd}")
-    #         calculated = ephemeris_correction(stamp.rd) * 86400  # Convert from days to seconds
+    #         calculated = ephemeris_correction(stamp.rd_day) * 86400  # Convert from days to seconds
     #         error = abs(calculated - Decimal(expected_seconds))
     #         if error <= max(Decimal('10'), abs(Decimal(expected_seconds) * Decimal('0.05'))):
     #             result = "✅"
@@ -316,11 +300,11 @@ class TestUniversalTimestamp:
         #                    <    <    <     <     <     <     <     <     <     <
         for year in transition_years:
             # Test just before and after the transition
-            before = UnivGREGORIAN(year-1, 12, 31)
-            after = UnivGREGORIAN(year, 1, 1)
+            before = UnivMoment.from_gregorian(year-1, 12, 31)
+            after = UnivMoment.from_gregorian(year, 1, 1)
             
-            before_correction = ephemeris_correction(before.rd)*86400
-            after_correction = ephemeris_correction(after.rd)*86400
+            before_correction = ephemeris_correction(before.rd_day)*86400
+            after_correction = ephemeris_correction(after.rd_day)*86400
             # The difference should be small at transition points
             diff = abs(before_correction - after_correction)
             
@@ -339,11 +323,11 @@ class TestUniversalTimestamp:
         eph_cs = []
         
         for year in range(1600, 2050, 1):
-            test_date = UnivGREGORIAN(year, 1, 1)
+            test_date = UnivMoment.from_gregorian(year, 1, 1)
             years.append(year)
-            u_time = universal_from_local(test_date.rd, AST.greenwich)
+            u_time = universal_from_local(test_date.rd_day, AST.greenwich)
             d_time = dynamical_from_universal(u_time)
-            eph_c = float(ephemeris_correction(test_date.rd))*86400 - 1 # from fraction of day to seconds
+            eph_c = float(ephemeris_correction(test_date.rd_day))*86400 - 1 # from fraction of day to seconds
             diff = (d_time - u_time)*86400
             diffs.append(diff)
             eph_cs.append(eph_c)
@@ -374,9 +358,9 @@ class TestUniversalTimestamp:
     # def test_March_21_2000(self):
     #     """Test solar longitude on March 21, 2000"""
     #     print("Testing solar longitude on March 21, 2000...")
-    #     test_date = UnivGREGORIAN(2000, 3, 21)
+    #     test_date = UnivMoment.from_gregorian(2000, 3, 21)
     #     expected_longitude = Decimal('0.0')
-    #     calculated_longitude = solar_longitude(test_date.rd).quantize(Decimal('0.000_001'), rounding=ROUND_FLOOR)
+    #     calculated_longitude = solar_longitude(test_date.rd_day).quantize(Decimal('0.000_001'), rounding=ROUND_FLOOR)
     #     error = abs(calculated_longitude - expected_longitude) % Decimal('360')
     #     print(f"Calculated Solar Longitude: {calculated_longitude:.6f}°")
     #     print(f"                  Expected: {expected_longitude:.6f}°, Error: {error:.1f}°")

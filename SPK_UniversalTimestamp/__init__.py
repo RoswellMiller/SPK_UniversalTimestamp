@@ -8,12 +8,11 @@ Comprehensive multi-scale time system for knowledge bases:
 - Human Calendars: Cultural/religious calendar conversions
 """
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 __author__ = "Roswell C Miller"
 __email__ = "support@sarek.ai"
 __description__ = "Comprehensive multi-scale timestamp system"
 
-from .UnivDecimalLibrary import *
 from .CC01_Calendar_Basics import (
     Epoch_rd,
     jd_from_rd,
@@ -40,38 +39,64 @@ from .CC08_Hebrew import (
     rd_from_hebrew,
     hebrew_from_rd,
 )
-from .CC19_Chinese_1645 import *
+from .CC14_Time_and_Astronomy import (
+    degrees_from_dms,
+    dms_from_degrees,
+    hms_from_hours,
+    location,
+    AST,
+    direction,
+    zone_from_longitude,
+    universal_from_local,
+    local_from_universal,
+    standard_from_universal,
+    universal_from_standard,
+    standard_from_local,
+    local_from_standard,
+)
+from .CC19_Chinese_1645 import (
+    current_major_solar_term,
+    chinese_location,
+    chinese_solar_longitude_on_or_after,
+    major_solar_term_on_or_after,   
+    current_minor_solar_term,
+    minor_solar_term_on_or_after,
+    midnight_in_china,
+    chinese_winter_solstice_on_or_before,
+    chinese_new_moon_on_or_after,
+    chinese_new_moon_before,
+    is_chinese_no_major_solar_term,
+    is_chinese_prior_leap_month,
+    chinese_new_year_in_sui,
+    chinese_new_year_on_or_before,
+    chinese_from_rd,
+    rd_from_chinese,
+    chinese_sexagesimal_tuple,
+    chinese_name_difference,
+    chinese_year_tuple,
+    chinese_month_epoch,
+    chinese_month_tuple,
+    chinese_day_epoch,
+    chinese_day_tuple,
+    chinese_day_tuple_on_or_before
+    )
 
-from .UnivTimestamp import (
-    UnivTimestamp,
-    Calendar,
-    CalendarAtts,
-    Precision, 
-    PrecisionAtts, 
-)
-from .UnivCalendars import (
-    UnivCalendars,
-)
-from .UnivTimestampFactory import (
-    UnivTimestampFactory,
-)
-from .UnivGREGORIAN import (
-    UnivGREGORIAN,
-    MEASUREMENT_HISTORY,
-)
-from .UnivJULIAN import (
-    UnivJULIAN,
-)
-from .UnivHEBREW import (
-    UnivHEBREW,
-)
-from .UnivCHINESE import (
-    UnivCHINESE,
-)
-from .UnivGEOLOGICAL import (
-    UnivGEOLOGICAL,
-    GEOLOGICAL_EONS,
-)
+from .Constants_aCommon import *
+from .Constants_Chinese import *
+from .Constants_Gregorian import *
+from .Constants_Julian import *
+from .Constants_Hebrew import *
+
+from .Moment_aUniversal import *
+from .Moment_bPresent_Calendars import *
+from .Moment_bPresent_Geological import *
+from .Moment_cPresent_Chinese import *
+from .Moment_cPresent_Gregorian import *
+from .Moment_cPresent_Julian import *
+from .Moment_cPresent_Hebrew import *
+
+from .CC00_Decimal_library import *
+from .Astro_Space import *
 
 # Make package metadata available
 __all__ = [
@@ -82,9 +107,7 @@ __all__ = [
     "__description__",
     
     # Core classes
-    "UnivTimestamp",
-    "UnivCalendars",
-    "UnivTimestampFactory",
+    "UnivMoment",
     
     # Enums and attributes
     "Calendar",
@@ -93,15 +116,18 @@ __all__ = [
     "PrecisionAtts",
     
     # Calendar-specific implementations
-    "UnivGREGORIAN",
-    "UnivJULIAN",
-    "UnivHEBREW",
-    "UnivCHINESE",
-    "UnivGEOLOGICAL",
+    "Present_GEOLOGICAL",
+    "Present_Calendars",
+    "Present_GREGORIAN",
+    "Present_JULIAN",
+    "Present_HEBREW",
+    "Present_CHINESE",
     
     # Constants and data
     "GEOLOGICAL_EONS",
-    "MEASUREMENT_HISTORY",
+    "GEOLOGICAL_ERAS",
+    "GEOLOGICAL_PERIODS",
+    "GEOLOGICAL_EPOCHSandAGES",
     "Epoch_rd",
     
     # Base calendar functions
@@ -128,4 +154,8 @@ __all__ = [
     "last_day_of_hebrew_month",
     "rd_from_hebrew",
     "hebrew_from_rd",
+    
+    # Chinese calendar functions
+    "rd_from_chinese",
+    "chinese_from_rd"
 ]

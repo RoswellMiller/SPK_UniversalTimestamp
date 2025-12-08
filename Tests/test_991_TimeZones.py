@@ -1,15 +1,11 @@
 import sys
 from datetime import datetime 
 
-from SPK_UniversalTimestamp import *
+#from SPK_UniversalTimestamp import *
 
 class TestUniversalTimestamp:
-    """Test cases for UnivTimestamp class."""
+    """Test cases for UnivMoment class."""
 
-    def test_calendar_creation(self):
-        """Test creating timestamps with different calendar systems."""
-        print("\nUnivCalendars is ABSTRACT and cannot be instantiated directly.")
-        
     # Test for static methods can be added here as needed
     def test_tzdata_installation(self):
         """Check if tzdata is properly installed"""   

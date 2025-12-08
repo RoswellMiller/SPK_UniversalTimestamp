@@ -1,8 +1,5 @@
-import os
-import sys
-from typing import Tuple
 import pyproj
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point
 from decimal import Decimal
 
 _geod_earth = pyproj.Geod(ellps="WGS84")
@@ -33,7 +30,7 @@ class psoEarth:
         return hash(self.point)
     
         
-    def psoAzimuth_to(self, to_pso) -> Tuple[Decimal, Decimal, Decimal]:
+    def psoAzimuth_to(self, to_pso) -> tuple[Decimal, Decimal, Decimal]:
         """Calculate geodesic distance to another point in meters"""
         if not isinstance(to_pso, psoEarth):
             raise TypeError("Can only calculate distance to another psoEarth object")
@@ -46,7 +43,7 @@ class psoEarth:
         d = Decimal(str(d)).quantize(Decimal('0.1'))
         return f, b, d  # forward, backward, distance in meters
 
-    # def direction(self, to_pso) -> Tuple[float , float]:
+    # def direction(self, to_pso) -> tuple[float , float]:
     #     """Calculate geodesic distance to another point in meters"""
     #     if not isinstance(to_pso, psoEarth):
     #         raise TypeError("Can only calculate distance to another psoEarth object")

@@ -51,3 +51,5 @@ class TestActualReadmeExamples:
                 print(f"Code block #{i+1} failed with error: {type(e).__name__}: {e}")
                 print(f"Code block content:\n{code_block}")
                 raise  # Re-raise the exception to fail the test
+        return
+    

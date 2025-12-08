@@ -1,6 +1,12 @@
-import sys
+"""
+This is a Decimal based library which provides a more standardized definition
+of common mathematical functions.  It is also designed to meet the mathematical
+requirements of "Calendrical Calculations" by Reingold and Dershowitz.
+"""
+
 from typing import Callable
-from decimal import Decimal, getcontext, ROUND_CEILING, ROUND_FLOOR
+from decimal import Decimal, getcontext
+import math
 import mpmath 
 
 ctx = getcontext()
@@ -66,23 +72,42 @@ def sign(x: Decimal) -> int:
         return 1
     return 0
 
-def abs(x : Decimal) -> Decimal:
+def abs(x : int | Decimal) -> Decimal:
     """Return the absolute value of x."""
     if x < 0:
         return -x
     return x
 
-def floor(x: int | Decimal) -> int:
+def floor(x: int | float | Decimal) -> int:
     """Return the largest integer not greater than x."""
     if isinstance(x,int):
         return x
-    return int(x.to_integral_exact(rounding='ROUND_FLOOR'))
+    elif isinstance(x,float):
+        return math.floor(x)
+    return x.to_integral_value(rounding='ROUND_FLOOR')
 
-def ceil(x: Decimal) -> Decimal:
+def ceil(x: int | Decimal) -> Decimal:
     """Return the largest integer not greater than x."""
     if isinstance(x,int):
         return x
-    return int(x.to_integral_exact(rounding='ROUND_CEILING'))
+    return x.to_integral_value(rounding='ROUND_CEILING')
+
+def trunc(x: Decimal, decimals=0) -> Decimal:
+    """Truncate x to a given number of decimal places."""
+    factor = Decimal(10) ** Decimal(decimals)
+    return (x * factor).to_integral_value(rounding='ROUND_DOWN') / factor
+
+# Some general purpose functions particular to Reingold and Dershowitz
+def round(x: Decimal) -> Decimal:
+    return floor(x + Decimal(0.5))
+
+def round_at(x: Decimal, decimals=0) -> Decimal:
+    """Round x to a given number of decimal places."""
+    factor = Decimal(10) ** Decimal(decimals)
+    result = (x * factor)
+    result = trunc(result +  Decimal(0.5))
+    result /= factor
+    return result
 
 def mod(x : Decimal, y : Decimal) -> Decimal:
     """Return x mod y, ensuring a non-negative result."""
@@ -185,3 +210,11 @@ def to_roman_numeral(num : int | Decimal, lowercase=True):
         i += 1
     
     return roman_num.lower() if lowercase else roman_num
+
+def within_precision(a: Decimal, b: Decimal, exp: int) -> bool:
+    """
+    Test if |a - b| < 10^exp, where exp is the precision exponent.
+    """
+    tolerance = Decimal(10) ** Decimal(exp)
+    return abs(a - b) < tolerance
+

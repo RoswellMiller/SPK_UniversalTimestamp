@@ -1,0 +1,327 @@
+# Table 19-1 from Calendrical Calculations, Reingold and Dershowitz, Ultimate Edition, p. 307
+chinese_MONTHS = [
+    {
+        "month": {
+            "index": 12,
+            "leap": True
+        },
+        "pinyin": "Lìchūn",
+        "hanzi": "立春",
+        "japanese": "Risshun",
+        "english": "Beginning of Spring",
+        "solar_longitude": 315,
+        "approximate_starting_date": "February 4"
+    },
+    {
+        "month": {
+            "index": 1,
+            "leap": False
+        },
+        "pinyin": "Yǔshuǐ",
+        "hanzi": "雨水",
+        "japanese": "Usui",
+        "english": "Rain Water",
+        "solar_longitude": 330,
+        "approximate_starting_date": "February 19"
+    },
+    {
+        "month": {
+            "index": 1,
+            "leap": True
+        },
+        "pinyin": "Jīngzhé",
+        "hanzi": "惊蛰",
+        "japanese": "Keichitsu",
+        "english": "Awakening of Insects",
+        "solar_longitude": 345,
+        "approximate_starting_date": "March 6"
+    },
+    {
+        "month": {
+            "index": 2,
+            "leap": False
+        },
+        "pinyin": "Chūnfēn",
+        "hanzi": "春分",
+        "japanese": "Shunbun",
+        "english": "Spring Equinox",
+        "solar_longitude": 0,
+        "approximate_starting_date": "March 21"
+    },
+    {
+        "month": {
+            "index": 2,
+            "leap": True
+        },
+        "pinyin": "Qīngmíng",
+        "hanzi": "清明",
+        "japanese": "Seimei",
+        "english": "Pure Brightness",
+        "solar_longitude": 15,
+        "approximate_starting_date": "April 5"
+    },
+    {
+        "month": {
+            "index": 3,
+            "leap": False
+        },
+        "pinyin": "Gǔyǔ",
+        "hanzi": "谷雨",
+        "japanese": "Kokuu",
+        "english": "Grain Rain",
+        "solar_longitude": 30,
+        "approximate_starting_date": "April 20"
+    },
+    {
+        "month": {
+            "index": 3,
+            "leap": True
+        },
+        "pinyin": "Lìxià",
+        "hanzi": "立夏",
+        "japanese": "Rikka",
+        "english": "Beginning of Summer",
+        "solar_longitude": 45,
+        "approximate_starting_date": "May 6"
+    },
+    {
+        "month": {
+            "index": 4,
+            "leap": False
+        },
+        "pinyin": "Xiǎomǎn",
+        "hanzi": "小满",
+        "japanese": "Shōman",
+        "english": "Grain Full",
+        "solar_longitude": 60,
+        "approximate_starting_date": "May 21"
+    },
+    {
+        "month": {
+            "index": 4,
+            "leap": True
+        },
+        "pinyin": "Mángzhòng",
+        "hanzi": "芒种",
+        "japanese": "Bōshu",
+        "english": "Grain in Ear",
+        "solar_longitude": 75,
+        "approximate_starting_date": "June 6"
+    },
+    {
+        "month": {
+            "index": 5,
+            "leap": False
+        },
+        "pinyin": "Xiàzhì",
+        "hanzi": "夏至",
+        "japanese": "Geshi",
+        "english": "Summer Solstice",
+        "solar_longitude": 90,
+        "approximate_starting_date": "June 21"
+    },
+    {
+        "month": {
+            "index": 5,
+            "leap": True
+        },
+        "pinyin": "Xiǎoshǔ",
+        "hanzi": "小暑",
+        "japanese": "Shosho",
+        "english": "Slight Heat",
+        "solar_longitude": 105,
+        "approximate_starting_date": "July 7"
+    },
+    {
+        "month": {
+            "index": 6,
+            "leap": False
+        },
+        "pinyin": "Dàshǔ",
+        "hanzi": "大暑",
+        "japanese": "Taisho",
+        "english": "Great Heat",
+        "solar_longitude": 120,
+        "approximate_starting_date": "July 23"
+    },
+    {
+        "month": {
+            "index": 6,
+            "leap": True
+        },
+        "pinyin": "Lìqiū",
+        "hanzi": "立秋",
+        "japanese": "Risshū",
+        "english": "Beginning of Autumn",
+        "solar_longitude": 135,
+        "approximate_starting_date": "August 8"
+    },
+    {
+        "month": {
+            "index": 7,
+            "leap": False
+        },
+        "pinyin": "Chǔshǔ",
+        "hanzi": "处暑",
+        "japanese": "Shosho",
+        "english": "Limit of Heat",
+        "solar_longitude": 150,
+        "approximate_starting_date": "August 23"
+    },
+    {
+        "month": {
+            "index": 7,
+            "leap": True
+        },
+        "pinyin": "Báilù",
+        "hanzi": "白露",
+        "japanese": "Hakuro",
+        "english": "White Dew",
+        "solar_longitude": 165,
+        "approximate_starting_date": "September 8"
+    },
+    {
+        "month": {
+            "index": 8,
+            "leap": False
+        },
+        "pinyin": "Qiūfēn",
+        "hanzi": "秋分",
+        "japanese": "Shūbun",
+        "english": "Autumnal Equinox",
+        "solar_longitude": 180,
+        "approximate_starting_date": "September 23"
+    },
+    {
+        "month": {
+            "index": 8,
+            "leap": True
+        },
+        "pinyin": "Hánlù",
+        "hanzi": "寒露",
+        "japanese": "Kanro",
+        "english": "Cold Dew",
+        "solar_longitude": 195,
+        "approximate_starting_date": "October 8"
+    },
+    {
+        "month": {
+            "index": 9,
+            "leap": False
+        },
+        "pinyin": "Shuāngjiàng",
+        "hanzi": "霜降",
+        "japanese": "Sōkō",
+        "english": "Descent of Frost",
+        "solar_longitude": 210,
+        "approximate_starting_date": "October 24"
+    },
+    {
+        "month": {
+            "index": 9,
+            "leap": True
+        },
+        "pinyin": "Lìdōng",
+        "hanzi": "立冬",
+        "japanese": "Rittō",
+        "english": "Beginning of Winter",
+        "solar_longitude": 225,
+        "approximate_starting_date": "November 8"
+    },
+    {
+        "month": {
+            "index": 10,
+            "leap": False
+        },
+        "pinyin": "Xiǎoxuě",
+        "hanzi": "小雪",
+        "japanese": "Shōsetsu",
+        "english": "Slight Snow",
+        "solar_longitude": 240,
+        "approximate_starting_date": "November 22"
+    },
+    {
+        "month": {
+            "index": 10,
+            "leap": True
+        },
+        "pinyin": "Dàxuě",
+        "hanzi": "大雪",
+        "japanese": "Taisetsu",
+        "english": "Great Snow",
+        "solar_longitude": 255,
+        "approximate_starting_date": "December 7"
+    },
+    {
+        "month": {
+            "index": 11,
+            "leap": False
+        },
+        "pinyin": "Dōngzhì",
+        "hanzi": "冬至",
+        "japanese": "Tōji",
+        "english": "Winter Solstice",
+        "solar_longitude": 270,
+        "approximate_starting_date": "December 22"
+    },
+    {
+        "month": {
+            "index": 11,
+            "leap": True
+        },
+        "pinyin": "Xiǎohán",
+        "hanzi": "小寒",
+        "japanese": "Shōkan",
+        "english": "Slight Cold",
+        "solar_longitude": 285,
+        "approximate_starting_date": "January 6"
+    },
+    {
+        "month": {
+            "index": 12,
+            "leap": False
+        },
+        "pinyin": "Dàhán",
+        "hanzi": "大寒",
+        "japanese": "Taikan",
+        "english": "Great Cold",
+        "solar_longitude": 300,
+        "approximate_starting_date": "January 20"
+    }
+]    
+chinese_MONTH_ATTS = {}
+for i, tu in enumerate(chinese_MONTHS):
+    if tu['month']['index'] not in chinese_MONTH_ATTS:
+        chinese_MONTH_ATTS[tu['month']['index']] = {}
+    chinese_MONTH_ATTS[tu['month']['index']][tu['month']['leap']] = tu
+
+# Section 19.4 from Calendrical Calculations, Reingold and Dershowitz, Ultimate Edition, p. 319
+chinese_SEXAGESIMALS = {
+    "stem": [
+        {"index": 1, "pinyin": "Jiˇa", "hanzi": "甲", "japanese": "Kō", "english": "First"},
+        {"index": 2, "pinyin": "Yˇı", "hanzi": "乙", "japanese": "Otsu", "english": "Second"},
+        {"index": 3, "pinyin": "Bˇıng", "hanzi": "丙", "japanese": "Hei", "english": "Third"},
+        {"index": 4, "pinyin": "D¯ıng", "hanzi": "丁", "japanese": "Tei", "english": "Fourth"},
+        {"index": 5, "pinyin": "Wù", "hanzi": "戊", "japanese": "Bo", "english": "Fifth"},
+        {"index": 6, "pinyin": "Jˇı", "hanzi": "己", "japanese": "Ki", "english": "Sixth"},
+        {"index": 7, "pinyin": "G¯eng", "hanzi": "庚", "japanese": "Kō", "english": "Seventh"},
+        {"index": 8, "pinyin": "X¯ın", "hanzi": "辛", "japanese": "Shin", "english": "Eighth"},
+        {"index": 9, "pinyin": "Rén", "hanzi": "壬", "japanese": "Jin", "english": "Ninth"},
+        {"index":10, "pinyin": "Guˇı", "hanzi": "癸", "japanese": "Ki", "english": "Tenth"}
+    ],
+    "branch": [
+        {"index": 1, "pinyin": "Z¯ı", "hanzi": "子", "japanese": "Shi", "english": "Rat"},
+        {"index": 2, "pinyin": "Ch¯ou", "hanzi": "丑", "japanese": "Ushi", "english": "Ox"},
+        {"index": 3, "pinyin": "Yín", "hanzi": "寅", "japanese": "Tora", "english": "Tiger"},
+        {"index": 4, "pinyin": "Mˇao", "hanzi": "卯", "japanese": "U", "english": "Rabbit"},
+        {"index": 5, "pinyin": "Chén", "hanzi": "辰", "japanese": "Tatsu", "english": "Dragon"},
+        {"index": 6, "pinyin": "S¯ı", "hanzi": "巳", "japanese": "Mi", "english": "Snake"},
+        {"index": 7, "pinyin": "W¯u", "hanzi": "午", "japanese": "Uma", "english": "Horse"},
+        {"index": 8, "pinyin": "Wèi", "hanzi": "未", "japanese": "Hitsuji", "english": "Goat"},
+        {"index": 9, "pinyin": "Sh¯en", "hanzi": "申", "japanese": "Saru", "english": "Monkey"},
+        {"index": 10, "pinyin": "Yóu", 	"hanzi":	"酉",	"japanese":"Tori","english":"Rooster"},
+        {"index": 11, "pinyin":"X¯u","hanzi":"戌","japanese":"Inu","english":"Dog"},
+        {"index": 12, "pinyin":"Hài","hanzi":"亥","japanese":"I","english":"Pig"}
+    ]
+}
+

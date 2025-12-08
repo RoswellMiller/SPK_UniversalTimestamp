@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Tuple
+from .CC00_Decimal_library import MAX, MIN
 from .CC01_Calendar_Basics import Epoch_rd
 
 class months(Enum):
@@ -119,27 +119,29 @@ def rd_from_hebrew(year: int, month: int = 1, day: int = 1) -> int:
     return rd
 
 # (8.28)
-def hebrew_from_rd(date: int) -> Tuple[int, int, int]:
+def hebrew_from_rd(date: int) -> tuple[int, int, int]:
     """Convert Rata Die to Hebrew date"""
     approx = (98496 * (date - Epoch_rd['hebrew']) // 35975351) + 1
     
-    for y in range(approx - 1, approx + 2):
-        y_rd = _new_year(y)
-        if y_rd >= date:
-            year = y - 1
-            break
-        continue
+    year = MAX(approx, lambda y: _new_year(y) <= date)
+    # for y in range(approx - 1, approx + 2):
+    #     y_rd = _new_year(y)
+    #     if y_rd >= date:
+    #         year = y - 1
+    #         break
+    #     continue
     
     if date < rd_from_hebrew(year, months.NISAN.value, 1):  
         start = months.TISHRI.value
     else:
         start = months.NISAN.value
         
-    for m in range(start, last_hebrew_month_of_year(year) + 1):
-        m_rd = rd_from_hebrew(year, m, last_day_of_hebrew_month(year, m))
-        if date <= m_rd:
-            break
-    month = m
+    month = MIN(start, lambda m: date<= rd_from_hebrew(year, m, last_day_of_hebrew_month(year, m)))
+    # for m in range(start, last_hebrew_month_of_year(year) + 1):
+    #     m_rd = rd_from_hebrew(year, m, last_day_of_hebrew_month(year, m))
+    #     if date <= m_rd:
+    #         break
+    # month = m
         
     day = date - rd_from_hebrew(year, month, 1) + 1
     return year, month, day

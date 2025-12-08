@@ -12,7 +12,7 @@ try:
         get_default_min_time_minimal,
         get_default_max_time_minimal,
         convert_timestamps_for_json,
-        UnivTimestamp
+        UnivMoment
     )
     print("✅ All imports successful!")
     
@@ -26,17 +26,17 @@ try:
     print("\n2. Testing parse_timestamp_string (now static method):")
     test_strings = ["2023-12-25", "4.5 BYA", "1731-02-11 OS", "JD 2451545.0"]
     for test_str in test_strings:
-        parsed = UnivTimestamp.parse_timestamp_string(test_str)
+        parsed = UnivMoment.parse_timestamp_string(test_str)
         if parsed:
             print(f"   ✅ '{test_str}' → {parsed.format_minimal()}")
         else:
             print(f"   ❌ '{test_str}' → Failed to parse")
     
     print("\n3. Testing convert_timestamps_for_json:")
-    ts = UnivTimestamp.GREGORIAN(2023, 12, 25, 12, 0, 0)
+    ts = UnivMoment.GREGORIAN(2023, 12, 25, 12, 0, 0)
     test_data = {
         "timestamp": ts,
-        "list_of_timestamps": [ts, UnivTimestamp.GREGORIAN(2024, 1, 1)],
+        "list_of_timestamps": [ts, UnivMoment.GREGORIAN(2024, 1, 1)],
         "regular_data": "This is just a string"
     }
     

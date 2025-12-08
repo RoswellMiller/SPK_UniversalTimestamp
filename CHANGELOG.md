@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial release of SPK Universal Timestamp
-- `UnivTimestamp` class for handling various timestamp formats
+- `UnivMoment` class for handling various timestamp formats
 - `UnivTimestampFactory` class for conversion from Unix timestamps, ISO format strings, and datetime objects
 - Conversion methods between different timestamp formats
 - UTC-first approach for consistency
@@ -35,6 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Convert between supported calendars, Gregorian, Julian, Hebrew and Chinese
 - Timezone handling and UTC normalization
 - Two classes are provided : 
-- a. UnivTimestamp - A timestamp
-- b. UnivTimestampFactory - A package of support routines for cross calendar UnivTimestamp construction and conversion.
-- Comprehensives series of test cases, which also serve as examples of how the UnivTimestamp is used.
+- a. UnivMoment - A timestamp
+- b. UnivTimestampFactory - A package of support routines for cross calendar UnivMoment construction and conversion.
+- Comprehensives series of test cases, which also serve as examples of how the UnivMoment is used.
