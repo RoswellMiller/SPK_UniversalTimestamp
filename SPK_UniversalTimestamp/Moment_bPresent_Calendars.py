@@ -237,41 +237,50 @@ class Present_Calendars(UnivMoment.Presentation):
 
 
     def _strftime_time(self, seg_type : str, language :str, eliminate_leading_zero: bool = False) -> str:
-        # Hour
+        # Hour ###############################################################################
         fmt = ""
-        if self.hour is None:
-            return ""
-        if seg_type == 'H':
-            fmt = f"{self.hour:02.0f}" if self.hour is not None else ".."   
-        elif seg_type == 'I':
-            fmt = f"{self.hour % 12:02.0f}" if self.hour is not None else ".."
-        elif seg_type == 'p':
-            # AM/PM
+        if seg_type in 'HIp':
             if self.hour is None:
-                pass #fmt += ""
+                return ".."
+            elif PrecisionAtts[self.precision]['level'] >= PrecisionAtts[ Precision.HOUR]['level']:
+                if seg_type == 'H':
+                    # 24-hour clock
+                    fmt = f"{self.hour:02.0f}" 
+                elif seg_type == 'I':
+                    # 12-hour clock
+                    fmt = f"{self.hour % 12:02.0f}"
+                else:
+                    # AM/PM
+                    fmt = "am" if self.hour < 12 else "pm"
             else:
-                fmt = "am" if self.hour < 12 else "pm"     
+                fmt = ".."    
+        # Minute ############################################################################### 
         elif seg_type == 'M':
-            fmt =  f"{self.minute:02.0f}" if self.minute is not None else ".."
+            if self.minute is None:
+                fmt = ".."
+            elif PrecisionAtts[self.precision]['level'] >= PrecisionAtts[ Precision.MINUTE]['level']:
+                fmt =  f"{self.minute:02.0f}"
+            else:
+                fmt = '..'
+        # Second ###############################################################################
         elif seg_type in 'S':
             if self.seconds is None:
                 fmt = ".."
-            # elif self.precision == Precision.SECOND:
-            #     fmt = f"{int_part:02.0f}"  # Format seconds integer part   
             elif PrecisionAtts[self.precision]['level'] >= PrecisionAtts[Precision.SECOND]['level']:
                 decimal_places = -PrecisionAtts[self.precision]['power']
                 fmt = f"0{2 + (1 if decimal_places>0 else 0) + decimal_places}.{decimal_places}f"
                 fmt = f"{trunc(self.seconds,decimals=decimal_places):{fmt}}"
                 pass
             else:
-                fmt = '%S'                
+                fmt = '..'     
+        # Timezone ###############################################################################           
         elif seg_type == 'z':
             # UTC offset, assuming no timezone information is available
             if self.tz_offset is not None:
                 offset_hours, offset_minutes = self.tz_offset[0], self.tz_offset[1]
                 sign = '+' if (offset_hours > 0 or (offset_hours == 0 and offset_minutes >= 0)) else '-'
                 fmt = f"{sign}{abs(offset_hours):02d}:{abs(offset_minutes):02d}"
-
+        # Internal Timezone Name ###################################################################
         elif seg_type == 'Z':
             if self.tz is not None:
                 fmt = self.tz
