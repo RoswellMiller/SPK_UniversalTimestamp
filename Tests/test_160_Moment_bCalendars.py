@@ -40,6 +40,7 @@ class Test_Moment_Calendars:
             'answer': f"{(test_hour+2) % 24:02}:{test_minute:02} +02:00 Africa/Johannesburg"},
         {   'format': "%H:%M %z %Z", 'tz' : 'Australia/Sydney',
             'answer': f"{(test_hour+11) % 24:02}:{test_minute:02} +11:00 Australia/Sydney"},
+        
         ]
         failures = 0
         try:
@@ -56,6 +57,19 @@ class Test_Moment_Calendars:
                     print(f"         Expected     : {test_case['answer']}")
                     failures += 1
                 continue
+        except Exception as e:
+            print(f"    ❌ValueError : {e}")
+            failures += 1
+        try:
+            bot = UnivMoment.beginning_of_time()
+            presentation = bot.present(Calendar.GREGORIAN, "%Y-%m-%d %H:%M:%S %Z", 'UTC', language='en') 
+            if presentation != "-Infinity-- :: ":
+                print("Beginning of Time presentation failed." )  
+                failures += 1
+            presentation = bot.present(Calendar.GREGORIAN, "%y-%m-%d %H:%M:%S %Z", 'UTC', language='en') 
+            if presentation != "Infinity BCE-- :: ":
+                print("Beginning of Time presentation failed." )  
+                failures += 1
         except Exception as e:
             print(f"    ❌ValueError : {e}")
             failures += 1

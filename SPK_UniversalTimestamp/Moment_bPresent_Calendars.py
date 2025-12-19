@@ -89,14 +89,14 @@ class Present_Calendars(UnivMoment.Presentation):
     
     # CONSTRUCTOR ############################################################################
     def __init__(self, calendar : Calendar, moment: UnivMoment, year: Decimal, tz : str | dict = 'UTC'):
-        self.tz = 'UTC'
+        self.tz = tz
         self.tz_offset = (0,0)  # (hours, minutes)        
-        if tz != 'UTC':
-            self.tz = tz
+        if tz and tz != 'UTC':
             self.tz_offset = Present_Calendars.get_utc_offset(tz, moment.rd_day)
             moment = moment + (Decimal(0), self.tz_offset[0], self.tz_offset[1], Decimal(0))
         super().__init__(calendar, moment, year)
-        self.hour, self.minute, self.seconds = moment.rd_time
+        if year != Decimal('-Infinity'):
+            self.hour, self.minute, self.seconds = moment.rd_time
         return
     
     # PRESENTATION LAYER METHODS ############################################################
@@ -194,6 +194,8 @@ class Present_Calendars(UnivMoment.Presentation):
         return fmt
 
     def _strftime_month(self, seg_type : str, language :str, eliminate_leading_zero: bool = False) -> str:
+        if self.year == Decimal('-Infinity'):
+            return ""
         if self.month is None:
             return ""
         if seg_type == 'm':
@@ -212,6 +214,8 @@ class Present_Calendars(UnivMoment.Presentation):
         raise NotImplementedError("Sub-classes must implement this method")
     
     def _strftime_day(self, seg_type : str, language :str, eliminate_leading_zero: bool = False) -> str:
+        if self.year == Decimal('-Infinity'):
+            return ""
         fmt = ""
         if self.day is None:
             return ""
@@ -232,11 +236,15 @@ class Present_Calendars(UnivMoment.Presentation):
         """
         Get a day of the week attribute.
         """
+        if self.year == Decimal('-Infinity'):
+            return "..."
         index = int(self.moment.rd_day - 1) % 7
         return Present_Calendars.DAY_OF_THE_WEEK_ATTS[language][index][attr]
 
 
     def _strftime_time(self, seg_type : str, language :str, eliminate_leading_zero: bool = False) -> str:
+        if self.year == Decimal('-Infinity'):
+            return ""
         # Hour ###############################################################################
         fmt = ""
         if seg_type in 'HIp':

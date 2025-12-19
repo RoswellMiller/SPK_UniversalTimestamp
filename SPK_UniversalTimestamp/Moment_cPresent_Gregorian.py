@@ -1,3 +1,4 @@
+from decimal import Decimal
 from .CC02_Gregorian import gregorian_from_rd
 from .Constants_aCommon import Calendar, Precision, PrecisionAtts
 from .Constants_Gregorian import gregorian_MONTH_ATTS
@@ -11,14 +12,19 @@ class Present_Gregorian(Present_Calendars):
     # CONSTRUCTOR ############################################################################
     def __init__(self, moment: UnivMoment, tz : str | tuple[float,float] = 'UTC'):
         rd = moment.rd_day
-        year, month, day = gregorian_from_rd(int(str(rd)))
+        if rd == Decimal('-Infinity'):
+            year = rd
+            tz = None
+        else:
+            year, month, day = gregorian_from_rd(int(str(rd)))
         super().__init__(Calendar.GREGORIAN, moment, year, tz)
-        self.month = 1
-        self.day = 1
-        if PrecisionAtts[self.precision]['level'] >= PrecisionAtts[Precision.MONTH]['level']:
-            self.month = month
-        if PrecisionAtts[self.precision]['level'] >= PrecisionAtts[Precision.DAY]['level']: 
-            self.day = day
+        if self.year != Decimal('-Infinity'):
+            self.month = 1
+            self.day = 1
+            if PrecisionAtts[self.precision]['level'] >= PrecisionAtts[Precision.MONTH]['level']:
+                self.month = month
+            if PrecisionAtts[self.precision]['level'] >= PrecisionAtts[Precision.DAY]['level']: 
+                self.day = day
         return
     
     # PRESENTATION LAYER METHODS ############################################################
