@@ -15,12 +15,14 @@ Comprehensive multi-scale time system:
     It is NOT a second as measured by the radioactive decay of Cesium 133 atoms.
 - Precision levels to indicate the certainty of the timestamp
 """
+import langcodes
 import re
 from datetime import datetime, timezone
 from decimal import Decimal, getcontext, ROUND_DOWN
 from .CC00_Decimal_library import floor
 from typing import Optional, Union
 from abc import abstractmethod
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .CC01_Calendar_Basics import Epoch_rd
 from .CC02_Gregorian import is_gregorian_leap_year, rd_from_gregorian, gregorian_from_rd
@@ -210,7 +212,6 @@ class UnivMoment:
         result = self._add_sub(self, 1, other)
         return UnivMoment(result[0], (result[1], result[2], result[3]), self.precision, getattr(self, 'description', None))
     
-    
     # COMPARISON METHODS ##########################################################################
     def __lt__(self, other) -> bool:
         """Less than comparison for sorting"""
@@ -250,16 +251,77 @@ class UnivMoment:
 
     # FORMATTING/PRESENTATION METHODS ########################################################################
     def __str__(self) -> str:
+        """ Generate a visual representative string for UnivMoment."""
         return self.format_signature()
 
     def __repr__(self) -> str:
+        """ Generate repr string for UnivMoment."""
         return f"UnivMoment(Decimal({repr(str(self.rd_day))}), {self.rd_time}, {self.precision}, description={repr(getattr(self, 'description', None))})"
 
     @staticmethod
     def eval_repr(repr_str) -> "UnivMoment":
+        """Recreate a UnivMoment from its repr string."""
         recreated = eval(repr_str, {'UnivMoment' : UnivMoment, 'Decimal' : Decimal, 'Precision' : Precision}) 
         return recreated
 
+    def format(self, format_ext : str) -> str:
+        """
+        Format the moment using an extended format string.
+
+        Args:
+            format_ext (str): Extended format string
+            Allows specifying calendar and time zone in the format string
+            Example: '^cal:GREGORIAN, tz:America/New_York, lng:en ::%Y-%m-%d %H:%M
+        Returns:
+            str: Formatted timestamp string
+        """
+        # Split format into tags/prefix and format parts
+        # pattern = re.compile(
+        #     r'^(?:\^(?P<prefix>(?:[a-z]+:[A-Za-z_/]+)(?:,[a-z]+:[A-Za-z_]+)*)::)?(?P<body>.*)$'
+        # )
+        # match = pattern.match(format_ext)
+        # if not match:
+        #     raise ValueError(
+        #         "Invalid format string. Expected format: '^cal:<calendar name>,tz:<time zone name>,lng:<language code>::FORMAT'"
+        #         )
+        prefix_left = format_ext.find("{")
+        prefix_right = format_ext.find("}")
+        if prefix_left >=0 and prefix_right > prefix_left:
+            prefix = format_ext[prefix_left + 1 : prefix_right].split(",")
+            format_str = format_ext[prefix_right + 1 :]
+        else:
+            prefix = []
+            format_str = format_ext
+        calendar_str = 'GREGORIAN'  # Default calendar
+        tz_str = 'UTC'  # Default time zone
+        lang_code = 'en' # Default language
+        for pair in prefix:
+            if len(pair) < 3:
+                continue
+            tag, value = pair.split(":")
+            if tag.lower() == "cal":
+                calendar_str = value.upper()
+            elif tag.lower() == "tz":
+                tz_str = value
+            elif tag.lower() == "lng":
+                lang_code = value
+            else:
+                raise ValueError(f"Unknown prefix tag '{tag}' in format string.")
+        # Map calendar string to Calendar enum
+        try:
+            calendar = Calendar[calendar_str]
+        except KeyError:
+            raise ValueError(f"Unknown calendar '{calendar_str}' in format string.")
+        # Validate time zone and language code
+        try:
+            ZoneInfo(tz_str)
+        except ZoneInfoNotFoundError:
+            raise ValueError(f"Unknown time zone '{tz_str}' in format string.")      
+        if not langcodes.tag_is_valid(lang_code):
+            raise ValueError(f"Invalid language code '{lang_code}' in format string.")
+        
+        return self.present(calendar, format_str, tz_str, lang_code)
+    
     def present(self, calendar: Calendar, format: str, tz = 'UTC', language: str = 'en') -> str:
         """
         Present the moment in a specific calendar format.

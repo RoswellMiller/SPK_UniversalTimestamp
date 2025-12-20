@@ -79,3 +79,69 @@ class Test_Moment_Calendars:
         else:
             print("✅ All time presentation tests passed successfully!")
         return
+
+    def test_time_format(self):
+        test_year = 1996
+        test_day = 27
+        test_ts = UnivMoment.from_gregorian(test_year, 2, test_day)
+        test_rd_day = test_ts.rd_day
+        test_month = { 'en' : 'Feb', 'fr' : 'Fév', 'es' : 'Feb', 'de' : 'Feb', 'it' : 'Feb' }
+        test_hour = 12
+        test_minute = 0
+        test_second = 0
+        test_rd_time = (test_hour, test_minute, test_second)
+        msg = f"Moment Presentation Test for R.D. {test_rd_day}"
+        test_cases = [
+        {   'format': "%b %d, %Y", 
+            'answer': f"{test_month['en']} {test_day:02d}, {test_year:d}"},
+        {   'format': "{lng:fr}%b %d, %Y",
+            'answer': f"{test_month['fr']} {test_day:02d}, {test_year:d}"},
+        {   'format': "{lng:es}%b %d, %Y", 
+            'answer': f"{test_month['es']} {test_day:02d}, {test_year:d}"},
+        {   'format': "{lng:de}%b %d, %Y",
+            'answer': f"{test_month['de']} {test_day:02d}, {test_year:d}"},
+        {   'format': "{lng:it}%b %d, %Y", 
+            'answer': f"{test_month['it']} {test_day:02d}, {test_year:d}"},
+        {   'format': "{cal:gregorian}%b %d, %Y", 
+            'answer': f"{test_month['en']} {test_day:02d}, {test_year:d}"},
+        {   'format': "{lng:fr,cal:gregorian}%b %d, %Y", 
+            'answer': f"{test_month['fr']} {test_day:02d}, {test_year:d}"},
+        {   'format': "{cal:gregorian,lng:es}%b %d, %Y",
+            'answer': f"{test_month['es']} {test_day:02d}, {test_year:d}"},
+        {   'format': "{cal:juLIan,lng:de}%b %d, %Y", 
+            'answer': f"{test_month['de']} {test_day-13:02d}, {test_year:d}"},
+        {   'format': "{lng:it,cal:juLIan}%b %d, %Y",
+            'answer': f"{test_month['it']} {test_day-13:02d}, {test_year:d}"},
+        {   'format': "{tz:America/New_York}%b %d, %Y %H:%M:%S %z", 
+            'answer': f"{test_month['en']} {test_day:02d}, {test_year:d} {test_hour-5:02d}:{test_minute:02d}:{test_second:02d} -05:00"},
+        {   'format': "{tz:Europe/Paris,lng:fr}%b %d, %Y %H:%M:%S %z", 
+            'answer': f"{test_month['fr']} {test_day:02d}, {test_year:d} {test_hour+1:02d}:{test_minute:02d}:{test_second:02d} +01:00"},
+        {   'format': "{lng:es,tz:Europe/Madrid}%b %d, %Y %H:%M:%S %z",
+            'answer': f"{test_month['es']} {test_day:02d}, {test_year:d} {test_hour+1:02d}:{test_minute:02d}:{test_second:02d} +01:00"},
+        {   'format': "{}%b %d, %Y %H:%M:%S %z",
+            'answer': f"{test_month['en']} {test_day:02d}, {test_year:d} {test_hour:02d}:{test_minute:02d}:{test_second:02d} +00:00"},
+        ]
+        failures = 0
+        try:
+            for test_case in test_cases:
+                moment = UnivMoment(test_rd_day, test_rd_time, precision=Precision.SECOND)
+                presentation = moment.format(test_case['format'])
+                if presentation == test_case['answer']:
+                    print(f"    ✅ {msg}")
+                else:
+                    print(f"    ❌ R.D.Error {test_rd_day}")
+                    print(f"         Format string: {test_case['format']}")
+                    print(f"         Returned     : {presentation}")
+                    print(f"         Expected     : {test_case['answer']}")
+                    failures += 1
+                continue
+        except Exception as e:
+            print(f"    ❌ValueError : {e}")
+            failures += 1
+            
+        if failures > 0:
+            assert False, f"❌ {failures} time format test(s) FAILED."
+        else:
+            print("✅ All format tests passed successfully!")
+        return
+
