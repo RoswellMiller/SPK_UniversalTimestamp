@@ -105,6 +105,38 @@ class UnivMoment:
         if description and isinstance(description, str):
             self.description = description
         return
+    
+    # Support for JSON serialization
+    def to_dict(self) -> dict:
+        """
+        Convert the UnivMoment to a dictionary for JSON serialization.
+
+        Returns:
+            dict: Dictionary representation of the UnivMoment
+        """
+        data = {
+            "rd_day": str(self.rd_day),
+            "rd_time": (self.rd_time[0], self.rd_time[1], str(self.rd_time[2])),
+            "precision": self.precision.name,
+        }
+        if hasattr(self, 'description'):
+            data["description"] = self.description
+        return data
+    @staticmethod
+    def from_dict(data: dict) -> "UnivMoment":
+        """
+        Create a UnivMoment from a dictionary.
+
+        Args:
+            data (dict): Dictionary representation of the UnivMoment
+        Returns:
+            UnivMoment: Created UnivMoment object
+        """
+        rd_day = Decimal(data["rd_day"])
+        rd_time = (data["rd_time"][0], data["rd_time"][1], Decimal(data["rd_time"][2]))
+        precision = Precision[data["precision"]]
+        description = data.get("description", None)
+        return UnivMoment(rd_day, rd_time, precision, description)
 
     ################################################################################
     # Methodology from "Calendrical Calculations" by Edward M. Reingold and Nachum Dershowitz

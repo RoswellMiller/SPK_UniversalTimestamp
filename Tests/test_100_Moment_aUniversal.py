@@ -34,6 +34,15 @@ class Test_Moment_aUniversal:
         
         print(f"✅ SUCCESS: {self.test_now_creation.__doc__}")
         return
+    def test_json_serialization(self):
+        """Test UnivMoment.to_dict/from_dict() serialization."""
+        moment_now = UnivMoment.now()
+        data = moment_now.to_dict()
+        moment_restored = UnivMoment.from_dict(data)
+        assert moment_now == moment_restored
+        print(f"✅ SUCCESS: {self.test_json_serialization.__doc__}")
+        return
+    
     
     def test_indexing(self):
         """Test indexing of UnivMoment."""
