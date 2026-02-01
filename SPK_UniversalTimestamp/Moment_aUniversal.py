@@ -274,6 +274,10 @@ class UnivMoment:
         if not isinstance(other, self.__class__):
             return NotImplemented
         return self.rd_moment() == other.rd_moment()
+    
+    def __hash__(self) -> int:
+        """Hash function for UnivMoment"""
+        return hash(self.rd_moment())
 
     def __ne__(self, other) -> bool:
         """Not equal comparison"""
