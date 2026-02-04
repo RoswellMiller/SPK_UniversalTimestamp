@@ -161,13 +161,18 @@ class Test_Present_Gregorian:
             test_seconds = Decimal(f"{test_second}.{test_fractional_second:06d}")
             msg = f"Row {appendix_c_ndx+1} {calendar} date: {test_year}-{test_month:02d}-{test_day:02d} {test_hour:02d}:{test_minute:02d}:{test_seconds:09.6f}"
             test_cases = [
-            {   'format': "%d/%m/%Y %H:%M:%S", 'condition' : lambda : True,
+            {   'format': "%d/%m/%Y %H:%M:%S%f", 'condition' : lambda : True,
                 'precision': Precision.MICROSECOND,
                 'answer': f"{test_day:02d}/{test_month:02d}/{test_year:d} {trunc(test_hour):02.0f}:{trunc(test_minute):02.0f}:{trunc(test_seconds, decimals=6):09.6f}"},
-            {   'format': "%d/%m/%Y %H:%M:%S", 'condition' : lambda : True,
+            {   'format': "%d/%m/%Y %H:%M:%S%f", 'condition' : lambda : True,
                 'precision': Precision.MILLISECOND,
                 'answer': f"{test_day:02d}/{test_month:02d}/{test_year:d} {trunc(test_hour):02.0f}:{trunc(test_minute):02.0f}:{trunc(test_seconds, decimals=3):06.3f}"},
-            {   'format': "%d/%m/%Y %H:%M:%S", 'condition' : lambda : True,
+            
+            {   'format': "%d/%m/%Y %H:%M:%S%f2", 'condition' : lambda : True,
+                'precision': Precision.MILLISECOND,
+                'answer': f"{test_day:02d}/{test_month:02d}/{test_year:d} {trunc(test_hour):02.0f}:{trunc(test_minute):02.0f}:{trunc(test_seconds, decimals=2):05.2f}"},
+            
+            {   'format': "%d/%m/%Y %H:%M:%S%f", 'condition' : lambda : True,
                 'precision': Precision.SECOND,
                 'answer': f"{test_day:02d}/{test_month:02d}/{test_year:d} {trunc(test_hour):02.0f}:{trunc(test_minute):02.0f}:{trunc(test_seconds):02.0f}"},
             {   'format': "%d/%m/%Y %H:%M", 'condition' : lambda : True,

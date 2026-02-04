@@ -311,15 +311,6 @@ class UnivMoment:
         Returns:
             str: Formatted timestamp string
         """
-        # Split format into tags/prefix and format parts
-        # pattern = re.compile(
-        #     r'^(?:\^(?P<prefix>(?:[a-z]+:[A-Za-z_/]+)(?:,[a-z]+:[A-Za-z_]+)*)::)?(?P<body>.*)$'
-        # )
-        # match = pattern.match(format_ext)
-        # if not match:
-        #     raise ValueError(
-        #         "Invalid format string. Expected format: '^cal:<calendar name>,tz:<time zone name>,lng:<language code>::FORMAT'"
-        #         )
         prefix_left = format_ext.find("{")
         prefix_right = format_ext.find("}")
         if prefix_left >=0 and prefix_right > prefix_left:
@@ -441,20 +432,30 @@ class UnivMoment:
                 # get segment type and any modifiers
                 seg_remainder_start = 1
                 seg_eliminate_leading_zero = False
+                seg_frac_digits = None
                 seg_type = segment[0]
                 if seg_type == "#":
                     seg_eliminate_leading_zero = True
                     if len(segment) > 1:
                         seg_type = segment[1]
                         seg_remainder_start = 2
-                        
+                if seg_type == 'f':
+                    if len(segment) > 1 and segment[1].isdigit():
+                        # fractional seconds precision
+                        frac_digits = 0
+                        for i in range(1, len(segment)):
+                            if not segment[i].isdigit():
+                                break
+                            frac_digits = frac_digits*10 + int(segment[i])
+                        seg_frac_digits = frac_digits
+                        seg_remainder_start = i+1
                 # process the segment
                 if seg_type in ['K']:
                     fmt += CalendarAtts[language][self.calendar]['name']
                 elif seg_type in ['k']:
                     fmt += CalendarAtts[language][self.calendar]['abbrv']
                 else:
-                    fmt += self._format_segment({'type' : seg_type, 'eliminate_leading_zero' : seg_eliminate_leading_zero}, language)
+                    fmt += self._format_segment({'type' : seg_type, 'eliminate_leading_zero' : seg_eliminate_leading_zero, 'frac_digits' : seg_frac_digits}, language)
                 for i in range(seg_remainder_start, len(segment)):
                     fmt += segment[i]
 

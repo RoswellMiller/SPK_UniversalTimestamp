@@ -136,7 +136,8 @@ class Present_Calendars(UnivMoment.Presentation):
     %M	        Minute (00-59)	                    35
 
                 SECOND
-    %S	        Second (00-59)	                    23, 45.35654
+    %S	        Second (00-59)	                    23
+    %f          fractional part                     .35654
 
                 TIMEZONE
     %z	        UTC offset (+HHMM or -HHMM)	        +0200
@@ -156,6 +157,7 @@ class Present_Calendars(UnivMoment.Presentation):
     def _format_segment(self, segment : dict, language : str) -> str:
         seg_type = segment['type']
         eliminate_leading_zero = segment.get('eliminate_leading_zero', False)
+        frac_digits = segment.get('frac_digits', None)
         # 
         if seg_type in 'YyCc':
             return self._strftime_year(seg_type, language, eliminate_leading_zero)
@@ -164,7 +166,7 @@ class Present_Calendars(UnivMoment.Presentation):
         elif seg_type in 'dAaj':
             return self._strftime_day(seg_type, language, eliminate_leading_zero)
         elif seg_type in 'HIpMSfZz':
-            return self._strftime_time(seg_type, language, eliminate_leading_zero)
+            return self._strftime_time(seg_type, language, eliminate_leading_zero, frac_digits)
         elif seg_type in 'Xx':
             return self._strftime_compound(seg_type, language, eliminate_leading_zero)
         else:
@@ -242,7 +244,7 @@ class Present_Calendars(UnivMoment.Presentation):
         return Present_Calendars.DAY_OF_THE_WEEK_ATTS[language][index][attr]
 
 
-    def _strftime_time(self, seg_type : str, language :str, eliminate_leading_zero: bool = False) -> str:
+    def _strftime_time(self, seg_type : str, language :str, eliminate_leading_zero: bool = False, frac_digits : int = None) -> str:
         if self.year == Decimal('-Infinity'):
             return ""
         # Hour ###############################################################################
@@ -275,12 +277,30 @@ class Present_Calendars(UnivMoment.Presentation):
             if self.seconds is None:
                 fmt = ".."
             elif PrecisionAtts[self.precision]['level'] >= PrecisionAtts[Precision.SECOND]['level']:
-                decimal_places = -PrecisionAtts[self.precision]['power']
-                fmt = f"0{2 + (1 if decimal_places>0 else 0) + decimal_places}.{decimal_places}f"
-                fmt = f"{trunc(self.seconds,decimals=decimal_places):{fmt}}"
+                # decimal_places = -PrecisionAtts[self.precision]['power']
+                # fmt = f"0{2 + (1 if decimal_places>0 else 0) + decimal_places}.{decimal_places}f"
+                # fmt = f"{trunc(self.seconds,decimals=decimal_places):{fmt}}"
+                integer_part = int(self.seconds)
+                if eliminate_leading_zero:
+                    fmt = f"{integer_part:d}"
+                else:
+                    fmt = f"{integer_part:02d}"
                 pass
             else:
-                fmt = '..'     
+                fmt = '..'  
+        elif seg_type == 'f':
+            if self.seconds is None:
+                fmt = ".."
+            elif PrecisionAtts[self.precision]['level'] >= PrecisionAtts[Precision.SECOND]['level']:
+                # fractional seconds
+                decimal_places = -PrecisionAtts[self.precision]['power']
+                if frac_digits is not None:
+                    decimal_places = min(frac_digits, decimal_places)
+                fractional_part = self.seconds - Decimal(int(self.seconds))
+                fmt = f"0.{decimal_places}f"
+                fmt = f"{trunc(fractional_part,decimals=decimal_places):{fmt}}"[1:]  # Skip "0"
+            else:
+                fmt = '..'   
         # Timezone ###############################################################################           
         elif seg_type == 'z':
             # UTC offset, assuming no timezone information is available

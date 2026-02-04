@@ -98,8 +98,6 @@ class Precision(Enum):
     BILLION_YEARS = "10⁹years"  # billion years
     MILLION_YEARS = "10⁶years"  # million years
     THOUSAND_YEARS = "10³years"  # 1000 years
-    # CENTURY = "century"  # 100 years
-    # DECADE = "decade"  # 10 years
     YEAR = "year"  # 1 year
     MONTH = "month"  # 1 month
     DAY = "day"  # 1 day
@@ -118,8 +116,6 @@ PrecisionAtts = {
     Precision.BILLION_YEARS: {'level': 1, 'power': 9,    'abbrv' : 'G-yr'},
     Precision.MILLION_YEARS: {'level': 2, 'power': 6,    'abbrv' : 'M-yr'},
     Precision.THOUSAND_YEARS:{'level': 3, 'power': 3,    'abbrv' : 'k-yr'},
-    # Precision.CENTURY:       {'level': 4, 'power': 2,    'abbrv' : 'h-yr'},
-    # Precision.DECADE:        {'level': 5, 'power': 1,    'abbrv' : 'da-yr'},
     Precision.YEAR:          {'level': 6, 'power': 0,    'abbrv' : 'yr'},
     Precision.MONTH:         {'level': 7, 'power': None, 'abbrv' : 'mo'},
     Precision.DAY:           {'level': 8, 'power': None, 'abbrv' : 'day'},

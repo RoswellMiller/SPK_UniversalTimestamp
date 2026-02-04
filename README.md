@@ -68,7 +68,9 @@ print(now.present(Calendar.GREGORIAN, "%A %d %B %Y %H:%M:%S", language='fr'))
 print(now.present(Calendar.GREGORIAN, "%A %d %B %Y %H:%M:%S", language='de'))
 
 ```
+
 ## API Reference
+
 The `UnivMoment` is a python class intended to support a time stamp the can be universally ordered.  The underlying notion
 of ordering is the rata die(rd) developed by Reingold and Dershowitz in their book "Calendrical Calculations : The Ultimate Edition".  While
 the rd maps human calendars to a unique day number as does the modern Julian Day number, we have extended the notion to UTC attosecond enabling
@@ -85,6 +87,7 @@ the science based numbers and apply them to a period in history in which they wo
 ### Main Classes
 
 #### `Calendar` (Enum)
+
 - `GREGORIAN` - Standard Gregorian calendar
 - `JULIAN` - Julian calendar (Old Style)  
 - `CHINESE` - Chinese traditional calendar
@@ -92,17 +95,31 @@ the science based numbers and apply them to a period in history in which they wo
 - `GEOLOGICAL` - Geological time scales
 
 #### `Precision` (Enum)
+
 **Timestamp Precision:**
-- `BILLION_YEARS`, `MILLION_YEARS`, `THOUSAND_YEARS`
-- `CENTURY`, `DECADE`, `YEAR`, `MONTH`, `DAY`
-- `HOUR`, `MINUTE`, `SECOND`
-- `MILLISECOND`, `MICROSECOND`, `NANOSECOND`
-- `PICOSECOND`, `FEMTOSECOND`, `ATTOSECOND`
+
+- `BILLION_YEARS`,
+- `MILLION_YEARS`,
+- `THOUSAND_YEARS`
+- `YEAR`,
+- `MONTH`,
+- `DAY`
+- `HOUR`,
+- `MINUTE`,
+- `SECOND`
+- `MILLISECOND`,
+- `MICROSECOND`,
+- `NANOSECOND`
+- `PICOSECOND`,
+- `FEMTOSECOND`,
+- `ATTOSECOND`
 
 ### Class Methods
 
 #### UnivMoment
+
 ##### Constructors
+
 UnivMoment.from_geological(years_ago, precision, description=)
 UnivMoment.from_gregorian(year, month, day, hour, minute, second, precision, description=)
 UnivMoment.from_julian(year, month, day, hour, minute, second, precision, description=)
@@ -111,18 +128,20 @@ UnivMoment.from_chinese(cycle, year, (leap,term), day, hour, minute, second, pre
 UnivMoment.now()
 
 ##### Standard
-present(calandar, format, language=)
+
+present(calendar, format, language=)
 __str__
 __repr__
 
 
 ##### Predefined Constants
+
 - python
 GEOLOGICAL_PERIODS = {
     "Hadean": ...,
     "Archean": ...,
     "Proterozoic": ...,
-    # ... more geological periods
+    ... more geological periods
 }
 
 ## Development
