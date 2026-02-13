@@ -62,6 +62,46 @@ class TestUniversalTimestamp:
         print(f"✅ SUCCESS: {inspect.currentframe().f_code.co_name}")
         return
     
+    def test_lexical_key(self):
+        """Test timestamp sorting and comparison."""
+        # Create timestamps in different time scales
+        bot = UnivMoment.beginning_of_time()                                            #"Beginning of Time"
+        big_bang = UnivMoment.from_geological(13.8, precision=Precision.BILLION_YEARS)  #"Big Bang"
+        dinosaurs = UnivMoment.from_geological(66.0, precision=Precision.MILLION_YEARS) #"Dinosaurs"
+        bce = UnivMoment.from_julian(-44, 3, 15)                                        #"Julius Caesar assassination
+        modern = UnivMoment.from_gregorian(2024, 1, 1)                                  #"Modern"
+        modern_2 = UnivMoment.from_gregorian(2024, 1, 1, 12)                            #"Modern with time"
+        future = UnivMoment.from_gregorian(2030, 1, 1)                                  #"Future event"
+        
+        # Test sorting
+        timestamps = [
+            modern_2.to_StdLexicalKey(), 
+            future.to_StdLexicalKey(), 
+            big_bang.to_StdLexicalKey(), 
+            modern.to_StdLexicalKey(), 
+            dinosaurs.to_StdLexicalKey(), 
+            bce.to_StdLexicalKey(), 
+            bot.to_StdLexicalKey()
+            ]
+        timestamps.sort()
+        
+        # Should be: big_bang, dinosaurs, modern, future
+        assert timestamps[0] == bot.to_StdLexicalKey()
+        assert timestamps[1] == big_bang.to_StdLexicalKey()
+        assert timestamps[2] == dinosaurs.to_StdLexicalKey()
+        assert timestamps[3] == bce.to_StdLexicalKey()
+        assert timestamps[4] == modern.to_StdLexicalKey()
+        assert timestamps[5] == modern_2.to_StdLexicalKey()
+        assert timestamps[6] == future.to_StdLexicalKey()
+
+        # Test individual comparisons
+        assert UnivMoment.from_StdLexicalKey(timestamps[0]) < UnivMoment.from_StdLexicalKey(timestamps[2])
+        assert UnivMoment.from_StdLexicalKey(timestamps[2]) < UnivMoment.from_StdLexicalKey(timestamps[4])
+        assert UnivMoment.from_StdLexicalKey(timestamps[4]) < UnivMoment.from_StdLexicalKey(timestamps[6])
+        assert UnivMoment.from_StdLexicalKey(timestamps[6]) > UnivMoment.from_StdLexicalKey(timestamps[4])
+        print(f"✅ SUCCESS: {inspect.currentframe().f_code.co_name}")
+        return
+    
     def test_hashing(self):
         """Test hashing of UnivMoment instances."""
         moment1 = UnivMoment.from_gregorian(2000, 1, 1, 12, 0, 0)

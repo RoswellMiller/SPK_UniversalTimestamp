@@ -138,6 +138,49 @@ class UnivMoment:
         description = data.get("description", None)
         return UnivMoment(rd_day, rd_time, precision, description)
 
+
+
+    def to_StdLexicalKey(self) -> str:
+        """
+        Convert the UnivMoment to a standardized lexical key for sorting and comparison.
+
+        Returns:
+            str: Standardized lexical key representing the UnivMoment
+        """
+        # Format rd_day with leading zeros and sign for proper lexical sorting
+        if self.rd_day == Decimal("-Infinity"):
+            rd_day_off = 0
+        else:
+            rd_day_int = int(self.rd_day )
+            rd_day_off = rd_day_int + 100_000_000_000_000_000  # Offset to ensure positive and fixed width
+        rd_day_str = f"{rd_day_off:018d}"
+        rd_time_str = f"H{self.rd_time[0]:02d}M{self.rd_time[1]:02d}S{self.rd_time[2]:021.18f}"
+        rd_lex_str = f"univRD{rd_day_str}{rd_time_str}UTC:{self.precision.name}"
+        return rd_lex_str
+    
+    @staticmethod
+    def from_StdLexicalKey(lex_key: str) -> "UnivMoment":
+        """
+        Create a UnivMoment from a standardized lexical key.
+
+        Args:
+            lex_key (str): Standardized lexical key representing the UnivMoment
+        """
+        pattern = r"univRD(?P<rd_day>\d{18})H(?P<hour>\d{2})M(?P<minute>\d{2})S(?P<second>\d{2}\.\d{18})UTC:(?P<precision>\w+)$"
+        match = re.match(pattern, lex_key)
+        if not match:
+            raise ValueError("Invalid lexical key format for UnivMoment")
+        rd_day = Decimal(match.group("rd_day"))
+        if rd_day <= 0:
+            rd_day = Decimal('-infinity')
+        else:
+            rd_day = rd_day - 100_000_000_000_000_000
+        hour = int(match.group("hour"))
+        minute = int(match.group("minute"))
+        second = Decimal(match.group("second"))
+        precision = Precision[match.group("precision")]
+        return UnivMoment(rd_day, (hour, minute, second), precision)
+    
     ################################################################################
     # Methodology from "Calendrical Calculations" by Edward M. Reingold and Nachum Dershowitz
     # r.d. (Rata Die) fixed day 1 =(def) Midnight Monday January 1, 1 Gregorian
@@ -360,12 +403,15 @@ class UnivMoment:
         Returns:
             str: Formatted timestamp string
         """
-        if calendar == Calendar.GREGORIAN:
-            from .Moment_cPresent_Gregorian import Present_Gregorian
-            return Present_Gregorian(self, tz)._format(format, language)
-        elif calendar == Calendar.GEOLOGICAL:
+        if calendar == Calendar.GEOLOGICAL:
             from .Moment_bPresent_Geological import Present_Geological
             return Present_Geological(self)._format(format, language)
+        elif self.rd_day < -9999*Decimal('365.25'):
+            from .Moment_bPresent_Geological import Present_Geological
+            return Present_Geological(self)._format("%y %O", language)
+        elif calendar == Calendar.GREGORIAN:
+            from .Moment_cPresent_Gregorian import Present_Gregorian
+            return Present_Gregorian(self, tz)._format(format, language)
         elif calendar == Calendar.JULIAN:
             from .Moment_cPresent_Julian import Present_Julian
             return Present_Julian(self, tz)._format(format, language)
@@ -556,13 +602,13 @@ class UnivMoment:
         Convert the geological timestamp to Rata Die (fixed day number).
         For geological time, we assume a constant year length of 365.25 days.
         """
-        days = years_ago * Decimal(365.25)
-        return UnivMoment(days, precision=precision, description=description)
+        days_ago = years_ago * Decimal('365.25')
+        return UnivMoment(days_ago, precision=precision, description=description)
     # CONSTRUCT beginning of time
     @staticmethod
     def beginning_of_time() -> "UnivMoment":
         """Get the beginning of time in the Gregorian calendar."""
-        return UnivMoment.from_geological('-Infinity', description="Beginning of Time")
+        return UnivMoment.from_geological('-Infinity')
 
     # CONSTRUCT from GREGORIAN date
     @staticmethod

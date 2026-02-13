@@ -63,11 +63,11 @@ class Test_Moment_Calendars:
         try:
             bot = UnivMoment.beginning_of_time()
             presentation = bot.present(Calendar.GREGORIAN, "%Y-%m-%d %H:%M:%S %Z", 'UTC', language='en') 
-            if presentation != "-Infinity-- :: ":
+            if presentation != "-Infinity EON before the big-bang":
                 print("Beginning of Time presentation failed." )  
                 failures += 1
-            presentation = bot.present(Calendar.GREGORIAN, "%y-%m-%d %H:%M:%S %Z", 'UTC', language='en') 
-            if presentation != "Infinity BCE-- :: ":
+            presentation = bot.present(Calendar.GEOLOGICAL, "%y %O", 'UTC', language='en') 
+            if presentation != "-Infinity EON before the big-bang":
                 print("Beginning of Time presentation failed." )  
                 failures += 1
         except Exception as e:

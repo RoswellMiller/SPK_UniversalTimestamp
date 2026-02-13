@@ -897,7 +897,7 @@ class Present_Geological(UnivMoment.Presentation):
     """
     def strftime(self, format: str, language: str = "en") -> str:
 
-    Format the timestamp using a custom format string.
+    Format the Moment using a custom format string.
     This is a simplified version and does not support all Python strftime features.
 
     Geological
@@ -966,7 +966,7 @@ class Present_Geological(UnivMoment.Presentation):
                 - 1
             )
             if ins_pnt < 0:
-                return "before the big-bang"
+                return "EON before the big-bang"
             period = GEOLOGICAL_EONS[ins_pnt]
             return period["name"] if period else "Unknown eon"
         elif seg_type in 'R':
