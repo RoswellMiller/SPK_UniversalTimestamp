@@ -155,7 +155,7 @@ class UnivMoment:
             rd_day_off = rd_day_int + 100_000_000_000_000_000  # Offset to ensure positive and fixed width
         rd_day_str = f"{rd_day_off:018d}"
         rd_time_str = f"H{self.rd_time[0]:02d}M{self.rd_time[1]:02d}S{self.rd_time[2]:021.18f}"
-        rd_lex_str = f"univRD{rd_day_str}{rd_time_str}UTC:{self.precision.name}"
+        rd_lex_str = f"univRD{rd_day_str}{rd_time_str}UTC:{PrecisionAtts[self.precision]['level']:02d}"
         return rd_lex_str
     
     @staticmethod
@@ -166,7 +166,7 @@ class UnivMoment:
         Args:
             lex_key (str): Standardized lexical key representing the UnivMoment
         """
-        pattern = r"univRD(?P<rd_day>\d{18})H(?P<hour>\d{2})M(?P<minute>\d{2})S(?P<second>\d{2}\.\d{18})UTC:(?P<precision>\w+)$"
+        pattern = r"univRD(?P<rd_day>\d{18})H(?P<hour>\d{2})M(?P<minute>\d{2})S(?P<second>\d{2}\.\d{18})UTC:(?P<precision>\d{2})$"
         match = re.match(pattern, lex_key)
         if not match:
             raise ValueError("Invalid lexical key format for UnivMoment")
@@ -178,7 +178,19 @@ class UnivMoment:
         hour = int(match.group("hour"))
         minute = int(match.group("minute"))
         second = Decimal(match.group("second"))
-        precision = Precision[match.group("precision")]
+        precision_level = int(match.group("precision"))
+        precision = None
+        last_prec = Precision.BILLION_YEARS
+        for prec in Precision:
+            if PrecisionAtts[prec]['level'] == precision_level:
+                precision = prec
+                break
+            elif PrecisionAtts[prec]['level'] > precision_level:
+                precision = last_prec
+                break
+            last_prec = prec
+        if precision is None:
+            precision = Precision.ATTOSECOND
         return UnivMoment(rd_day, (hour, minute, second), precision)
     
     ################################################################################
