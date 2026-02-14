@@ -966,7 +966,7 @@ class Present_Geological(UnivMoment.Presentation):
                 - 1
             )
             if ins_pnt < 0:
-                return "EON before the big-bang"
+                return ""
             period = GEOLOGICAL_EONS[ins_pnt]
             return period["name"] if period else "Unknown eon"
         elif seg_type in 'R':
