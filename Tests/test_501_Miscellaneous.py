@@ -4,6 +4,7 @@ Comprehensive tests for the UnivMoment class.
 import inspect
 from SPK_UniversalTimestamp.Constants_aCommon import Precision
 from SPK_UniversalTimestamp.Moment_aUniversal  import UnivMoment
+from decimal import Decimal
 
 # Add the parent directory to Python path so we can import the package
 #sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -128,6 +129,18 @@ class TestUniversalTimestamp:
         moment = UnivMoment.from_string("2024-01-01T12:00:00")
         assert UnivMoment.from_gregorian(2024, 1, 1, 12, 0, 0) == moment
         
+        moment = UnivMoment.from_string("2024-01-01 12")
+        assert UnivMoment.from_gregorian(2024, 1, 1, 12) == moment
+        
+        moment = UnivMoment.from_string("2024-01-01 12:00")
+        assert UnivMoment.from_gregorian(2024, 1, 1, 12, 0) == moment
+        
+        moment = UnivMoment.from_string("2024-01-01 12:00:00")
+        assert UnivMoment.from_gregorian(2024, 1, 1, 12, 0, 0) == moment
+        
+        moment = UnivMoment.from_string("2024-01-01 12:00:00.123456789")
+        assert UnivMoment.from_gregorian(2024, 1, 1, 12, 0, Decimal("00.123456789")) == moment
+        
         moment = UnivMoment.from_string("2024-01-01")
         assert UnivMoment.from_gregorian(2024, 1, 1) == moment
         
@@ -136,6 +149,22 @@ class TestUniversalTimestamp:
         
         moment = UnivMoment.from_string("12bc-03-15")
         assert UnivMoment.from_julian(-12, 3, 15) == moment
+
+        moment = UnivMoment.from_string("12BCE-03-15 23:59:59.123456789123456789")
+        assert UnivMoment.from_gregorian(-12, 3, 15, 23, 59, Decimal("59.123456789123456789"), precision=Precision.ATTOSECOND) == moment
+        assert moment.precision == Precision.ATTOSECOND
+
+        moment = UnivMoment.from_string("12bc-03-15 06:07")
+        assert UnivMoment.from_julian(-12, 3, 15, 6, 7, None, precision=Precision.MINUTE) == moment
+        assert moment.precision == Precision.MINUTE
+
+        moment = UnivMoment.from_string("12bc-03-15 23:45:01.123456 OS")
+        assert UnivMoment.from_julian(-12, 3, 15, 23, 45, Decimal("01.123456"), precision=Precision.MICROSECOND) == moment
+        assert moment.precision == Precision.MICROSECOND
+
+        moment = UnivMoment.from_string("5784-1-1 05:30:12 AM")
+        assert UnivMoment.from_hebrew(5784, 1, 1, 5, 30, 12, precision=Precision.SECOND) == moment
+        assert moment.precision == Precision.SECOND
         
         print(f"✅ SUCCESS: {inspect.currentframe().f_code.co_name}")
         return

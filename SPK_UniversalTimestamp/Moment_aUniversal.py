@@ -919,6 +919,65 @@ class UnivMoment:
             precision=Precision.NANOSECOND,
             description=description,
         )
+
+    _TIME_AFTER_DAY_REGEX = (
+        r"\s+(?P<hh>(?:[01]?\d|2[0-3]))"
+        r"(?::(?P<mm>[0-5]?\d)"
+        r"(?::(?P<ss>[0-5]?\d)"
+        r"(?:\.(?P<fraction>\d{1,18}))?"
+        r")?)?"
+    )
+
+    @staticmethod
+    def _precision_from_fraction_digits(num_digits: int) -> Precision:
+        if num_digits <= 3:
+            return Precision.MILLISECOND
+        if num_digits <= 6:
+            return Precision.MICROSECOND
+        if num_digits <= 9:
+            return Precision.NANOSECOND
+        if num_digits <= 12:
+            return Precision.PICOSECOND
+        if num_digits <= 15:
+            return Precision.FEMTOSECOND
+        return Precision.ATTOSECOND
+
+    @staticmethod
+    def _parse_named_time_groups(time_groups: dict) -> tuple[Optional[int], Optional[int], Optional[Decimal], Precision]:
+        hour_str = time_groups.get('hh')
+        minute_str = time_groups.get('mm')
+        second_str = time_groups.get('ss')
+        fraction_str = time_groups.get('fraction')
+
+        if hour_str is None:
+            return None, None, None, Precision.DAY
+
+        hour = int(hour_str)
+        if minute_str is None:
+            return hour, None, None, Precision.HOUR
+
+        minute = int(minute_str)
+        if second_str is None:
+            return hour, minute, None, Precision.MINUTE
+
+        if fraction_str is None:
+            return hour, minute, int(second_str), Precision.SECOND
+
+        second = Decimal(f"{second_str}.{fraction_str}")
+        precision = UnivMoment._precision_from_fraction_digits(len(fraction_str))
+        return hour, minute, second, precision
+
+    @staticmethod
+    def _construct_with_day_time(constructor, date_args: tuple, match, description: str = "") -> "UnivMoment":
+        hour, minute, second, precision = UnivMoment._parse_named_time_groups(match.groupdict())
+        return constructor(
+            *date_args,
+            hour,
+            minute,
+            second,
+            precision=precision,
+            description=description,
+        )
     
     # CONSTRUCT moment from ISO 8601 patterns
     _ISO_8601_PATTERNS = [
@@ -1017,7 +1076,7 @@ class UnivMoment:
     _HUMAN_CALENDAR_PATTERNS = [
         # Gregorian
         (
-            # ddd BCE, ddd BC, etc. year before common era
+            # yyyy BCE  year before common era
             r"(\d{1,4})\s*BCE",
             lambda m, description="" : UnivMoment.from_gregorian(
                 -int(m.group(1)), 
@@ -1028,7 +1087,7 @@ class UnivMoment:
             ),
         ),
         (
-            # yyyy BCE-mm, yyy BC-mm, etc. year and month before common era
+            # yyyy BCE-mm  year and month before common era
             r"(\d{1,4})\s*BCE-(\d{1,2})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 -int(m.group(1)), 
@@ -1039,7 +1098,17 @@ class UnivMoment:
             ),
         ),
         (
-            # yyyy BCE-mm-dd, yyy BC-mm-dd, etc. year, month and day before common era
+            # yyyy BCE-mm-dd  year, month and day before common era
+            r"(\d{1,4})\s*BCE-(\d{1,2})-(\d{1,2})" + _TIME_AFTER_DAY_REGEX,
+            lambda m, description="" : UnivMoment._construct_with_day_time(
+                UnivMoment.from_gregorian,
+                (-int(m.group(1)), int(m.group(2)), int(m.group(3))),
+                m,
+                description,
+            ),
+        ),
+        (
+            # yyyy BCE-mm-dd  year, month and day before common era
             r"(\d{1,4})\s*BCE-(\d{1,2})-(\d{1,2})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 -int(m.group(1)), 
@@ -1050,7 +1119,17 @@ class UnivMoment:
             ),
         ),
         (
-            # yyyy-mm-dd, yyyy-mm, yyyy, etc. year, month and day in common era
+            # +yyyy-mm-dd  year, month and day in common era
+            r"([+-]?\d{1,4})-(\d{1,2})-(\d{1,2})" + _TIME_AFTER_DAY_REGEX,
+            lambda m, description="" : UnivMoment._construct_with_day_time(
+                UnivMoment.from_gregorian,
+                (int(m.group(1)), int(m.group(2)), int(m.group(3))),
+                m,
+                description,
+            ),
+        ),
+        (
+            # +yyyy-mm-dd  year, month and day in common era
             r"([+-]?\d{1,4})-(\d{1,2})-(\d{1,2})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 int(m.group(1)), 
@@ -1061,7 +1140,7 @@ class UnivMoment:
             ),
         ),
         (
-            # yyyy-mm, yyyy, etc. year and month in common era
+            # +yyyy-mm  year and month in common era
             r"([+-]?\d{1,4})-(\d{1,2})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 int(m.group(1)), 
@@ -1072,7 +1151,7 @@ class UnivMoment:
             ),
         ),
         (
-            # yyyy, etc. year in common era
+            # yyyy   year in common era
             r"([+-]?\d{1,4})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 int(m.group(1)), 
@@ -1083,6 +1162,16 @@ class UnivMoment:
             ),
         ),
         # Julian calendar
+        (
+            # yyyy bc-mm-dd, yyy bc-mm, yyy bc, etc. year, month and day before common era
+            r"(\d{1,4})\s*bc-(\d{1,2})-(\d{1,2})" + _TIME_AFTER_DAY_REGEX,
+            lambda m, description="" : UnivMoment._construct_with_day_time(
+                UnivMoment.from_julian,
+                (-int(m.group(1)), int(m.group(2)), int(m.group(3))),
+                m,
+                description,
+            ),
+        ),
         (
             # yyyy bc-mm-dd, yyy bc-mm, yyy bc, etc. year, month and day before common era
             r"(\d{1,4})\s*bc-(\d{1,2})-(\d{1,2})",
@@ -1113,6 +1202,16 @@ class UnivMoment:
         ),
         (
             # yyyy bc-mm-dd OS, yyy bc-mm JC, yyy bc, etc. year, month and day before common era with calendar specifier
+            r"(\d{1,4})\s*bc-(\d{1,2})-(\d{1,2})" + _TIME_AFTER_DAY_REGEX + r"\s*(OS|JC)",
+            lambda m, description="" : UnivMoment._construct_with_day_time(
+                UnivMoment.from_julian,
+                (-int(m.group(1)), int(m.group(2)), int(m.group(3))),
+                m,
+                description,
+            ),
+        ),
+        (
+            # yyyy bc-mm-dd OS, yyy bc-mm JC, yyy bc, etc. year, month and day before common era with calendar specifier
             r"(\d{1,4})\s*bc-(\d{1,2})-(\d{1,2})\s*(OS|JC)",
             lambda m, description="" : UnivMoment.from_julian(
                 -int(m.group(1)), 
@@ -1137,6 +1236,16 @@ class UnivMoment:
                 None, 
                 None,
                 description=description,
+            ),
+        ),
+        (
+            # yyyy-mm-dd OS, -yyy-mm-dd JC, etc. year, month and day with calendar specifier
+            r"([+-]?\d{1,4})-(\d{1,2})-(\d{1,2})" + _TIME_AFTER_DAY_REGEX + r"\s*(OS|JC)",
+            lambda m, description="" : UnivMoment._construct_with_day_time(
+                UnivMoment.from_julian,
+                (int(m.group(1)), int(m.group(2)), int(m.group(3))),
+                m,
+                description,
             ),
         ),
         (
@@ -1186,6 +1295,15 @@ class UnivMoment:
                 int(m.group(2)), 
                 None,
                 description=description,
+            ),
+        ),
+        (
+            r"(\d{1,4})-(\d+)-(\d+)" + _TIME_AFTER_DAY_REGEX + r"\s*AM",
+            lambda m, description="" : UnivMoment._construct_with_day_time(
+                UnivMoment.from_hebrew,
+                (int(m.group(1)), int(m.group(2)), int(m.group(3))),
+                m,
+                description,
             ),
         ),
         (
