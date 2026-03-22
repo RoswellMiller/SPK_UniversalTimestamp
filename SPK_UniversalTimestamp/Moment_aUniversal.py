@@ -834,7 +834,7 @@ class UnivMoment:
     
     # CONSTRUCT now moment from system Datetime.now(timezone.utc)
     @staticmethod
-    def now() -> "UnivMoment":
+    def now(precision=Precision.MICROSECOND) -> "UnivMoment":
         """
         Construct a UnivMoment representing the current system time.
 
@@ -849,7 +849,13 @@ class UnivMoment:
             Decimal(str(now_utc.second)) + (Decimal(str(now_utc.microsecond)) / Decimal('1_000_000'))
         )
         description = now_utc.strftime("now %Y-%m-%dT%H:%M:%S.%fZ")
-        return UnivMoment(rd_day, rd_time, Precision.MICROSECOND, description=description)
+        if not isinstance(precision, Precision):
+            raise ValueError("precision must be an instance of the Precision enum")
+        if PrecisionAtts[precision]['level'] > PrecisionAtts[Precision.MICROSECOND]['level']:
+            precision = Precision.MICROSECOND
+        elif PrecisionAtts[precision]['level'] < PrecisionAtts[Precision.YEAR]['level']:
+            precision = Precision.YEAR
+        return UnivMoment(rd_day, rd_time, precision, description=description)
     
     # CONSTRUCT moment from system datetime
     @staticmethod
@@ -918,6 +924,7 @@ class UnivMoment:
     _ISO_8601_PATTERNS = [
         # ISO 8601 with time
         (
+            # yyy-mm-ddThh:mm:ss.sss
             r"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 int(m.group(1)),
@@ -931,6 +938,7 @@ class UnivMoment:
             ),
         ),
         (
+            # yyy-mm-ddThh:mm:ss
             r"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 int(m.group(1)),
@@ -945,6 +953,7 @@ class UnivMoment:
         ),
         # Space-separated datetime
         (
+            # yyy-mm-dd hh:mm:ss.sss
             r"(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})\.(\d{3})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 int(m.group(1)),
@@ -958,6 +967,7 @@ class UnivMoment:
             ),
         ),
         (
+            # yyy-mm-dd hh:mm:ss
             r"(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 int(m.group(1)),
@@ -975,6 +985,7 @@ class UnivMoment:
     # Geological time patterns
     _GEOLOGICAL_PATTERNS = [
         (
+            # ddd BYA, ddd.ddd BYA, ddd.dddd BYA, etc. billion years ago
             r"(\d+\.?\d*)\s*BYA",
             lambda m, description="": UnivMoment.from_geological(
                 Decimal(m.group(1)),
@@ -983,6 +994,7 @@ class UnivMoment:
             ),
         ),
         (
+            # ddd MYA, ddd.ddd MYA, ddd.dddd MYA, etc. million years ago
             r"(\d+\.?\d*)\s*MYA",
             lambda m, description="": UnivMoment.from_geological(
                 Decimal(m.group(1)),
@@ -991,6 +1003,7 @@ class UnivMoment:
             ),
         ),
         (
+            # ddd KYA, ddd.ddd KYA, ddd.dddd KYA, etc. thousand years ago
             r"(\d+\.?\d*)\s*KYA",
             lambda m, description="" : UnivMoment.from_geological(
                 Decimal(m.group(1)),
@@ -1004,6 +1017,7 @@ class UnivMoment:
     _HUMAN_CALENDAR_PATTERNS = [
         # Gregorian
         (
+            # ddd BCE, ddd BC, etc. year before common era
             r"(\d{1,4})\s*BCE",
             lambda m, description="" : UnivMoment.from_gregorian(
                 -int(m.group(1)), 
@@ -1014,6 +1028,7 @@ class UnivMoment:
             ),
         ),
         (
+            # yyyy BCE-mm, yyy BC-mm, etc. year and month before common era
             r"(\d{1,4})\s*BCE-(\d{1,2})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 -int(m.group(1)), 
@@ -1024,6 +1039,7 @@ class UnivMoment:
             ),
         ),
         (
+            # yyyy BCE-mm-dd, yyy BC-mm-dd, etc. year, month and day before common era
             r"(\d{1,4})\s*BCE-(\d{1,2})-(\d{1,2})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 -int(m.group(1)), 
@@ -1034,6 +1050,7 @@ class UnivMoment:
             ),
         ),
         (
+            # yyyy-mm-dd, yyyy-mm, yyyy, etc. year, month and day in common era
             r"([+-]?\d{1,4})-(\d{1,2})-(\d{1,2})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 int(m.group(1)), 
@@ -1044,6 +1061,7 @@ class UnivMoment:
             ),
         ),
         (
+            # yyyy-mm, yyyy, etc. year and month in common era
             r"([+-]?\d{1,4})-(\d{1,2})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 int(m.group(1)), 
@@ -1054,6 +1072,7 @@ class UnivMoment:
             ),
         ),
         (
+            # yyyy, etc. year in common era
             r"([+-]?\d{1,4})",
             lambda m, description="" : UnivMoment.from_gregorian(
                 int(m.group(1)), 
@@ -1065,6 +1084,7 @@ class UnivMoment:
         ),
         # Julian calendar
         (
+            # yyyy bc-mm-dd, yyy bc-mm, yyy bc, etc. year, month and day before common era
             r"(\d{1,4})\s*bc-(\d{1,2})-(\d{1,2})",
             lambda m, description="" : UnivMoment.from_julian(
                 -int(m.group(1)), 
@@ -1092,6 +1112,7 @@ class UnivMoment:
             ),
         ),
         (
+            # yyyy bc-mm-dd OS, yyy bc-mm JC, yyy bc, etc. year, month and day before common era with calendar specifier
             r"(\d{1,4})\s*bc-(\d{1,2})-(\d{1,2})\s*(OS|JC)",
             lambda m, description="" : UnivMoment.from_julian(
                 -int(m.group(1)), 
@@ -1119,6 +1140,7 @@ class UnivMoment:
             ),
         ),
         (
+            # yyyy-mm-dd OS, -yyy-mm-dd JC, etc. year, month and day with calendar specifier
             r"([+-]?\d{1,4})-(\d{1,2})-(\d{1,2})\s*(OS|JC)",
             lambda m, description="" : UnivMoment.from_julian(
                 int(m.group(1)), 
@@ -1185,7 +1207,7 @@ class UnivMoment:
     )
 
     @staticmethod
-    def from_iso_patterns(timestamp_str: str, accuracy : str = None, description : str = "") -> "UnivMoment":
+    def from_string(timestamp_str: str, description : str = "") -> "UnivMoment":
         """Parse all time scales: geological, astronomical, and human calendars"""
         timestamp_str = timestamp_str.strip()
 

@@ -122,3 +122,20 @@ class TestUniversalTimestamp:
         print(f"✅ SUCCESS: {inspect.currentframe().f_code.co_name}")
         return
     
+    def test_regex_patterns(self):
+        """Test ISO 8601 patterns for UnivMoment."""
+        
+        moment = UnivMoment.from_string("2024-01-01T12:00:00")
+        assert UnivMoment.from_gregorian(2024, 1, 1, 12, 0, 0) == moment
+        
+        moment = UnivMoment.from_string("2024-01-01")
+        assert UnivMoment.from_gregorian(2024, 1, 1) == moment
+        
+        moment = UnivMoment.from_string("34.5BYA")
+        assert UnivMoment.from_geological(34.5, precision=Precision.BILLION_YEARS) == moment
+        
+        moment = UnivMoment.from_string("12bc-03-15")
+        assert UnivMoment.from_julian(-12, 3, 15) == moment
+        
+        print(f"✅ SUCCESS: {inspect.currentframe().f_code.co_name}")
+        return
