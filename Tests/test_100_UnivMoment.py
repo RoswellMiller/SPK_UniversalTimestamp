@@ -3,8 +3,8 @@ Comprehensive tests for the UnivMoment class.
 """
 from decimal import Decimal
 
-from SPK_UniversalTimestamp.Constants_aCommon import Calendar, Precision
-from SPK_UniversalTimestamp.Moment_aUniversal import UnivMoment
+from SPK_UniversalTimestamp.Constants_aCommon import Calendar, UnivMomPrecision
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment
 
 class Test_Moment_aUniversal: 
     """Test cases for UnivMoment class."""
@@ -14,11 +14,11 @@ class Test_Moment_aUniversal:
         """Test UnivMoment creation."""
         moment = UnivMoment.from_gregorian(1492, 4, 9, 12, 30)  #, description="creator day")
         assert moment.rd_moment() == (Decimal('544676'),(12,30,0))  
-        assert moment.precision == Precision.MINUTE
+        assert moment.precision == UnivMomPrecision.MINUTE
         
-        moment = UnivMoment(Decimal('2451545'), (12,0,0), precision=Precision.DAY)
+        moment = UnivMoment(Decimal('2451545'), (12,0,0), precision=UnivMomPrecision.DAY)
         assert moment.rd_moment() == (Decimal('2451545'),(12,0,0))
-        assert moment.precision == Precision.DAY
+        assert moment.precision == UnivMomPrecision.DAY
         
         print(f"✅ SUCCESS: {self.test_UnivMoment_creation.__doc__}")
         return
@@ -30,7 +30,7 @@ class Test_Moment_aUniversal:
         assert isinstance(moment_now.rd_moment()[1][0], int)
         assert isinstance(moment_now.rd_moment()[1][1], int)
         assert isinstance(moment_now.rd_moment()[1][2], Decimal)
-        assert moment_now.precision == Precision.MICROSECOND
+        assert moment_now.precision == UnivMomPrecision.MICROSECOND
         
         print(f"✅ SUCCESS: {self.test_now_creation.__doc__}")
         return
@@ -65,15 +65,15 @@ class Test_Moment_aUniversal:
         moment1 = UnivMoment.from_gregorian(2020, 1, 1, 0, 0, 0)
         moment2 = UnivMoment.from_gregorian(2019, 1, 1, 0, 0, 0)       
         delta1 = moment1 - moment2
-        assert delta1 == (Decimal('365'),0,0,0)
+        assert delta1.seconds == Decimal('365') * 86400   # 31 536 000 s
         # test __class__ __sub__ __class__
         moment1 = UnivMoment.from_gregorian(224, 3, 1, 12, 30, 30)
         moment2 = UnivMoment.from_gregorian(-200, 2, 28, 10, 15, 15)
         delta2 = moment1 - moment2
-        assert delta2 == (Decimal('154864'),2,15,15)
+        assert delta2.seconds == Decimal('13380257715')   # 154864d 2h 15m 15s
         # test __class__ __sub__ __class__
         delta3 = moment2 - moment1
-        assert delta3 == (Decimal('-154865'),21,44,45)
+        assert delta3.seconds == Decimal('-13380257715')
         # test __class__ __add__ tuple
         moment3 = moment1 + delta3
         present = moment3.present(Calendar.GREGORIAN, "%Y-%m-%d %H:%M:%S", language="en")

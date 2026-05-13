@@ -1,7 +1,7 @@
 from .CC08_Hebrew import hebrew_from_rd
-from .Constants_aCommon import Calendar, Precision, PrecisionAtts
+from .Constants_aCommon import Calendar, UnivMomPrecision, MomPrecLevel
 from .Constants_Hebrew import hebrew_MONTH_ATTS
-from .Moment_aUniversal import UnivMoment
+from .UnivMoment import UnivMoment
 from .Moment_bPresent_Calendars import Present_Calendars
 
 class Present_Hebrew(Present_Calendars):
@@ -15,9 +15,9 @@ class Present_Hebrew(Present_Calendars):
         super().__init__(Calendar.HEBREW, moment, year, tz)
         self.month = 1
         self.day = 1
-        if PrecisionAtts[self.precision]['level'] >= PrecisionAtts[Precision.MONTH]['level']:
+        if MomPrecLevel[self.precision] <= MomPrecLevel[UnivMomPrecision.DAY]:
             self.month = month
-        if PrecisionAtts[self.precision]['level'] >= PrecisionAtts[Precision.DAY]['level']: 
+        if MomPrecLevel[self.precision] <= MomPrecLevel[UnivMomPrecision.DAY]: 
             self.day = day
         return
     

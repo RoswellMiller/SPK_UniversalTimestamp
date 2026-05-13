@@ -12,7 +12,7 @@ from SPK_UniversalTimestamp.CC19_Chinese_1645 import chinese_new_moon_on_or_afte
 
 from SPK_UniversalTimestamp.Constants_aCommon import Calendar
 from SPK_UniversalTimestamp.Constants_Chinese import chinese_MONTHS
-from SPK_UniversalTimestamp.Moment_aUniversal import UnivMoment
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment
 
 class TestChineseAstronomy:
     """Test cases for UnivMoment class."""
@@ -451,7 +451,7 @@ class TestChineseAstronomy:
     #     assert timestamp.year == 3732
     #     assert timestamp.month == 4
     #     assert timestamp.day == 25
-    #     assert timestamp.precision == Precision.DAY
+    #     assert timestamp.precision == UnivMomPrecision.DAY
     #     assert rd == need_rd
     #     assert signature == "3732-04-25 CC"
     #     assert _str == "3732-04-25 CC"
@@ -472,7 +472,7 @@ class TestChineseAstronomy:
     #     assert timestamp.month[0] == 4
     #     assert timestamp.month[1] is True
     #     assert timestamp.day == 20
-    #     assert timestamp.precision == Precision.DAY
+    #     assert timestamp.precision == UnivMomPrecision.DAY
     #     assert rd == need_rd
     #     assert signature == "4284-04L-20 CC day±1.0%"
     #     assert _str == "4284-04L-20 CC"

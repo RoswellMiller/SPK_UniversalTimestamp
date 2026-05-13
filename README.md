@@ -15,6 +15,7 @@ A comprehensive multi-scale timestamp system for knowledge bases that handles ti
 - 🌟 **Astronomical Time** - Julian Day Numbers
 - ⚗️ **Scientific Measurements** - High-precision timestamps with uncertainty tracking
 - ⚡ **Ultra-High Precision** - From attoseconds to billion-year scales
+- ⏱️ **Time Spans** - `UnivDuration` for arithmetic over time intervals at any precision level
 - 🔄 **Calendar Conversions** - Seamless conversion between calendar systems
 - 📖 **Type Safety** - Full type annotations for better IDE experience
 - 📖 **Multi-lingual** - For some calendars there is English, French, German, Italian
@@ -38,26 +39,31 @@ pip install -e .
 
 ## Quick Start Examples
 
+### UnivMoment
+
 ```python
 from SPK_UniversalTimestamp import (
     UnivMoment,
-    Calendar, 
-    Precision
+    UnivDuration,
+    Calendar,
+    UnivMomPrecision,
+    MomPrecLevel,
+    MomPrecAbbrev,
 )
 from decimal import Decimal
 
-# Get current time
+# Get current time (default: MICROSECOND precision)
 now = UnivMoment.now()
 print(f"Current time: {now.format_signature()}")
 
-# Create timestamps for different calendar systems
+# Create a Gregorian timestamp
 greg_date = UnivMoment.from_gregorian(2025, 9, 8, description="Example date")
 print(f"Gregorian date: {greg_date.present(Calendar.GREGORIAN, '%A, %B %d, %Y')}")
 
 # Create timestamp with scientific precision
 scientific_ts = UnivMoment.from_gregorian(
-    2035, 7, 28, 21, 47, Decimal("30.123_123_123_123_123_123"),
-    precision=Precision.ATTOSECOND,
+    2035, 7, 28, 21, 47, Decimal("30.123123123123123123"),
+    precision=UnivMomPrecision.ATTOSECOND,
     description="Quantum experiment measurement"
 )
 print(f"Scientific timestamp: {scientific_ts.format_signature()}")
@@ -67,52 +73,189 @@ print(now.present(Calendar.GREGORIAN, "%A, %B %d, %Y %H:%M:%S", language='en'))
 print(now.present(Calendar.GREGORIAN, "%A %d %B %Y %H:%M:%S", language='fr'))
 print(now.present(Calendar.GREGORIAN, "%A %d %B %Y %H:%M:%S", language='de'))
 
+# Subtract two UnivMoments → produces a UnivDuration
+t1 = UnivMoment.from_gregorian(2025, 1, 1, 0, 0, 0)
+t2 = UnivMoment.from_gregorian(2025, 1, 2, 1, 1, 1)
+gap: UnivDuration = t2 - t1
+print(gap.format_for_display())     # → "1 day 1 hr 1 min 1 s"
+
+# Add a UnivDuration to a UnivMoment
+one_week = UnivDuration(Decimal("604800"), precision=3)  # 7 days
+next_week = t1 + one_week
+print(next_week.present(Calendar.GREGORIAN, "%Y-%m-%d"))
 ```
+
+### UnivDuration
+
+`UnivDuration` represents a time span (positive or negative) expressed in seconds with a
+precision level that determines how finely the value is rounded and displayed.
+
+```python
+from SPK_UniversalTimestamp import UnivDuration
+from decimal import Decimal
+
+# --- Construction ---
+
+# 90 061 seconds at second precision
+dur_s = UnivDuration(90061)                        # precision=0 (SECOND) is the default
+print(dur_s.format_for_display())                  # → "1 day 1 hr 1 min 1 s"
+
+# Exactly 3 days at day-level precision (precision=3)
+dur_d = UnivDuration(Decimal("259200"), precision=3)
+print(dur_d.format_for_display())                  # → "3 days"
+
+# 1.5 hours at minute precision (precision=1)
+dur_m = UnivDuration(Decimal("5400"), precision=1)
+print(dur_m.format_for_display())                  # → "1 hr 30 mins"
+
+# Geological: 65 million years in seconds, at million-year precision (precision=6)
+my_secs = Decimal("31557600000000") * Decimal("65")
+dur_geo = UnivDuration(my_secs, precision=6)
+print(dur_geo.format_for_display())                # → "65 M-years"
+
+# Sub-second: 5.123 seconds at millisecond precision (precision=-3)
+dur_ms = UnivDuration(Decimal("5.123"), precision=-3)
+print(dur_ms.format_for_display())                 # → "5 s 123 ms"
+
+# Nanosecond precision (precision=-9)
+dur_ns = UnivDuration(Decimal("0.000000001"), precision=-9)
+print(dur_ns.format_for_display())                 # → "1 ns"
+
+# --- Arithmetic ---
+
+d1 = UnivDuration(Decimal("3600"), precision=1)    # 1 hour at minute precision
+d2 = UnivDuration(Decimal("1800"), precision=1)    # 30 minutes at minute precision
+total = d1 + d2
+print(total.format_for_display())                  # → "1 hr 30 mins"
+
+diff = d1 - d2
+print(diff.format_for_display())                   # → "30 mins"
+
+# When precisions differ, the coarser precision wins
+coarse = UnivDuration(Decimal("86400"), precision=3)   # 1 day (day precision)
+fine   = UnivDuration(Decimal("3600"),  precision=0)   # 1 hour (second precision)
+result = coarse + fine                                  # result is day-precision
+print(result.precision)                                # → 3
+print(result.format_for_display())                     # → "1 day"  (1 hr rounds away)
+
+# --- Comparison ---
+
+d3 = UnivDuration(Decimal("7200"))
+d4 = UnivDuration(Decimal("3600"))
+print(d3 > d4)   # True — ordered by total seconds
+
+# --- Serialization ---
+
+# Dictionary round-trip (suitable for JSON)
+d = UnivDuration(Decimal("3661"), precision=1)
+data = d.to_dict()
+# {'seconds': '3661', 'precision': '1'}
+restored = UnivDuration.from_dict(data)
+assert restored == d
+
+# Lexical key (sortable string)
+key = d.to_StdLexicalKey()
+# → "univDU000000000000003661.000000000000000000.01P"
+back = UnivDuration.from_StdLexicalKey(key)
+assert back == d
+```
+
+### Precision Level Reference
+
+`UnivDuration.precision` and `MomPrecLevel[UnivMomPrecision.*]` use the same integer scheme:
+
+| Level | UnivMomPrecision      | Quantum           |
+|------:|:----------------------|:------------------|
+|     7 | `BILLION_YEARS`       | 10⁹ Julian years  |
+|     6 | `MILLION_YEARS`       | 10⁶ Julian years  |
+|     5 | `THOUSAND_YEARS`      | 10³ Julian years  |
+|     4 | `YEAR`                | 1 Julian year     |
+|     3 | `DAY`                 | 86 400 s          |
+|     2 | `HOUR`                | 3 600 s           |
+|     1 | `MINUTE`              | 60 s              |
+|     0 | `SECOND`              | 1 s               |
+|    -3 | `MILLISECOND`         | 10⁻³ s            |
+|    -6 | `MICROSECOND`         | 10⁻⁶ s            |
+|    -9 | `NANOSECOND`          | 10⁻⁹ s            |
+|   -12 | `PICOSECOND`          | 10⁻¹² s           |
+|   -15 | `FEMTOSECOND`         | 10⁻¹⁵ s           |
+|   -18 | `ATTOSECOND`          | 10⁻¹⁸ s           |
+
+Higher value = coarser; lower (more negative) = finer.
+`MONTH` is intentionally absent: month length is calendar-specific and cannot
+represent a universal time quantum.
 
 ## API Reference
 
-The `UnivMoment` is a python class intended to support a time stamp the can be universally ordered.  The underlying notion
-of ordering is the rata die(rd) developed by Reingold and Dershowitz in their book "Calendrical Calculations : The Ultimate Edition".  While
+The `UnivMoment` is a python class intended to support a time stamp that can be universally ordered.  The underlying notion
+of ordering is the rata die (rd) developed by Reingold and Dershowitz in their book "Calendrical Calculations : The Ultimate Edition".  While
 the rd maps human calendars to a unique day number as does the modern Julian Day number, we have extended the notion to UTC attosecond enabling
 timestamps to be accurately sorted and distinguished.  The extensions make extensive use of Python's long integer and Decimal numbers
-and functional calculations with the current precision for Decimal set to 35. 
+and functional calculations with the current precision for Decimal set to 35.
 
-When specifying a timestamp the elements of the time stamp must be stated top(year) down with no intervening type None values. Specifying a precision is therefore unnecessary unless your using geological time or needing seconds to be more precise, more accurate than seconds . The UnivMoment constructor will pick microseconds as the precision, unless you override it. 
+When specifying a timestamp the elements of the time stamp must be stated top (year) down with no intervening `None` values. Specifying a
+precision is therefore unnecessary unless you are using geological time or need finer-than-second resolution. The `UnivMoment` constructor
+will pick `MICROSECOND` as the precision by default unless you override it.
+
+`UnivDuration` represents a time span (positive or negative) as a `Decimal` number of seconds plus a plain-`int` precision level.
+Arithmetic on `UnivDuration` values automatically rounds the result to the coarser of the two operands' precisions.
 
 There are known problems with some of the astronomy calculations used in the Appendix C of "Calendrical Calculations".  The test cases highlight these
 known issues.  The correct fix for these errors and for errors that will appear in other astronomically based calendars is to convert them all to JPL's DE422.
-This is an objective for a next release since there are historical issues in addition to scientific issues.  For example, it's not enough to convert to
-the science based numbers and apply them to a period in history in which they would not have been known.  All us further complicated by the possibility of not knowing how it was done in some periods of history.
+This is an objective for a next release since there are historical issues in addition to scientific issues.
 
 ### Main Classes
 
 #### `Calendar` (Enum)
 
 - `GREGORIAN` - Standard Gregorian calendar
-- `JULIAN` - Julian calendar (Old Style)  
+- `JULIAN` - Julian calendar (Old Style)
 - `CHINESE` - Chinese traditional calendar
 - `HEBREW` - Hebrew/Jewish calendar
 - `GEOLOGICAL` - Geological time scales
 
-#### `Precision` (Enum)
+#### `UnivMomPrecision` (Enum)
 
-**Timestamp Precision:**
+Precision levels for `UnivMoment`.  `MONTH` is **not** included: month length varies
+by calendar and cannot represent a universal time quantum.
 
-- `BILLION_YEARS`,
-- `MILLION_YEARS`,
+- `BILLION_YEARS`
+- `MILLION_YEARS`
 - `THOUSAND_YEARS`
-- `YEAR`,
-- `MONTH`,
+- `YEAR`
 - `DAY`
-- `HOUR`,
-- `MINUTE`,
+- `HOUR`
+- `MINUTE`
 - `SECOND`
-- `MILLISECOND`,
-- `MICROSECOND`,
+- `MILLISECOND`
+- `MICROSECOND`
 - `NANOSECOND`
-- `PICOSECOND`,
-- `FEMTOSECOND`,
+- `PICOSECOND`
+- `FEMTOSECOND`
 - `ATTOSECOND`
+
+#### Precision Attribute Dictionaries
+
+Four module-level dicts map `UnivMomPrecision` values to their numeric properties.
+They are exported from the package and share the same integer level scheme used by
+`UnivDuration.precision`:
+
+```python
+MomPrecLevel  : dict[UnivMomPrecision, int]        # precision → level int (0=SECOND, 7=BILLION_YEARS, -18=ATTOSECOND)
+MomLevelPrec  : dict[int, UnivMomPrecision]        # reverse of MomPrecLevel
+MomPrecPower  : dict[UnivMomPrecision, int | None] # SI exponent (None for day/hour/minute)
+MomPrecAbbrev : dict[UnivMomPrecision, str]        # SI-style abbreviation ('ms', 'μs', 'G-yr', …)
+```
+
+Example:
+
+```python
+from SPK_UniversalTimestamp import UnivMomPrecision, MomPrecLevel, MomPrecAbbrev
+
+prec = UnivMomPrecision.MILLISECOND
+print(MomPrecLevel[prec])    # → -3
+print(MomPrecAbbrev[prec])   # → "ms"
+```
 
 ### Class Methods
 
@@ -120,29 +263,76 @@ the science based numbers and apply them to a period in history in which they wo
 
 ##### Constructors
 
+```
 UnivMoment.from_geological(years_ago, precision, description=)
 UnivMoment.from_gregorian(year, month, day, hour, minute, second, precision, description=)
 UnivMoment.from_julian(year, month, day, hour, minute, second, precision, description=)
 UnivMoment.from_hebrew(year, month, day, hour, minute, second, precision, description=)
-UnivMoment.from_chinese(cycle, year, (leap,term), day, hour, minute, second, precision, description=)
-UnivMoment.now()
+UnivMoment.from_chinese(cycle, year, (leap, term), day, hour, minute, second, precision, description=)
+UnivMoment.from_datetime(dt, description=)
+UnivMoment.from_julian_day_number(jd, precision, description=)
+UnivMoment.from_unix_timestamp(unix_ts, precision_time, description=)
+UnivMoment.from_string(timestamp_str, description=)
+UnivMoment.now(precision=UnivMomPrecision.MICROSECOND)
+```
 
-##### Standard
+##### Instance Methods
 
-present(calendar, format, language=)
-__str__
-__repr__
+```
+moment.present(calendar, format, tz='UTC', language='en') → str
+moment.format_signature() → str
+moment.format_for_display() → str
+moment.to_dict() → dict
+moment.to_StdLexicalKey() → str
+moment - moment → UnivDuration
+moment - duration → UnivMoment
+moment + duration → UnivMoment
+```
 
+##### Class / Static Methods
 
-##### Predefined Constants
+```
+UnivMoment.from_dict(data) → UnivMoment
+UnivMoment.from_StdLexicalKey(lex_key) → UnivMoment
+```
 
-- python
-GEOLOGICAL_PERIODS = {
-    "Hadean": ...,
-    "Archean": ...,
-    "Proterozoic": ...,
-    ... more geological periods
-}
+#### UnivDuration
+
+##### Construction
+
+```
+UnivDuration(seconds: Decimal | int, precision: int = 0)
+```
+
+`precision` is a plain `int` using the same level scheme as `MomPrecLevel`:
+`0` = second, `3` = day, `7` = billion-year, `-3` = millisecond, `-18` = attosecond.
+
+##### Instance Methods / Operators
+
+```
+duration.format_for_display() → str
+duration.to_dict() → dict
+duration.to_StdLexicalKey() → str
+duration + duration → UnivDuration   # result precision = coarser of the two
+duration - duration → UnivDuration
+duration == duration, <, <=, >, >=   # ordered by total seconds
+```
+
+##### Static Methods
+
+```
+UnivDuration.from_dict(data) → UnivDuration
+UnivDuration.from_StdLexicalKey(lex_key) → UnivDuration
+```
+
+#### Predefined Constants
+
+```
+GEOLOGICAL_EONS      # dict of geological eon boundaries
+GEOLOGICAL_ERAS      # dict of geological era boundaries
+GEOLOGICAL_PERIODS   # dict of geological period boundaries (e.g. "Cambrian", "Jurassic", …)
+GEOLOGICAL_EPOCHSandAGES
+```
 
 ## Development
 
@@ -246,6 +436,19 @@ For commercial use, enterprise deployment, or integration into sold software pro
 See the [LICENSE](LICENSE) file for complete terms and conditions.
 
 ## Changelog
+
+### [1.1.0] - 2026-05-13
+
+#### Added
+- `UnivDuration` class — immutable, frozen dataclass representing a time span as a `Decimal` number of seconds with a plain-`int` precision level.  Supports arithmetic (`+`, `-`), comparison, `format_for_display()`, dict/lexical-key serialization.
+- `MomPrecLevel`, `MomLevelPrec`, `MomPrecPower`, `MomPrecAbbrev` — four precision attribute dicts exported from the package, replacing the old `PrecisionAtts` dict-of-dicts.
+- `UnivMoment.__sub__(UnivMoment)` now returns a `UnivDuration`.
+- `UnivMoment.__add__(UnivDuration)` and `UnivMoment.__sub__(UnivDuration)` now return a `UnivMoment`.
+
+#### Changed
+- `UnivMomPrecision.MONTH` has been **removed**. Month length is calendar-specific (Gregorian, Hebrew, and Chinese months differ) and cannot represent a universal time quantum. Constructors that accept a `month` argument continue to work; precision defaults to `DAY`.
+- `UnivDuration.precision` is now a plain `int` instead of a `UnivDurPrecision` enum value. The integer values match `MomPrecLevel` exactly (0 = second, 3 = day, 7 = billion-year, -3 = ms, -18 = as).
+- `UnivDurPrecision` enum has been **removed**; use plain `int` literals or `MomPrecLevel[prec]` instead.
 
 ### [1.0.0] - 2025-09-15
 - Initial release

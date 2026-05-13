@@ -3,8 +3,8 @@ Comprehensive tests for the Moment_Calendars class.
 """
 from datetime import datetime
 from decimal import Decimal
-from SPK_UniversalTimestamp.Constants_aCommon import Calendar, Precision
-from SPK_UniversalTimestamp.Moment_aUniversal import UnivMoment
+from SPK_UniversalTimestamp.Constants_aCommon import Calendar, UnivMomPrecision
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment
 
 class Test_Moment_Calendars: 
     """Test cases for Moment_Calendars class."""
@@ -46,7 +46,7 @@ class Test_Moment_Calendars:
         try:
             for test_case in test_cases:
                 tz = test_case['tz']
-                moment = UnivMoment(test_rd_day, test_rd_time, precision=Precision.MICROSECOND)
+                moment = UnivMoment(test_rd_day, test_rd_time, precision=UnivMomPrecision.MICROSECOND)
                 presentation = moment.present(Calendar.GREGORIAN, test_case['format'], tz, language='en')
                 if presentation == test_case['answer']:
                     print(f"    ✅ {msg}")
@@ -124,7 +124,7 @@ class Test_Moment_Calendars:
         failures = 0
         try:
             for test_case in test_cases:
-                moment = UnivMoment(test_rd_day, test_rd_time, precision=Precision.SECOND)
+                moment = UnivMoment(test_rd_day, test_rd_time, precision=UnivMomPrecision.SECOND)
                 presentation = moment.format(test_case['format'])
                 if presentation == test_case['answer']:
                     print(f"    ✅ {msg}")

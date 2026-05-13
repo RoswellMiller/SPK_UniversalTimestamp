@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from SPK_UniversalTimestamp import (
     UnivMoment,
     Calendar, 
-    Precision,
+    UnivMomPrecision,
     GEOLOGICAL_EONS
 )
 
@@ -29,21 +29,21 @@ def main():
     
     big_bang = UnivMoment.from_geological(
         13.8, 
-        precision=Precision.BILLION_YEARS,
+        precision=UnivMomPrecision.BILLION_YEARS,
         description="Big Bang"
     )
     print(f"   Big Bang: {big_bang.format_signature()}")
     
     earth_formation = UnivMoment.from_geological(
         4.54e3,
-        precision=Precision.MILLION_YEARS,
+        precision=UnivMomPrecision.MILLION_YEARS,
         description="Earth formation"
     )
     print(f"   Earth formation: {earth_formation.format_signature()}")
     
     dinosaur_extinction = UnivMoment.from_geological(
         66.0,
-        precision=Precision.MILLION_YEARS, 
+        precision=UnivMomPrecision.MILLION_YEARS, 
         description="K-Pg extinction event"
     )
     print(f"   Dinosaur extinction: {dinosaur_extinction.present(Calendar.GEOLOGICAL, '%y %O %R %P %a')}")
@@ -63,7 +63,7 @@ def main():
     # Nanosecond Unix timestamp  
     unix_precise = UnivMoment.from_unix_timestamp(
         1_640_995_200.123_456_789,
-        precision_time=Precision.NANOSECOND,
+        precision_time=UnivMomPrecision.NANOSECOND,
         description="High-precision system measurement"
     )
     print(f"   Unix precise: {unix_precise.format_for_display()}")
@@ -118,19 +118,19 @@ def main():
         print(f"   {period_name}: {period_ts.format_compact()}")
     
     
-    # 6. Precision and Formatting Examples
-    print("\n6. Precision and Formatting Examples:")
+    # 6. UnivMomPrecision and Formatting Examples
+    print("\n6. UnivMomPrecision and Formatting Examples:")
     print("-" * 37)
     
     # Different precision levels
     year_precision = UnivMoment.from_gregorian(
-        2024, precision=Precision.YEAR
+        2024, precision=UnivMomPrecision.YEAR
     )
     print(f"   Year precision: {year_precision.present(Calendar.GREGORIAN, '%A %d %m, %Y')}")
     
     microsecond_precision = UnivMoment.from_gregorian(
         2024, 7, 15, 14, 30, 25.123456,
-        precision_time=Precision.MICROSECOND
+        precision_time=UnivMomPrecision.MICROSECOND
     )
     print(f"   Microsecond precision: {microsecond_precision.present(Calendar.GREGORIAN, '%Y-%m-%d %H:%M:%S.%f')}")
     

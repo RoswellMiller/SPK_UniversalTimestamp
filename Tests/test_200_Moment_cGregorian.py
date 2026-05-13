@@ -7,9 +7,9 @@ import random
 
 from decimal import Decimal
 from SPK_UniversalTimestamp.CC00_Decimal_library import trunc
-from SPK_UniversalTimestamp.Constants_aCommon import Calendar, Precision
+from SPK_UniversalTimestamp.Constants_aCommon import Calendar, UnivMomPrecision
 from SPK_UniversalTimestamp.Constants_Gregorian import gregorian_MONTH_ATTS
-from SPK_UniversalTimestamp.Moment_aUniversal import UnivMoment
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment
 from SPK_UniversalTimestamp.Moment_bPresent_Calendars import Present_Calendars
 
 class Test_Present_Gregorian: 
@@ -47,7 +47,7 @@ class Test_Present_Gregorian:
             test_date = (appendix_c_ndx, calendar, test_year, test_month, test_day)
             msg = f"Row {appendix_c_ndx+1} {calendar} date: {test_year}-{test_month:02d}-{test_day:02d}"
             try:
-                moment = UnivMoment.from_gregorian(test_year, test_month, test_day, precision=Precision.DAY)
+                moment = UnivMoment.from_gregorian(test_year, test_month, test_day, precision=UnivMomPrecision.DAY)
                 if (test_rd,(0,0,0)) == moment.rd_moment():
                     print(f"    ✅ {msg}")
                 else:
@@ -108,7 +108,7 @@ class Test_Present_Gregorian:
                 for test_case in test_cases:
                     if not test_case['condition']():
                         continue
-                    moment = UnivMoment(test_rd, precision=Precision.DAY)
+                    moment = UnivMoment(test_rd, precision=UnivMomPrecision.DAY)
                     presentation = moment.present(Calendar.GREGORIAN, test_case['format'], language='en')
                     if presentation == test_case['answer']:
                         print(f"    ✅ {msg}")
@@ -132,7 +132,7 @@ class Test_Present_Gregorian:
 
     def test_Precision_and_Time(self):
         """Test Appendix C: Calendar presentation."""
-        print("\n3. APPENDIX C: Precision and Time")
+        print("\n3. APPENDIX C: UnivMomPrecision and Time")
         print("-" * 40)
         failures = 0
         failure_list = []
@@ -162,80 +162,72 @@ class Test_Present_Gregorian:
             msg = f"Row {appendix_c_ndx+1} {calendar} date: {test_year}-{test_month:02d}-{test_day:02d} {test_hour:02d}:{test_minute:02d}:{test_seconds:09.6f}"
             test_cases = [
             {   'format': "%d/%m/%Y %H:%M:%S%f", 'condition' : lambda : True,
-                'precision': Precision.MICROSECOND,
+                'precision': UnivMomPrecision.MICROSECOND,
                 'answer': f"{test_day:02d}/{test_month:02d}/{test_year:d} {trunc(test_hour):02.0f}:{trunc(test_minute):02.0f}:{trunc(test_seconds, decimals=6):09.6f}"},
             {   'format': "%d/%m/%Y %H:%M:%S%f", 'condition' : lambda : True,
-                'precision': Precision.MILLISECOND,
+                'precision': UnivMomPrecision.MILLISECOND,
                 'answer': f"{test_day:02d}/{test_month:02d}/{test_year:d} {trunc(test_hour):02.0f}:{trunc(test_minute):02.0f}:{trunc(test_seconds, decimals=3):06.3f}"},
             
             {   'format': "%d/%m/%Y %H:%M:%S%f2", 'condition' : lambda : True,
-                'precision': Precision.MILLISECOND,
+                'precision': UnivMomPrecision.MILLISECOND,
                 'answer': f"{test_day:02d}/{test_month:02d}/{test_year:d} {trunc(test_hour):02.0f}:{trunc(test_minute):02.0f}:{trunc(test_seconds, decimals=2):05.2f}"},
             
             {   'format': "%d/%m/%Y %H:%M:%S%f", 'condition' : lambda : True,
-                'precision': Precision.SECOND,
+                'precision': UnivMomPrecision.SECOND,
                 'answer': f"{test_day:02d}/{test_month:02d}/{test_year:d} {trunc(test_hour):02.0f}:{trunc(test_minute):02.0f}:{trunc(test_seconds):02.0f}"},
             {   'format': "%d/%m/%Y %H:%M", 'condition' : lambda : True,
-                'precision': Precision.MINUTE,
+                'precision': UnivMomPrecision.MINUTE,
                 'answer': f"{test_day:02d}/{test_month:02d}/{test_year:d} {trunc(test_hour):02.0f}:{trunc(test_minute):02.0f}"},
             {   'format': "%d/%m/%Y %I%p", 'condition' : lambda : True,
-                'precision': Precision.HOUR,
+                'precision': UnivMomPrecision.HOUR,
                 'answer': f"{test_day:02d}/{test_month:02d}/{test_year:d} {trunc(test_hour % 12):02.0f}{'am' if test_hour < 12 else 'pm'}"},
             {   'format': "%d/%m/%Y", 'condition' : lambda : True,
-                'precision': Precision.DAY,
+                'precision': UnivMomPrecision.DAY,
                 'answer': f"{test_day:02d}/{test_month:02d}/{test_year:d}"},
-            {   'format': "%m/%Y", 'condition' : lambda : True,
-                'precision': Precision.MONTH,
-                'answer': f"{test_month:02d}/{test_year:d}"},
             {   'format': "%Y", 'condition' : lambda : True,
-                'precision': Precision.YEAR,
+                'precision': UnivMomPrecision.YEAR,
                 'answer': f"{test_year:d}"},
             ]
             try:
                 for test_case in test_cases:
                     if not test_case['condition']():
                         continue
-                    if test_case['precision'] == Precision.MICROSECOND:
+                    if test_case['precision'] == UnivMomPrecision.MICROSECOND:
                         moment = UnivMoment.from_gregorian(
                             test_year, test_month, test_day,
                             test_hour, test_minute, test_seconds,
                             precision=test_case['precision']
                         )
-                    elif test_case['precision'] == Precision.MILLISECOND:
+                    elif test_case['precision'] == UnivMomPrecision.MILLISECOND:
                         moment = UnivMoment.from_gregorian(
                             test_year, test_month, test_day,
                             test_hour, test_minute, test_seconds,
                             precision=test_case['precision']
                         )
-                    elif test_case['precision'] == Precision.SECOND:
+                    elif test_case['precision'] == UnivMomPrecision.SECOND:
                         moment = UnivMoment.from_gregorian(
                             test_year, test_month, test_day,
                             test_hour, test_minute, int(test_seconds),
                             precision=test_case['precision']
                         )
-                    elif test_case['precision'] == Precision.MINUTE:
+                    elif test_case['precision'] == UnivMomPrecision.MINUTE:
                         moment = UnivMoment.from_gregorian(
                             test_year, test_month, test_day,
                             test_hour, test_minute,
                             precision=test_case['precision']
                         )
-                    elif test_case['precision'] == Precision.HOUR:
+                    elif test_case['precision'] == UnivMomPrecision.HOUR:
                         moment = UnivMoment.from_gregorian(
                             test_year, test_month, test_day,
                             test_hour,
                             precision=test_case['precision']
                         )
-                    elif test_case['precision'] == Precision.DAY:
+                    elif test_case['precision'] == UnivMomPrecision.DAY:
                         moment = UnivMoment.from_gregorian(
                             test_year, test_month, test_day,
                             precision=test_case['precision']
                         )
-                    elif test_case['precision'] == Precision.MONTH:
-                        moment = UnivMoment.from_gregorian(
-                            test_year, test_month,
-                            precision=test_case['precision']
-                        )
-                    elif test_case['precision'] == Precision.YEAR:
+                    elif test_case['precision'] == UnivMomPrecision.YEAR:
                         moment = UnivMoment.from_gregorian(
                             test_year,
                             precision=test_case['precision']

@@ -13,7 +13,7 @@ from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import hms_from_hours, unive
 from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import AST, standard_from_local, location, direction
 #from .PolynomialRegression import polynomial_regression
 
-from SPK_UniversalTimestamp.Moment_aUniversal import UnivMoment
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment
 
 class TestTimeAndAstronomy:
     def setup_method(self):

@@ -42,7 +42,7 @@ def sqrt(x: Decimal) -> Decimal:
     # Initial guess
     guess = x / 2
     
-    # Precision - adjust as needed
+    # UnivMomPrecision - adjust as needed
     precision = Decimal('1e-50')
     
     # Newton's method

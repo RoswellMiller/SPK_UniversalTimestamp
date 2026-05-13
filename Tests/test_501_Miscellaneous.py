@@ -2,19 +2,19 @@
 Comprehensive tests for the UnivMoment class.
 """
 import inspect
-from SPK_UniversalTimestamp.Constants_aCommon import Precision
-from SPK_UniversalTimestamp.Moment_aUniversal  import UnivMoment
+from SPK_UniversalTimestamp.Constants_aCommon import UnivMomPrecision
+from SPK_UniversalTimestamp.UnivMoment  import UnivMoment
 from decimal import Decimal
 
 # Add the parent directory to Python path so we can import the package
 #sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-#from SPK_UniversalTimestamp.UnivCommonConstants import Precision
+#from SPK_UniversalTimestamp.UnivCommonConstants import UnivMomPrecision
 
 class TestUniversalTimestamp:
     
     def Test_repr_UnivMoment(self):
-        moment = UnivMoment.from_gregorian(1947, 1, 20, 2, 36, 45, precision=Precision.SECOND)
+        moment = UnivMoment.from_gregorian(1947, 1, 20, 2, 36, 45, precision=UnivMomPrecision.SECOND)
         repr_str = repr(moment)
         recreated = UnivMoment.eval_repr(repr_str) 
         assert moment == recreated
@@ -30,8 +30,8 @@ class TestUniversalTimestamp:
         """Test timestamp sorting and comparison."""
         # Create timestamps in different time scales
         bot = UnivMoment.beginning_of_time()                                            #"Beginning of Time"
-        big_bang = UnivMoment.from_geological(13.8, precision=Precision.BILLION_YEARS)  #"Big Bang"
-        dinosaurs = UnivMoment.from_geological(66.0, precision=Precision.MILLION_YEARS) #"Dinosaurs"
+        big_bang = UnivMoment.from_geological(13.8, precision=UnivMomPrecision.BILLION_YEARS)  #"Big Bang"
+        dinosaurs = UnivMoment.from_geological(66.0, precision=UnivMomPrecision.MILLION_YEARS) #"Dinosaurs"
         bce = UnivMoment.from_julian(-44, 3, 15)                                        #"Julius Caesar assassination
         modern = UnivMoment.from_gregorian(2024, 1, 1)                                  #"Modern"
         modern_2 = UnivMoment.from_gregorian(2024, 1, 1, 12)                            #"Modern with time"
@@ -67,8 +67,8 @@ class TestUniversalTimestamp:
         """Test timestamp sorting and comparison."""
         # Create timestamps in different time scales
         bot = UnivMoment.beginning_of_time()                                            #"Beginning of Time"
-        big_bang = UnivMoment.from_geological(13.8, precision=Precision.BILLION_YEARS)  #"Big Bang"
-        dinosaurs = UnivMoment.from_geological(66.0, precision=Precision.MILLION_YEARS) #"Dinosaurs"
+        big_bang = UnivMoment.from_geological(13.8, precision=UnivMomPrecision.BILLION_YEARS)  #"Big Bang"
+        dinosaurs = UnivMoment.from_geological(66.0, precision=UnivMomPrecision.MILLION_YEARS) #"Dinosaurs"
         bce = UnivMoment.from_julian(-44, 3, 15)                                        #"Julius Caesar assassination
         modern = UnivMoment.from_gregorian(2024, 1, 1)                                  #"Modern"
         modern_2 = UnivMoment.from_gregorian(2024, 1, 1, 12)                            #"Modern with time"
@@ -145,26 +145,26 @@ class TestUniversalTimestamp:
         assert UnivMoment.from_gregorian(2024, 1, 1) == moment
         
         moment = UnivMoment.from_string("34.5BYA")
-        assert UnivMoment.from_geological(34.5, precision=Precision.BILLION_YEARS) == moment
+        assert UnivMoment.from_geological(34.5, precision=UnivMomPrecision.BILLION_YEARS) == moment
         
         moment = UnivMoment.from_string("12bc-03-15")
         assert UnivMoment.from_julian(-12, 3, 15) == moment
 
         moment = UnivMoment.from_string("12BCE-03-15 23:59:59.123456789123456789")
-        assert UnivMoment.from_gregorian(-12, 3, 15, 23, 59, Decimal("59.123456789123456789"), precision=Precision.ATTOSECOND) == moment
-        assert moment.precision == Precision.ATTOSECOND
+        assert UnivMoment.from_gregorian(-12, 3, 15, 23, 59, Decimal("59.123456789123456789"), precision=UnivMomPrecision.ATTOSECOND) == moment
+        assert moment.precision == UnivMomPrecision.ATTOSECOND
 
         moment = UnivMoment.from_string("12bc-03-15 06:07")
-        assert UnivMoment.from_julian(-12, 3, 15, 6, 7, None, precision=Precision.MINUTE) == moment
-        assert moment.precision == Precision.MINUTE
+        assert UnivMoment.from_julian(-12, 3, 15, 6, 7, None, precision=UnivMomPrecision.MINUTE) == moment
+        assert moment.precision == UnivMomPrecision.MINUTE
 
         moment = UnivMoment.from_string("12bc-03-15 23:45:01.123456 OS")
-        assert UnivMoment.from_julian(-12, 3, 15, 23, 45, Decimal("01.123456"), precision=Precision.MICROSECOND) == moment
-        assert moment.precision == Precision.MICROSECOND
+        assert UnivMoment.from_julian(-12, 3, 15, 23, 45, Decimal("01.123456"), precision=UnivMomPrecision.MICROSECOND) == moment
+        assert moment.precision == UnivMomPrecision.MICROSECOND
 
         moment = UnivMoment.from_string("5784-1-1 05:30:12 AM")
-        assert UnivMoment.from_hebrew(5784, 1, 1, 5, 30, 12, precision=Precision.SECOND) == moment
-        assert moment.precision == Precision.SECOND
+        assert UnivMoment.from_hebrew(5784, 1, 1, 5, 30, 12, precision=UnivMomPrecision.SECOND) == moment
+        assert moment.precision == UnivMomPrecision.SECOND
         
         print(f"✅ SUCCESS: {inspect.currentframe().f_code.co_name}")
         return

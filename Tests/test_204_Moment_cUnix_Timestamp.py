@@ -4,7 +4,7 @@ Comprehensive tests for the Moment_Unix_Timestamp.
 import os
 import json
 
-from SPK_UniversalTimestamp.Moment_aUniversal import UnivMoment
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment
 from SPK_UniversalTimestamp.Moment_bPresent_Calendars import Present_Calendars
 
 class Test_Moment_Unix_Timestamp: 

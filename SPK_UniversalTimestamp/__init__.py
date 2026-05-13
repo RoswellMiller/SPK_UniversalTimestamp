@@ -87,7 +87,8 @@ from .Constants_Gregorian import *
 from .Constants_Julian import *
 from .Constants_Hebrew import *
 
-from .Moment_aUniversal import *
+from .UnivDuration import *
+from .UnivMoment import *
 from .Moment_bPresent_Calendars import *
 from .Moment_bPresent_Geological import *
 from .Moment_cPresent_Chinese import *
@@ -108,12 +109,16 @@ __all__ = [
     
     # Core classes
     "UnivMoment",
+    "UnivDuration",
     
     # Enums and attributes
     "Calendar",
     "CalendarAtts",
-    "Precision",
-    "PrecisionAtts",
+    "UnivMomPrecision",
+    "MomPrecLevel",
+    "MomPrecPower",
+    "MomPrecAbbrev",
+    "MomLevelPrec",
     
     # Calendar-specific implementations
     "Present_GEOLOGICAL",

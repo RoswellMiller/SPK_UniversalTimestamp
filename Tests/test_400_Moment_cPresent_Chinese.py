@@ -4,9 +4,9 @@ Comprehensive tests for the Moment_Chinese class.
 import os
 import json
 
-from SPK_UniversalTimestamp.Constants_aCommon import Calendar, Precision
+from SPK_UniversalTimestamp.Constants_aCommon import Calendar, UnivMomPrecision
 from SPK_UniversalTimestamp.Constants_Chinese import chinese_MONTH_ATTS
-from SPK_UniversalTimestamp.Moment_aUniversal import UnivMoment
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment
 from SPK_UniversalTimestamp.Moment_bPresent_Calendars import Present_Calendars
 
 
@@ -55,7 +55,7 @@ class Test_Moment_Chinese:
             print(f"  test :: {test_cycle} | {test_year} | {test_month} | {test_leap} | {test_day}")
             
             try:
-                moment = UnivMoment.from_chinese(test_cycle, test_year, (test_month, test_leap), test_day, precision=Precision.DAY)
+                moment = UnivMoment.from_chinese(test_cycle, test_year, (test_month, test_leap), test_day, precision=UnivMomPrecision.DAY)
                 if (test_rd, (0,0,0)) == moment.rd_moment():
                     print(f"    ✅ {msg}")
                 else:
@@ -123,7 +123,7 @@ class Test_Moment_Chinese:
                 for test_case in test_cases:
                     if not test_case['condition']():
                         continue
-                    moment = UnivMoment(test_rd, precision=Precision.DAY)
+                    moment = UnivMoment(test_rd, precision=UnivMomPrecision.DAY)
                     presentation = moment.present(Calendar.CHINESE, test_case['format'], language='en')
                     greg = moment.present(Calendar.GREGORIAN, "%Y-%m-%d", language='en')
                     if presentation == test_case['answer']:

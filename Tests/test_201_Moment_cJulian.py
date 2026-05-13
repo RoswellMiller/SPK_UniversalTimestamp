@@ -4,9 +4,9 @@ Comprehensive tests for the Moment_Julian class.
 import os
 import json
 
-from SPK_UniversalTimestamp.Constants_aCommon import Calendar, Precision
+from SPK_UniversalTimestamp.Constants_aCommon import Calendar, UnivMomPrecision
 from SPK_UniversalTimestamp.Constants_Julian import julian_MONTH_ATTS
-from SPK_UniversalTimestamp.Moment_aUniversal import UnivMoment
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment
 from SPK_UniversalTimestamp.Moment_bPresent_Calendars import Present_Calendars
 
 class Test_Moment_Julian: 
@@ -47,7 +47,7 @@ class Test_Moment_Julian:
             test_date = (appendix_c_ndx, calendar, test_year, test_month, test_day)
             msg = f"Row {appendix_c_ndx+1} {calendar} date: {test_year}-{test_month:02d}-{test_day:02d}"
             try:
-                moment = UnivMoment.from_julian(test_year, test_month, test_day, precision=Precision.DAY)
+                moment = UnivMoment.from_julian(test_year, test_month, test_day, precision=UnivMomPrecision.DAY)
                 if (test_rd,(0,0,0)) == moment.rd_moment():
                     print(f"    ✅ {msg}")
                 else:
@@ -108,7 +108,7 @@ class Test_Moment_Julian:
                 for test_case in test_cases:
                     if not test_case['condition']():
                         continue
-                    moment = UnivMoment(test_rd, precision=Precision.DAY)
+                    moment = UnivMoment(test_rd, precision=UnivMomPrecision.DAY)
                     presentation = moment.present(Calendar.JULIAN, test_case['format'], language='en')
                     if presentation == test_case['answer']:
                         print(f"    ✅ {msg}")

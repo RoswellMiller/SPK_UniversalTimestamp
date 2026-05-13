@@ -1,6 +1,6 @@
 from decimal import Decimal
-from .Constants_aCommon import Calendar, Precision, PrecisionAtts
-from .Moment_aUniversal import UnivMoment
+from .Constants_aCommon import Calendar, UnivMomPrecision, MomPrecLevel, MomPrecAbbrev
+from .UnivMoment import UnivMoment
 
 import bisect
 
@@ -884,7 +884,7 @@ class Present_Geological(UnivMoment.Presentation):
     """
     # CONSTRUCTOR ############################################################################
     def __init__(self, moment: UnivMoment):
-        if (PrecisionAtts[moment.precision]["level"] > PrecisionAtts[Precision.YEAR]["level"]):
+        if (MomPrecLevel[moment.precision] < MomPrecLevel[UnivMomPrecision.YEAR]):
             raise ValueError("Geological moments must have precision of at least year or coarser.")
         if moment == UnivMoment.beginning_of_time():
             year = Decimal('-inf')
@@ -931,24 +931,24 @@ class Present_Geological(UnivMoment.Presentation):
             """
             Format the year component based on the segment type and language.
             """
-            if self.precision == Precision.BILLION_YEARS:
+            if self.precision == UnivMomPrecision.BILLION_YEARS:
                 year = f"{self.year / 1_000_000_000:.2f}"
-            elif self.precision == Precision.MILLION_YEARS:
+            elif self.precision == UnivMomPrecision.MILLION_YEARS:
                 year = f"{self.year / 1_000_000:.2f}"
-            elif self.precision == Precision.THOUSAND_YEARS:
+            elif self.precision == UnivMomPrecision.THOUSAND_YEARS:
                 year = f"{self.year / 1_000:.2f}"
-            elif self.precision == Precision.YEAR:
+            elif self.precision == UnivMomPrecision.YEAR:
                 year = f"{self.year}"
             else:
                 raise ValueError("Year is not defined for the current precision level.")
             # Handle negative vales
             fmt = year
             if seg_type == "Y":
-                if (PrecisionAtts[self.precision]["level"] < PrecisionAtts[Precision.YEAR]["level"]):
-                    fmt += f" {PrecisionAtts[self.precision]['abbrv']}"
+                if (MomPrecLevel[self.precision] > MomPrecLevel[UnivMomPrecision.YEAR]):
+                    fmt += f" {MomPrecAbbrev[self.precision]}"
             elif seg_type == "y":
-                if (PrecisionAtts[self.precision]["level"] < PrecisionAtts[Precision.YEAR]["level"]):
-                    fmt += f" {PrecisionAtts[self.precision]['abbrv']}"
+                if (MomPrecLevel[self.precision] > MomPrecLevel[UnivMomPrecision.YEAR]):
+                    fmt += f" {MomPrecAbbrev[self.precision]}"
             return fmt
         elif seg_type in 'O':
             """
@@ -1038,7 +1038,7 @@ def main():
         GEOLOGICAL_EPOCHSandAGES
 
     def convert_time(
-        year: Decimal | int | float, precision: Precision, description: str = ""
+        year: Decimal | int | float, precision: UnivMomPrecision, description: str = ""
     ) -> dict:
         if isinstance(year, (int, float)):
             year = Decimal(str(year))
@@ -1046,7 +1046,7 @@ def main():
             pass
         if year <0:
             raise ValueError("Geological time scale entries must be non-negative")
-        if precision != Precision.MILLION_YEARS:
+        if precision != UnivMomPrecision.MILLION_YEARS:
             raise ValueError(
                 "Geological time scale entries must have million year precision"
             )
@@ -1073,12 +1073,12 @@ def main():
             if eon_start is None:
                 raise ValueError(f"Eon {eon_name} has no start date")
             eon_start = convert_time(
-                eon_start, precision=Precision.MILLION_YEARS, description=eon_name
+                eon_start, precision=UnivMomPrecision.MILLION_YEARS, description=eon_name
             )
             eon_end = eon.get("end", float("+inf"))
             if eon_end:
                 eon_end = convert_time(
-                    eon_end, precision=Precision.MILLION_YEARS, description=eon_name
+                    eon_end, precision=UnivMomPrecision.MILLION_YEARS, description=eon_name
                 )
             eons.append(
                 {
@@ -1113,12 +1113,12 @@ def main():
             if era_start is None:
                 raise ValueError(f"Era {era_name} has no start date")
             era_start = convert_time(
-                era_start, precision=Precision.MILLION_YEARS, description=era_name
+                era_start, precision=UnivMomPrecision.MILLION_YEARS, description=era_name
             )
             era_end = era.get("end", float("+inf"))
             if era_end:
                 era_end = convert_time(
-                    era_end, precision=Precision.MILLION_YEARS, description=era_name
+                    era_end, precision=UnivMomPrecision.MILLION_YEARS, description=era_name
                 )
             eras.append(
                 {
@@ -1154,13 +1154,13 @@ def main():
             if period_start is None:
                 raise ValueError(f"Period {period_name} has no start date")
             period_start = convert_time(
-                period_start, precision=Precision.MILLION_YEARS, description=period_name
+                period_start, precision=UnivMomPrecision.MILLION_YEARS, description=period_name
             )
             period_end = period.get("end", float("+inf"))
             if period_end:
                 period_end = convert_time(
                     period_end,
-                    precision=Precision.MILLION_YEARS,
+                    precision=UnivMomPrecision.MILLION_YEARS,
                     description=period_name,
                 )
             periods.append(
@@ -1203,12 +1203,12 @@ def main():
             if epoch_start is None:
                 raise ValueError(f"Period {epoch_name} has no start date")
             epoch_start = convert_time(
-                epoch_start, precision=Precision.MILLION_YEARS, description=epoch_name
+                epoch_start, precision=UnivMomPrecision.MILLION_YEARS, description=epoch_name
             )
             epoch_end = epoch.get("end", float("+inf"))
             if epoch_end:
                 epoch_end = convert_time(
-                    epoch_end, precision=Precision.MILLION_YEARS, description=epoch_name
+                    epoch_end, precision=UnivMomPrecision.MILLION_YEARS, description=epoch_name
                 )
 
             if "ages" in epoch:
@@ -1255,12 +1255,12 @@ def main():
             if age_start is None:
                 raise ValueError(f"Period {age_name} has no start date")
             age_start = convert_time(
-                age_start, precision=Precision.MILLION_YEARS, description=age_name
+                age_start, precision=UnivMomPrecision.MILLION_YEARS, description=age_name
             )
             age_end = age.get("end", float("+inf"))
             if age_end:
                 age_end = convert_time(
-                    age_end, precision=Precision.MILLION_YEARS, description=age_name
+                    age_end, precision=UnivMomPrecision.MILLION_YEARS, description=age_name
                 )
 
             epochs.append(
@@ -1282,7 +1282,7 @@ def main():
     GEOLOGICAL_PERIODS = []
     GEOLOGICAL_EPOCHSandAGES = []
 
-    begin_earth = convert_time(4550, Precision.MILLION_YEARS, "Earth formation era")
+    begin_earth = convert_time(4550, UnivMomPrecision.MILLION_YEARS, "Earth formation era")
     pre_cam = GEOLOGICAL_TIME_STRUCTURE.get("pre-phanerozoic", [None])[0]
     last_date = create_eons(
         GEOLOGICAL_EONS,

@@ -13,7 +13,7 @@ Comprehensive multi-scale time system:
     2. rd_time is a tuple of (hour : int, minute : int, second : Decimal). The second
     here is the 1/24*60*60 fraction of a single rotation of the earth on its axis.
     It is NOT a second as measured by the radioactive decay of Cesium 133 atoms.
-- Precision levels to indicate the certainty of the timestamp
+- UnivMomPrecision levels to indicate the certainty of the timestamp
 """
 import langcodes
 import re
@@ -29,7 +29,27 @@ from .CC02_Gregorian import is_gregorian_leap_year, rd_from_gregorian, gregorian
 from .CC03_Julian import is_julian_leap_year, rd_from_julian
 from .CC08_Hebrew import rd_from_hebrew, last_day_of_hebrew_month, last_hebrew_month_of_year
 from .CC19_Chinese_1645 import rd_from_chinese, chinese_new_moon_before, chinese_new_moon_on_or_after
-from .Constants_aCommon import Calendar, CalendarAtts, Precision, PrecisionAtts
+from .Constants_aCommon import Calendar, CalendarAtts, UnivMomPrecision, MomPrecLevel, MomPrecPower, MomPrecAbbrev
+
+# Maps each UnivMomPrecision to the matching int precision level used by UnivDuration.
+# (SECOND=0, positive=coarser, negative=sub-second — same as MomPrecLevel values.)
+_MOM_TO_DUR_PREC: dict[UnivMomPrecision, int] = {
+    UnivMomPrecision.BILLION_YEARS:  7,
+    UnivMomPrecision.MILLION_YEARS:  6,
+    UnivMomPrecision.THOUSAND_YEARS: 5,
+    UnivMomPrecision.YEAR:           4,
+    # MONTH removed — months are calendar-specific and have no universal quantum.
+    UnivMomPrecision.DAY:            3,
+    UnivMomPrecision.HOUR:           2,
+    UnivMomPrecision.MINUTE:         1,
+    UnivMomPrecision.SECOND:         0,
+    UnivMomPrecision.MILLISECOND:    -3,
+    UnivMomPrecision.MICROSECOND:    -6,
+    UnivMomPrecision.NANOSECOND:     -9,
+    UnivMomPrecision.PICOSECOND:     -12,
+    UnivMomPrecision.FEMTOSECOND:    -15,
+    UnivMomPrecision.ATTOSECOND:     -18,
+}
 from .Constants_Gregorian import gregorian_MONTH_ATTS
 from .Constants_Julian import julian_MONTH_ATTS
 #from .UnivMoment import UnivMoment
@@ -44,9 +64,9 @@ class UnivMoment:
     """
 
     # __slots__ #######################################################################################
-    rd_day: Decimal  # Rata Die moment
+    rd_day: Decimal                    # Rata Die moment
     rd_time: tuple[int, int, Decimal]  # (hour, minute, second)
-    precision: Precision  # Precision level of the moment
+    precision: UnivMomPrecision        # UnivMomPrecision level of the moment
     # IMMUTABLE #######################################################################################
     __slots__ = ("rd_day", "rd_time", "precision", "description")
 
@@ -71,7 +91,7 @@ class UnivMoment:
         self,
         rd_day: str | int | Decimal,
         rd_time: Optional[tuple[int, int, Decimal]] = (0, 0, Decimal('0.0')),
-        precision: Optional[Precision] = Precision.SECOND,
+        precision: Optional[UnivMomPrecision] = UnivMomPrecision.SECOND,
         description: Optional[str] = None
     ):
         """
@@ -80,7 +100,7 @@ class UnivMoment:
         Args:
             rd_day (str | int | Decimal]): Rata Die
             td_time (Optional[tuple[int, int, Decimal]]): (hour, minute, second)
-            precision (Optional[Precision]): Precision level of the moment
+            precision (Optional[UnivMomPrecision]): UnivMomPrecision level of the moment
         """
         if isinstance(rd_day, int):
             self.rd_day = Decimal(rd_day)
@@ -134,7 +154,7 @@ class UnivMoment:
         """
         rd_day = Decimal(data["rd_day"])
         rd_time = (data["rd_time"][0], data["rd_time"][1], Decimal(data["rd_time"][2]))
-        precision = Precision[data["precision"]]
+        precision = UnivMomPrecision[data["precision"]]
         description = data.get("description", None)
         return UnivMoment(rd_day, rd_time, precision, description)
 
@@ -155,7 +175,10 @@ class UnivMoment:
             rd_day_off = rd_day_int + 100_000_000_000_000_000  # Offset to ensure positive and fixed width
         rd_day_str = f"{rd_day_off:018d}"
         rd_time_str = f"H{self.rd_time[0]:02d}M{self.rd_time[1]:02d}S{self.rd_time[2]:021.18f}"
-        rd_lex_str = f"univRD{rd_day_str}{rd_time_str}UTC:{PrecisionAtts[self.precision]['level']:02d}"
+        # Encode level with +20 offset so the result is always a positive 2-digit int
+        # (range 02-27 for levels -18 to +7).  Decoded in from_StdLexicalKey.
+        prec_code = MomPrecLevel[self.precision] + 20
+        rd_lex_str = f"univRD{rd_day_str}{rd_time_str}UTC:{prec_code:02d}"
         return rd_lex_str
     
     @staticmethod
@@ -178,19 +201,21 @@ class UnivMoment:
         hour = int(match.group("hour"))
         minute = int(match.group("minute"))
         second = Decimal(match.group("second"))
-        precision_level = int(match.group("precision"))
+        # Decode: stored value is level + 20; iterating from coarsest (7) to finest (-18)
+        precision_level = int(match.group("precision")) - 20
         precision = None
-        last_prec = Precision.BILLION_YEARS
-        for prec in Precision:
-            if PrecisionAtts[prec]['level'] == precision_level:
+        last_prec = UnivMomPrecision.BILLION_YEARS
+        for prec in UnivMomPrecision:
+            if MomPrecLevel[prec] == precision_level:
                 precision = prec
                 break
-            elif PrecisionAtts[prec]['level'] > precision_level:
+            elif MomPrecLevel[prec] < precision_level:
+                # Overshot downward — use the last (coarser) precision
                 precision = last_prec
                 break
             last_prec = prec
         if precision is None:
-            precision = Precision.ATTOSECOND
+            precision = UnivMomPrecision.ATTOSECOND
         return UnivMoment(rd_day, (hour, minute, second), precision)
     
     ################################################################################
@@ -248,6 +273,18 @@ class UnivMoment:
             return other
         else:
             raise TypeError("Time period must be a tuple of (day : Decimal, hour : int, minute : int, second : Decimal)")
+
+    @staticmethod
+    def _dur_to_period(dur) -> tuple[Decimal, int, int, Decimal]:
+        """Decompose the absolute value of a UnivDuration into (days, hrs, mins, secs)."""
+        total = abs(dur.seconds)
+        days  = Decimal(int(total / Decimal('86400')))
+        rem   = total - days * Decimal('86400')
+        hours = int(rem / Decimal('3600'))
+        rem  -= Decimal(hours) * Decimal('3600')
+        mins  = int(rem / Decimal('60'))
+        secs  = rem - Decimal(mins) * Decimal('60')
+        return (days, hours, mins, secs)
     @staticmethod    
     def _add_sub(x : tuple[Decimal, int, int, Decimal] | "UnivMoment",
             s : int, 
@@ -278,22 +315,45 @@ class UnivMoment:
             result[i] = sum
         return (result[0], int(result[1]), int(result[2]), result[3])
     
-    def __sub__(self, other) -> Decimal:
+    def __sub__(self, other) -> "UnivDuration | UnivMoment":
         """
-        Subtract two UnivMoment objects to get the difference
-        Subtract a time delta (days, hours, minutes, seconds) from a UnivMoment
+        UnivMoment - UnivMoment  → UnivDuration  (signed total-seconds difference,
+                                                   precision = coarser of the two moments)
+        UnivMoment - UnivDuration → UnivMoment
+        UnivMoment - tuple        → UnivMoment    (legacy: tuple is (days,hrs,mins,secs))
         """
+        from .UnivDuration import UnivDuration as _UnivDuration
         if isinstance(other, self.__class__):
-            # tuple = __class__ __sub__ __class__
-            result = self._add_sub(self, -1, other)
-            return result
+            raw   = self._add_sub(self, -1, other)
+            total = raw[0] * 86400 + raw[1] * 3600 + raw[2] * 60 + raw[3]
+            # adopt the coarser precision (higher MomPrecLevel = coarser)
+            coarser  = (other.precision
+                        if MomPrecLevel[other.precision] > MomPrecLevel[self.precision]
+                        else self.precision)
+            return _UnivDuration(total, _MOM_TO_DUR_PREC[coarser])
+        if isinstance(other, _UnivDuration):
+            period = self._dur_to_period(other)
+            s = -1 if other.seconds >= 0 else 1
+            result = self._add_sub(self, s, period)
+            return UnivMoment(result[0], (result[1], result[2], result[3]),
+                              self.precision, getattr(self, 'description', None))
         other = self._get_time_period(other)
         # __class__ = __class__ __sub__ tuple
         result = self._add_sub(self, -1, other)
         return UnivMoment(result[0], (result[1], result[2], result[3]), self.precision, getattr(self, 'description', None))
     
-    def __add__(self, other : tuple[Decimal, int, int, Decimal]) -> "UnivMoment":
-        """Add a time delta (days, hours, minutes, seconds) to the UnivMoment"""
+    def __add__(self, other) -> "UnivMoment":
+        """
+        UnivMoment + UnivDuration → UnivMoment
+        UnivMoment + tuple        → UnivMoment  (legacy: tuple is (days,hrs,mins,secs))
+        """
+        from .UnivDuration import UnivDuration as _UnivDuration
+        if isinstance(other, _UnivDuration):
+            period = self._dur_to_period(other)
+            s = 1 if other.seconds >= 0 else -1
+            result = self._add_sub(self, s, period)
+            return UnivMoment(result[0], (result[1], result[2], result[3]),
+                              self.precision, getattr(self, 'description', None))
         other = self._get_time_period(other)
         # __class__ = __class__ __add__ tuple
         result = self._add_sub(self, 1, other)
@@ -352,7 +412,7 @@ class UnivMoment:
     @staticmethod
     def eval_repr(repr_str) -> "UnivMoment":
         """Recreate a UnivMoment from its repr string."""
-        recreated = eval(repr_str, {'UnivMoment' : UnivMoment, 'Decimal' : Decimal, 'Precision' : Precision}) 
+        recreated = eval(repr_str, {'UnivMoment' : UnivMoment, 'Decimal' : Decimal, 'UnivMomPrecision' : UnivMomPrecision}) 
         return recreated
 
     def format(self, format_ext : str) -> str:
@@ -536,7 +596,7 @@ class UnivMoment:
     # Each calendar system will have its own construction function 
     # Validation method for constructor arguments
     @staticmethod
-    def _init_validate_constructor_args(constructor_args : list, num_required, args: list, init_precision) -> tuple[dict, Precision]:
+    def _init_validate_constructor_args(constructor_args : list, num_required, args: list, init_precision) -> tuple[dict, UnivMomPrecision]:
         if len(args) < num_required:
             expected = ', '.join(arg[0] for arg in constructor_args[:num_required])
             raise ValueError(f"Too few arguments: expected at least {num_required} ({expected})")
@@ -562,9 +622,9 @@ class UnivMoment:
             precision = parm_precision
         elif init_precision == parm_precision:
             precision = init_precision
-        elif PrecisionAtts[init_precision]['level'] < PrecisionAtts[parm_precision]['level']:
+        elif MomPrecLevel[init_precision] > MomPrecLevel[parm_precision]:
             raise ValueError(f"Invalid precision {init_precision}. {parm_precision} is less than the precision specified.")
-        elif parm_precision == Precision.SECOND and PrecisionAtts[init_precision]['level'] >= PrecisionAtts[Precision.SECOND]['level']:
+        elif parm_precision == UnivMomPrecision.SECOND and MomPrecLevel[init_precision] <= 0:
             precision = init_precision
         else:
             raise ValueError(f"Invalid precision {init_precision}. Must be at least {parm_precision}.")
@@ -583,7 +643,7 @@ class UnivMoment:
     # CONSTRUCT from GEOLOGICAL date
     def from_geological(
         years_ago: Union[int, float, str, Decimal],
-        precision: Optional[Precision] = Precision.MILLION_YEARS,
+        precision: Optional[UnivMomPrecision] = UnivMomPrecision.MILLION_YEARS,
         description: Optional[str] = None,
     ):
         """Create geological timestamp (years ago)"""
@@ -598,18 +658,17 @@ class UnivMoment:
         if years_ago != Decimal("-Infinity"):
             if (
                 precision is None
-                or PrecisionAtts[precision]["level"]
-                > PrecisionAtts[Precision.YEAR]["level"]
+                or MomPrecLevel[precision] < MomPrecLevel[UnivMomPrecision.YEAR]
             ):
                 raise ValueError(
-                    f"Invalid precision {precision} for geological time. Must be YEAR or higher."
+                    f"Invalid precision {precision} for geological time. Must be YEAR or coarser."
                 )
-            power = PrecisionAtts[precision]["power"]
+            power = MomPrecPower[precision]
             years_ago *= Decimal("1e" + str(power))
             # Scale to the correct precision
             years_ago = int(years_ago)
         else:
-            precision = Precision.YEAR
+            precision = UnivMomPrecision.YEAR
         """
         Convert the geological timestamp to Rata Die (fixed day number).
         For geological time, we assume a constant year length of 365.25 days.
@@ -631,17 +690,17 @@ class UnivMoment:
         return num_days
     # Each tuple: (slot name, allowed_types, valid_function, precision_enum)
     _gregorian_CNST_ARGS = [
-        ("year",   (int,), lambda arg, *_: (-9999 <= arg <= 9999), Precision.YEAR),
-        ("month",  (int,), lambda arg, *_: (1 <= arg <=12), Precision.MONTH),
-        ("day",    (int,), lambda arg, v: (1 <= arg <= UnivMoment._gregorian_days_in_month(v['year'], v['month'])),  Precision.DAY),
-        ("hour",   (int,), lambda arg, *_: (0 <= arg <= 23), Precision.HOUR),
-        ("minute", (int,), lambda arg, *_: (0 <= arg <= 59), Precision.MINUTE),
-        ("second", (Union[int, Decimal],), lambda arg, *_: (Decimal("0") <= arg < Decimal("60")), Precision.SECOND),
+        ("year",   (int,), lambda arg, *_: (-9999 <= arg <= 9999), UnivMomPrecision.YEAR),
+        ("month",  (int,), lambda arg, *_: (1 <= arg <=12), UnivMomPrecision.DAY),
+        ("day",    (int,), lambda arg, v: (1 <= arg <= UnivMoment._gregorian_days_in_month(v['year'], v['month'])),  UnivMomPrecision.DAY),
+        ("hour",   (int,), lambda arg, *_: (0 <= arg <= 23), UnivMomPrecision.HOUR),
+        ("minute", (int,), lambda arg, *_: (0 <= arg <= 59), UnivMomPrecision.MINUTE),
+        ("second", (Union[int, Decimal],), lambda arg, *_: (Decimal("0") <= arg < Decimal("60")), UnivMomPrecision.SECOND),
     ]
     @staticmethod
     def from_gregorian(
         *args,
-        precision: Optional[Precision] = None,
+        precision: Optional[UnivMomPrecision] = None,
         description: Optional[str] = None
     ) -> "UnivMoment":
         """
@@ -649,7 +708,7 @@ class UnivMoment:
 
         Args:
             *args: Variable length argument list for year, month, day, hour, minute, second
-            precision (Optional[Precision]): Precision level of the moment
+            precision (Optional[UnivMomPrecision]): UnivMomPrecision level of the moment
 
         Returns:
             UnivMoment: Constructed UnivMoment object
@@ -662,7 +721,11 @@ class UnivMoment:
             precision
         )
         # Convert to Rata Die moment
-        rd_day = rd_from_gregorian(arg_context['year'], arg_context['month'], arg_context['day'])
+        rd_day = rd_from_gregorian(
+            arg_context['year'],
+            arg_context['month'] if arg_context['month'] is not None else 1,
+            arg_context['day']   if arg_context['day']   is not None else 1,
+        )
         rd_time = (
             arg_context['hour'] if arg_context['hour'] is not None else 0,
             arg_context['minute'] if arg_context['minute'] is not None else 0,
@@ -679,17 +742,17 @@ class UnivMoment:
         return num_days
     # Each tuple: (slot name, allowed_types, valid_function, precision_enum)
     _julian_CNST_ARGS = [
-        ("year",   (int,), lambda arg, *_: (-9999 <= arg <= 9999), Precision.YEAR),
-        ("month",  (int,), lambda arg, *_: (1 <= arg <=12), Precision.MONTH),
-        ("day",    (int,), lambda arg, v: (1 <= arg <= UnivMoment._gregorian_days_in_month(v['year'], v['month'])),  Precision.DAY),
-        ("hour",   (int,), lambda arg, *_: (0 <= arg <= 23), Precision.HOUR),
-        ("minute", (int,), lambda arg, *_: (0 <= arg <= 59), Precision.MINUTE),
-        ("second", (Union[int, Decimal],), lambda arg, *_: (Decimal("0") <= arg < Decimal("60")), Precision.SECOND),
+        ("year",   (int,), lambda arg, *_: (-9999 <= arg <= 9999), UnivMomPrecision.YEAR),
+        ("month",  (int,), lambda arg, *_: (1 <= arg <=12), UnivMomPrecision.DAY),
+        ("day",    (int,), lambda arg, v: (1 <= arg <= UnivMoment._gregorian_days_in_month(v['year'], v['month'])),  UnivMomPrecision.DAY),
+        ("hour",   (int,), lambda arg, *_: (0 <= arg <= 23), UnivMomPrecision.HOUR),
+        ("minute", (int,), lambda arg, *_: (0 <= arg <= 59), UnivMomPrecision.MINUTE),
+        ("second", (Union[int, Decimal],), lambda arg, *_: (Decimal("0") <= arg < Decimal("60")), UnivMomPrecision.SECOND),
     ]
     @staticmethod
     def from_julian(
         *args,
-        precision: Optional[Precision] = None,
+        precision: Optional[UnivMomPrecision] = None,
         description: Optional[str] = None,
     ) -> "UnivMoment":
         """
@@ -697,7 +760,7 @@ class UnivMoment:
 
         Args:
             *args: Variable length argument list for year, month, day, hour, minute, second
-            precision (Optional[Precision]): Precision level of the moment
+            precision (Optional[UnivMomPrecision]): UnivMomPrecision level of the moment
         Returns:
             UnivMoment: Constructed UnivMoment object
         """
@@ -709,7 +772,11 @@ class UnivMoment:
             precision
         )
         # Convert to Rata Die moment
-        rd_day = rd_from_julian(arg_context['year'], arg_context['month'], arg_context['day'])
+        rd_day = rd_from_julian(
+            arg_context['year'],
+            arg_context['month'] if arg_context['month'] is not None else 1,
+            arg_context['day']   if arg_context['day']   is not None else 1,
+        )
         rd_time = (
             arg_context['hour'] if arg_context['hour'] is not None else 0,
             arg_context['minute'] if arg_context['minute'] is not None else 0,
@@ -725,16 +792,16 @@ class UnivMoment:
     def hebrew_last_day_of_month(year: int, month: int) -> int:
         return last_day_of_hebrew_month(year, month)
     _hebrew_CNST_ARGS = [
-        ("year",   (int,), lambda arg, *_: (1 <= arg <= 9999), Precision.YEAR),
-        ("month",  (int,), lambda arg, v: (1 <= arg <= UnivMoment.hebrew_last_month_of_year(v['year'])), Precision.MONTH),
-        ("day",    (int,), lambda arg, v: (1 <= arg <= UnivMoment.hebrew_last_day_of_month(v['year'], v['month'])),  Precision.DAY),
-        ("hour",   (int,), lambda arg, *_: (0 <= arg <= 23), Precision.HOUR),
-        ("minute", (int,), lambda arg, *_: (0 <= arg <= 59), Precision.MINUTE),
-        ("second", (Union[int, Decimal],), lambda arg, *_: (Decimal("0") <= arg < Decimal("60")), Precision.SECOND),
+        ("year",   (int,), lambda arg, *_: (1 <= arg <= 9999), UnivMomPrecision.YEAR),
+        ("month",  (int,), lambda arg, v: (1 <= arg <= UnivMoment.hebrew_last_month_of_year(v['year'])), UnivMomPrecision.DAY),
+        ("day",    (int,), lambda arg, v: (1 <= arg <= UnivMoment.hebrew_last_day_of_month(v['year'], v['month'])),  UnivMomPrecision.DAY),
+        ("hour",   (int,), lambda arg, *_: (0 <= arg <= 23), UnivMomPrecision.HOUR),
+        ("minute", (int,), lambda arg, *_: (0 <= arg <= 59), UnivMomPrecision.MINUTE),
+        ("second", (Union[int, Decimal],), lambda arg, *_: (Decimal("0") <= arg < Decimal("60")), UnivMomPrecision.SECOND),
     ]
     def from_hebrew(
         *args,
-        precision: Optional[Precision] = None,
+        precision: Optional[UnivMomPrecision] = None,
         description: Optional[str] = None,
     ) -> "UnivMoment":
         """
@@ -742,7 +809,7 @@ class UnivMoment:
 
         Args:
             *args: Variable length argument list for year, month, day, hour, minute, second
-            precision (Optional[Precision]): Precision level of the moment
+            precision (Optional[UnivMomPrecision]): UnivMomPrecision level of the moment
         Returns:
             UnivMoment: Constructed UnivMoment object
         """
@@ -754,7 +821,11 @@ class UnivMoment:
             precision
         )
         # Convert to Rata Die moment
-        rd_day = rd_from_hebrew(arg_context['year'], arg_context['month'], arg_context['day'])
+        rd_day = rd_from_hebrew(
+            arg_context['year'],
+            arg_context['month'] if arg_context['month'] is not None else 1,
+            arg_context['day']   if arg_context['day']   is not None else 1,
+        )
         rd_time = (
             arg_context['hour'] if arg_context['hour'] is not None else 0,
             arg_context['minute'] if arg_context['minute'] is not None else 0,
@@ -780,8 +851,8 @@ class UnivMoment:
     # Each tuple: (slot name, allowed_types, valid_function, precision_enum)
     _chinese_CNST_ARGS = [
         ("cycle",  (int,), lambda arg, *_: (1 <= arg <= 99999), None),
-        ("year",   (int,), lambda arg, *_: (1 <= arg <= 60), Precision.YEAR),
-        ("month",  (int, tuple), lambda arg, context : UnivMoment._chinese_validate_month(arg, context), Precision.MONTH),
+        ("year",   (int,), lambda arg, *_: (1 <= arg <= 60), UnivMomPrecision.YEAR),
+        ("month",  (int, tuple), lambda arg, context : UnivMoment._chinese_validate_month(arg, context), UnivMomPrecision.DAY),
         ("day",    (int,), 
             lambda arg, v: (
                 1 <= arg <=
@@ -792,16 +863,16 @@ class UnivMoment:
                     v['month'][1] if isinstance(v['month'], tuple) else False
                     )
                 ), 
-            Precision.DAY),
-        ("hour",   (int,), lambda arg, *_: (0 <= arg <= 23), Precision.HOUR),
-        ("minute", (int,), lambda arg, *_: (0 <= arg <= 59), Precision.MINUTE),
-        ("second", (Union[int, Decimal],), lambda arg, *_: (Decimal("0") <= arg < Decimal("60")), Precision.SECOND),
+            UnivMomPrecision.DAY),
+        ("hour",   (int,), lambda arg, *_: (0 <= arg <= 23), UnivMomPrecision.HOUR),
+        ("minute", (int,), lambda arg, *_: (0 <= arg <= 59), UnivMomPrecision.MINUTE),
+        ("second", (Union[int, Decimal],), lambda arg, *_: (Decimal("0") <= arg < Decimal("60")), UnivMomPrecision.SECOND),
     ]
 
     @staticmethod
     def from_chinese(
         *args,
-        precision: Optional[Precision] = None,
+        precision: Optional[UnivMomPrecision] = None,
         description: Optional[str] = None,
     ) -> "UnivMoment":
         """
@@ -809,7 +880,7 @@ class UnivMoment:
 
         Args:
             *args: Variable length argument list for cycle, year, month, day, hour, minute, second
-            precision (Optional[Precision]): Precision level of the moment
+            precision (Optional[UnivMomPrecision]): UnivMomPrecision level of the moment
         Returns:
             UnivMoment: Constructed UnivMoment object
         """
@@ -834,7 +905,7 @@ class UnivMoment:
     
     # CONSTRUCT now moment from system Datetime.now(timezone.utc)
     @staticmethod
-    def now(precision=Precision.MICROSECOND) -> "UnivMoment":
+    def now(precision=UnivMomPrecision.MICROSECOND) -> "UnivMoment":
         """
         Construct a UnivMoment representing the current system time.
 
@@ -849,12 +920,12 @@ class UnivMoment:
             Decimal(str(now_utc.second)) + (Decimal(str(now_utc.microsecond)) / Decimal('1_000_000'))
         )
         description = now_utc.strftime("now %Y-%m-%dT%H:%M:%S.%fZ")
-        if not isinstance(precision, Precision):
-            raise ValueError("precision must be an instance of the Precision enum")
-        if PrecisionAtts[precision]['level'] > PrecisionAtts[Precision.MICROSECOND]['level']:
-            precision = Precision.MICROSECOND
-        elif PrecisionAtts[precision]['level'] < PrecisionAtts[Precision.YEAR]['level']:
-            precision = Precision.YEAR
+        if not isinstance(precision, UnivMomPrecision):
+            raise ValueError("precision must be an instance of the UnivMomPrecision enum")
+        if MomPrecLevel[precision] < MomPrecLevel[UnivMomPrecision.MICROSECOND]:
+            precision = UnivMomPrecision.MICROSECOND
+        elif MomPrecLevel[precision] > MomPrecLevel[UnivMomPrecision.YEAR]:
+            precision = UnivMomPrecision.YEAR
         return UnivMoment(rd_day, rd_time, precision, description=description)
     
     # CONSTRUCT moment from system datetime
@@ -873,7 +944,7 @@ class UnivMoment:
             utc_dt.minute,
             Decimal(str(utc_dt.second)) + (Decimal(str(utc_dt.microsecond)) / Decimal('1_000_000'))
         )
-        return UnivMoment(rd_day, rd_time, Precision.MICROSECOND, description=description)
+        return UnivMoment(rd_day, rd_time, UnivMomPrecision.MICROSECOND, description=description)
 
     # CONSTRUCT moment from Julian Day Number
     @staticmethod
@@ -893,7 +964,7 @@ class UnivMoment:
         else:
             raise ValueError("jdn must be an integer, decimal, float or string")
         rd_day = jdn - Decimal(1721424.5)
-        return UnivMoment(rd_day, precision=Precision.HOUR, description=description)
+        return UnivMoment(rd_day, precision=UnivMomPrecision.HOUR, description=description)
     # CONSTRUCT moment from UNIX timestamp
     @staticmethod
     def from_unix_timestamp( 
@@ -916,7 +987,7 @@ class UnivMoment:
         sec_frac_ts = Decimal(sec_ts) + frac_ts
         return UnivMoment.from_gregorian(
             year, month, day, hour_ts, min_ts, sec_frac_ts,
-            precision=Precision.NANOSECOND,
+            precision=UnivMomPrecision.NANOSECOND,
             description=description,
         )
 
@@ -929,39 +1000,39 @@ class UnivMoment:
     )
 
     @staticmethod
-    def _precision_from_fraction_digits(num_digits: int) -> Precision:
+    def _precision_from_fraction_digits(num_digits: int) -> UnivMomPrecision:
         if num_digits <= 3:
-            return Precision.MILLISECOND
+            return UnivMomPrecision.MILLISECOND
         if num_digits <= 6:
-            return Precision.MICROSECOND
+            return UnivMomPrecision.MICROSECOND
         if num_digits <= 9:
-            return Precision.NANOSECOND
+            return UnivMomPrecision.NANOSECOND
         if num_digits <= 12:
-            return Precision.PICOSECOND
+            return UnivMomPrecision.PICOSECOND
         if num_digits <= 15:
-            return Precision.FEMTOSECOND
-        return Precision.ATTOSECOND
+            return UnivMomPrecision.FEMTOSECOND
+        return UnivMomPrecision.ATTOSECOND
 
     @staticmethod
-    def _parse_named_time_groups(time_groups: dict) -> tuple[Optional[int], Optional[int], Optional[Decimal], Precision]:
+    def _parse_named_time_groups(time_groups: dict) -> tuple[Optional[int], Optional[int], Optional[Decimal], UnivMomPrecision]:
         hour_str = time_groups.get('hh')
         minute_str = time_groups.get('mm')
         second_str = time_groups.get('ss')
         fraction_str = time_groups.get('fraction')
 
         if hour_str is None:
-            return None, None, None, Precision.DAY
+            return None, None, None, UnivMomPrecision.DAY
 
         hour = int(hour_str)
         if minute_str is None:
-            return hour, None, None, Precision.HOUR
+            return hour, None, None, UnivMomPrecision.HOUR
 
         minute = int(minute_str)
         if second_str is None:
-            return hour, minute, None, Precision.MINUTE
+            return hour, minute, None, UnivMomPrecision.MINUTE
 
         if fraction_str is None:
-            return hour, minute, int(second_str), Precision.SECOND
+            return hour, minute, int(second_str), UnivMomPrecision.SECOND
 
         second = Decimal(f"{second_str}.{fraction_str}")
         precision = UnivMoment._precision_from_fraction_digits(len(fraction_str))
@@ -992,7 +1063,7 @@ class UnivMoment:
                 int(m.group(4)),
                 int(m.group(5)),
                 Decimal(f"{m.group(6)}.{m.group(7)}"),
-                precision=Precision.MILLISECOND,
+                precision=UnivMomPrecision.MILLISECOND,
                 description=description,
             ),
         ),
@@ -1006,7 +1077,7 @@ class UnivMoment:
                 int(m.group(4)),
                 int(m.group(5)),
                 int(m.group(6)),
-                precision=Precision.SECOND,
+                precision=UnivMomPrecision.SECOND,
                 description=description,
             ),
         ),
@@ -1021,7 +1092,7 @@ class UnivMoment:
                 int(m.group(4)),
                 int(m.group(5)),
                 Decimal(f"{m.group(6)}.{m.group(7)}"),
-                precision=Precision.MILLISECOND,
+                precision=UnivMomPrecision.MILLISECOND,
                 description=description,
             ),
         ),
@@ -1035,7 +1106,7 @@ class UnivMoment:
                 int(m.group(4)),
                 int(m.group(5)),
                 int(m.group(6)),
-                precision=Precision.SECOND,
+                precision=UnivMomPrecision.SECOND,
                 description=description,
             ),
         ),
@@ -1048,7 +1119,7 @@ class UnivMoment:
             r"(\d+\.?\d*)\s*BYA",
             lambda m, description="": UnivMoment.from_geological(
                 Decimal(m.group(1)),
-                precision=Precision.BILLION_YEARS,
+                precision=UnivMomPrecision.BILLION_YEARS,
                 description=description,
             ),
         ),
@@ -1057,7 +1128,7 @@ class UnivMoment:
             r"(\d+\.?\d*)\s*MYA",
             lambda m, description="": UnivMoment.from_geological(
                 Decimal(m.group(1)),
-                precision=Precision.MILLION_YEARS,
+                precision=UnivMomPrecision.MILLION_YEARS,
                 description=description,
             ),
         ),
@@ -1066,7 +1137,7 @@ class UnivMoment:
             r"(\d+\.?\d*)\s*KYA",
             lambda m, description="" : UnivMoment.from_geological(
                 Decimal(m.group(1)),
-                precision=Precision.THOUSAND_YEARS,
+                precision=UnivMomPrecision.THOUSAND_YEARS,
                 description=description,
             ),
         ),
@@ -1082,7 +1153,7 @@ class UnivMoment:
                 -int(m.group(1)), 
                 None, 
                 None,
-                precision=Precision.YEAR,
+                precision=UnivMomPrecision.YEAR,
                 description=description,
             ),
         ),
@@ -1092,8 +1163,8 @@ class UnivMoment:
             lambda m, description="" : UnivMoment.from_gregorian(
                 -int(m.group(1)), 
                 int(m.group(2)), 
-                None,
-                precision=Precision.MONTH,
+                1,
+                precision=UnivMomPrecision.DAY,
                 description=description,
             ),
         ),
@@ -1114,7 +1185,7 @@ class UnivMoment:
                 -int(m.group(1)), 
                 int(m.group(2)), 
                 int(m.group(3)),
-                precision=Precision.DAY,
+                precision=UnivMomPrecision.DAY,
                 description=description,
             ),
         ),
@@ -1135,7 +1206,7 @@ class UnivMoment:
                 int(m.group(1)), 
                 int(m.group(2)), 
                 int(m.group(3)),
-                precision=Precision.DAY,
+                precision=UnivMomPrecision.DAY,
                 description=description,
             ),
         ),
@@ -1145,8 +1216,8 @@ class UnivMoment:
             lambda m, description="" : UnivMoment.from_gregorian(
                 int(m.group(1)), 
                 int(m.group(2)), 
-                None,
-                precision=Precision.MONTH,
+                1,
+                precision=UnivMomPrecision.DAY,
                 description=description,
             ),
         ),
@@ -1157,7 +1228,7 @@ class UnivMoment:
                 int(m.group(1)), 
                 None, 
                 None,
-                precision=Precision.YEAR,
+                precision=UnivMomPrecision.YEAR,
                 description=description,
             ),
         ),
