@@ -8,7 +8,7 @@ Comprehensive multi-scale time system for knowledge bases:
 - Human Calendars: Cultural/religious calendar conversions
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __author__ = "Roswell C Miller"
 __email__ = "support@sarek.ai"
 __description__ = "Comprehensive multi-scale timestamp system"
