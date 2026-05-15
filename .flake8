@@ -1,0 +1,73 @@
+[flake8]
+# Match the project's actual line width (math-heavy code uses longer lines)
+max-line-length = 150
+
+# Ignore codes that are pervasive in the existing codebase and represent
+# intentional style choices (aligned operators, compact math expressions, etc.)
+extend-ignore =
+    # Black / formatter compatibility
+    E203,
+    W503,
+    W504,
+    # Aligned assignment/operator columns (used throughout for readability)
+    E221,
+    E222,
+    # Comma spacing in math expressions (e.g. Decimal(1,2) style)
+    E231,
+    # Blank-line style (pre-existing throughout)
+    E301,
+    E302,
+    E303,
+    E305,
+    # Trailing / leading whitespace in existing files
+    W291,
+    W292,
+    W293,
+    W391,
+    # Inline / block comment style
+    E261,
+    E262,
+    E265,
+    # Module-level import order in initialisation files
+    E402,
+    # Bracket / parenthesis spacing (intentional in matrix/array expressions)
+    E201,
+    E202,
+    # Subscript spacing
+    E211,
+    # Continuation-line indentation (math formulas split across lines)
+    E122,
+    E123,
+    E124,
+    E125,
+    E126,
+    E127,
+    E128,
+    E129,
+    E131,
+    # Operator spacing in math (intentional for readability)
+    E225,
+    E226,
+    E227,
+    E228,
+    # Keyword spacing
+    E271,
+    E272,
+    # Parameter default spacing
+    E251,
+    E252,
+    # Indentation comments
+    E115,
+    E116,
+    E117,
+
+# Per-file exclusions for patterns that are intentional
+per-file-ignores =
+    # __init__.py uses star-imports deliberately to re-export the public API
+    SPK_UniversalTimestamp/__init__.py: F401, F403, F405
+    # Test files: long assertion strings routinely exceed the line limit
+    Tests/*.py: E501
+    # Test helpers and random-case generators are not part of the public API
+    Tests/random_cases.py: F401
+    Tests/RandD_Appendix_C.py: F401
+    Tests/RandD_Appendix_C_Lunisolar_table.py: F401

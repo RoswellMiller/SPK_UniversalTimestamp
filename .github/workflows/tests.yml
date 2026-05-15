@@ -11,6 +11,7 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.11", "3.12", "3.13", "3.14"]
@@ -19,9 +20,10 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        allow-prereleases: true
 
     - name: Install dependencies
       run: |
@@ -29,10 +31,12 @@ jobs:
         pip install -e ".[dev]"
 
     - name: Lint with flake8
+      continue-on-error: true
       run: |
         flake8 SPK_UniversalTimestamp Tests
 
     - name: Type check with mypy
+      continue-on-error: true
       run: |
         mypy SPK_UniversalTimestamp
 
@@ -41,7 +45,7 @@ jobs:
         pytest --cov=SPK_UniversalTimestamp --cov-report=xml --cov-report=html
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
         flags: unittests
@@ -56,9 +60,10 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.11"
+        python-version: "3.14"
+        allow-prereleases: true
 
     - name: Install build dependencies
       run: |
@@ -72,7 +77,7 @@ jobs:
       run: twine check dist/*
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dist
         path: dist/

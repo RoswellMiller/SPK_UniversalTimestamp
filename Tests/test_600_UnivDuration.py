@@ -1,6 +1,4 @@
 from decimal import Decimal
-from SPK_UniversalTimestamp.Constants_aCommon import Calendar, UnivMomPrecision
-from SPK_UniversalTimestamp.UnivMoment import UnivMoment
 from SPK_UniversalTimestamp.UnivDuration import UnivDuration
 
 class Test_UnivDuration:
