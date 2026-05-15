@@ -29,7 +29,8 @@ from .CC02_Gregorian import is_gregorian_leap_year, rd_from_gregorian, gregorian
 from .CC03_Julian import is_julian_leap_year, rd_from_julian
 from .CC08_Hebrew import rd_from_hebrew, last_day_of_hebrew_month, last_hebrew_month_of_year
 from .CC19_Chinese_1645 import rd_from_chinese, chinese_new_moon_before, chinese_new_moon_on_or_after
-from .Constants_aCommon import Calendar, CalendarAtts, UnivMomPrecision, MomPrecLevel, MomPrecPower, MomPrecAbbrev
+from .Constants_aCommon import Calendar, CalendarAtts, UnivMomPrecision, MomPrecLevel, MomPrecPower
+from .UnivDuration import UnivDuration
 
 # Maps each UnivMomPrecision to the matching int precision level used by UnivDuration.
 # (SECOND=0, positive=coarser, negative=sub-second — same as MomPrecLevel values.)
@@ -318,7 +319,7 @@ class UnivMoment:
     def __sub__(self, other) -> "UnivDuration | UnivMoment":
         """
         UnivMoment - UnivMoment  → UnivDuration  (signed total-seconds difference,
-                                                   precision = coarser of the two moments)
+                                                    precision = coarser of the two moments)
         UnivMoment - UnivDuration → UnivMoment
         UnivMoment - tuple        → UnivMoment    (legacy: tuple is (days,hrs,mins,secs))
         """

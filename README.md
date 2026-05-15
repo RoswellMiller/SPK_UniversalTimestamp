@@ -158,6 +158,48 @@ key = d.to_StdLexicalKey()
 # → "univDU000000000000003661.000000000000000000.01P"
 back = UnivDuration.from_StdLexicalKey(key)
 assert back == d
+
+# --- Class constants (read-only) ---
+
+# LEVEL_QUANTUM: seconds-per-quantum for whole-unit levels 0..7
+print(UnivDuration.LEVEL_QUANTUM[3])    # → 86400  (seconds in one day)
+print(UnivDuration.LEVEL_QUANTUM[0])    # → 1      (one second)
+
+# LEVEL_ABBREV: display string for every level -18..7
+print(UnivDuration.LEVEL_ABBREV[4])     # → "years"
+print(UnivDuration.LEVEL_ABBREV[-3])    # → "ms"
+
+# Both are MappingProxyType — any write raises TypeError
+try:
+    UnivDuration.LEVEL_QUANTUM[0] = 2
+except TypeError:
+    pass  # expected
+
+# --- Parsing (from_string) ---
+
+# Single integer pair
+d = UnivDuration.from_string("5 s")
+print(d.format_for_display())                  # → "5 s"
+
+# Decimal value: each decimal digit shifts precision one level finer
+d = UnivDuration.from_string("10.001 s")
+assert d.precision == -3                       # 3 decimal places → ms
+print(d.format_for_display())                  # → "10 s 1 ms"
+
+# Decimal on a coarse unit subdivides it
+d = UnivDuration.from_string("10.5 M-years")
+assert d.precision == 5                        # 1 decimal place → k-years
+print(d.format_for_display())                  # → "10 M-years 500 k-years"
+
+# Compound string: precision = finest level across all pairs
+d = UnivDuration.from_string("1 day 2 hrs 30 mins")
+print(d.format_for_display())                  # → "1 day 2 hrs 30 mins"
+
+# Round-trip with format_for_display
+original = UnivDuration(90061, precision=0)    # 1 day 1 hr 1 min 1 s
+restored = UnivDuration.from_string(original.format_for_display())
+assert restored.seconds   == original.seconds
+assert restored.precision == original.precision
 ```
 
 ### Precision Level Reference
@@ -318,12 +360,26 @@ duration - duration → UnivDuration
 duration == duration, <, <=, >, >=   # ordered by total seconds
 ```
 
-##### Static Methods
+##### Class Constants
+
+```
+UnivDuration.LEVEL_QUANTUM  : MappingProxyType   # level → seconds-per-quantum (levels 0..7)
+UnivDuration.LEVEL_ABBREV   : MappingProxyType   # level → display abbreviation (levels -18..7)
+```
+
+Both are read-only (`MappingProxyType`); any mutation attempt raises `TypeError`.
+
+##### Static / Class Methods
 
 ```
 UnivDuration.from_dict(data) → UnivDuration
 UnivDuration.from_StdLexicalKey(lex_key) → UnivDuration
+UnivDuration.from_string(text) → UnivDuration
 ```
+
+`from_string` parses a compound string of `<number> <unit>` pairs and infers precision
+from the finest level present, with decimal places subdividing each unit one level per digit
+(e.g. `"10.5 M-years"` → k-year precision, `"10.001 s"` → millisecond precision).
 
 #### Predefined Constants
 

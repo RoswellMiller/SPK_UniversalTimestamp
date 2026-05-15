@@ -1,7 +1,7 @@
 from decimal import Decimal
 from SPK_UniversalTimestamp.Constants_aCommon import Calendar, UnivMomPrecision
 from SPK_UniversalTimestamp.UnivMoment import UnivMoment
-from SPK_UniversalTimestamp.UnivDuration import UnivDuration, _LEVEL_QUANTUM
+from SPK_UniversalTimestamp.UnivDuration import UnivDuration
 
 class Test_UnivDuration:
     """
@@ -17,8 +17,8 @@ class Test_UnivDuration:
         assert duration.seconds == Decimal('0.001'), "UnivDuration value should be initialized to 0.001"
         assert duration.precision == -3, "Precision should be -3 for sub-second (10⁻³) precision"
         assert duration.precision == -3, "Precision -3 = millisecond"
-        duration = UnivDuration(Decimal('10E6')*_LEVEL_QUANTUM[6], precision=6)
-        assert duration.seconds == Decimal('10E6')*_LEVEL_QUANTUM[6], "UnivDuration value should be initialized to 10E6"
+        duration = UnivDuration(Decimal('10E6')*UnivDuration.LEVEL_QUANTUM[6], precision=6)
+        assert duration.seconds == Decimal('10E6')*UnivDuration.LEVEL_QUANTUM[6], "UnivDuration value should be initialized to 10E6"
         assert duration.precision == 6, "Precision should be 6 = MILLION_YEAR"
         assert duration.precision == 6, "Precision 6 = MILLION_YEAR"
         duration = UnivDuration(3600*24, precision=3)
@@ -67,7 +67,7 @@ class Test_UnivDuration:
         assert rt2.precision  == -3   # millisecond
 
         # Coarse precision
-        d3 = UnivDuration(Decimal('10E6') * _LEVEL_QUANTUM[6], precision=6)
+        d3 = UnivDuration(Decimal('10E6') * UnivDuration.LEVEL_QUANTUM[6], precision=6)
         rt3 = UnivDuration.from_dict(d3.to_dict())
         assert rt3.seconds    == d3.seconds
         assert rt3.precision  == 6
@@ -192,13 +192,13 @@ class Test_UnivDuration:
 
         # --- YEAR precision: singular and plural ---
         assert UnivDuration(Decimal('31557600'),          precision=4).format_for_display() == "1 year"
-        assert UnivDuration(Decimal('2') * _LEVEL_QUANTUM[4], precision=4).format_for_display() == "2 years"
+        assert UnivDuration(Decimal('2') * UnivDuration.LEVEL_QUANTUM[4], precision=4).format_for_display() == "2 years"
 
         # --- k-year, M-year, B-year: singular stripping ---
-        assert UnivDuration(_LEVEL_QUANTUM[5],            precision=5).format_for_display() == "1 k-year"
-        assert UnivDuration(Decimal('3') * _LEVEL_QUANTUM[5], precision=5).format_for_display() == "3 k-years"
-        assert UnivDuration(_LEVEL_QUANTUM[6],            precision=6).format_for_display()  == "1 M-year"
-        assert UnivDuration(_LEVEL_QUANTUM[7],            precision=7).format_for_display()  == "1 B-year"
+        assert UnivDuration(UnivDuration.LEVEL_QUANTUM[5],            precision=5).format_for_display() == "1 k-year"
+        assert UnivDuration(Decimal('3') * UnivDuration.LEVEL_QUANTUM[5], precision=5).format_for_display() == "3 k-years"
+        assert UnivDuration(UnivDuration.LEVEL_QUANTUM[6],            precision=6).format_for_display()  == "1 M-year"
+        assert UnivDuration(UnivDuration.LEVEL_QUANTUM[7],            precision=7).format_for_display()  == "1 B-year"
 
         # --- sub-second compound: s + ms ---
         assert UnivDuration(Decimal('5.123'), precision=-3).format_for_display() == "5 s 123 ms"
@@ -216,3 +216,77 @@ class Test_UnivDuration:
 
         # --- negative duration: sign prepended, magnitudes identical ---
         assert UnivDuration(-3661, precision=0).format_for_display() == "-1 hr 1 min 1 s"
+
+    def test_class_constants(self):
+        """LEVEL_QUANTUM and LEVEL_ABBREV are public, read-only MappingProxyType class vars"""
+        # --- accessible as class attributes ---
+        assert UnivDuration.LEVEL_QUANTUM[0] == Decimal("1")
+        assert UnivDuration.LEVEL_QUANTUM[3] == Decimal("86400")
+        assert UnivDuration.LEVEL_ABBREV[0]  == "s"
+        assert UnivDuration.LEVEL_ABBREV[-3] == "ms"
+        assert UnivDuration.LEVEL_ABBREV[4]  == "years"
+
+        # --- accessible via instance (same object) ---
+        dur = UnivDuration(1)
+        assert dur.LEVEL_QUANTUM is UnivDuration.LEVEL_QUANTUM
+        assert dur.LEVEL_ABBREV  is UnivDuration.LEVEL_ABBREV
+
+        # --- read-only: mutation raises TypeError ---
+        try:
+            UnivDuration.LEVEL_QUANTUM[0] = Decimal("2")
+            assert False, "Should have raised TypeError"
+        except TypeError:
+            pass
+        try:
+            UnivDuration.LEVEL_ABBREV[0] = "sec"
+            assert False, "Should have raised TypeError"
+        except TypeError:
+            pass
+
+    def test_from_string(self):
+        """Test constructing a UnivDuration from a human-readable compound string"""
+        # --- single integer pair ---
+        d = UnivDuration.from_string("5 s")
+        assert d.seconds   == Decimal("5")
+        assert d.precision == 0
+
+        # --- decimal: precision determined by decimal places ---
+        d = UnivDuration.from_string("10.001 s")
+        assert d.seconds   == Decimal("10.001")
+        assert d.precision == -3    # 0 (s) - 3 decimal places = ms
+
+        # --- coarse unit with decimal: subdivides one level per digit ---
+        d = UnivDuration.from_string("10.5 M-years")
+        assert d.precision == 5    # 6 - 1 = k-years
+        assert d.format_for_display() == "10 M-years 500 k-years"
+
+        # --- compound string: precision = finest level across all pairs ---
+        d = UnivDuration.from_string("1 day 2 hrs 30 mins")
+        assert d.seconds   == Decimal("95400")
+        assert d.precision == 1    # mins
+        assert d.format_for_display() == "1 day 2 hrs 30 mins"
+
+        # --- singular form accepted alongside plural ---
+        d_sing = UnivDuration.from_string("1 day")
+        d_plur = UnivDuration.from_string("1 days")
+        assert d_sing.seconds   == Decimal("86400")
+        assert d_sing.precision == 3
+        assert d_sing.seconds   == d_plur.seconds
+
+        # --- decimal on compound: finest effective precision wins ---
+        d = UnivDuration.from_string("1 day 2.5 hrs")
+        assert d.precision == 1    # min(3, 2-1=1) = 1 (mins)
+        assert d.format_for_display() == "1 day 2 hrs 30 mins"
+
+        # --- round-trip with format_for_display ---
+        original = UnivDuration(90061, precision=0)
+        restored = UnivDuration.from_string(original.format_for_display())
+        assert restored.seconds   == original.seconds
+        assert restored.precision == original.precision
+
+        # --- invalid input raises ValueError ---
+        try:
+            UnivDuration.from_string("not a duration at all")
+            assert False, "Should have raised ValueError"
+        except ValueError:
+            pass

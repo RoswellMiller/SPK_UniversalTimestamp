@@ -2,50 +2,9 @@ import re
 
 from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_HALF_EVEN
+from types import MappingProxyType
+from typing import ClassVar
 
-# Quantum in seconds for each coarseness level >= 0.
-# YEAR uses the Julian year (365.25 × 86400 = 31 557 600 s).
-_LEVEL_QUANTUM: dict[int, Decimal] = {
-    0: Decimal("1"),
-    1: Decimal("60"),
-    2: Decimal("3600"),
-    3: Decimal("86400"),
-    4: Decimal("31557600"),
-    5: Decimal("31557600000"),
-    6: Decimal("31557600000000"),
-    7: Decimal("31557600000000000"),
-}
-
-_LEVEL_ABBREV: dict[int, str] = {
-    # Coarse / whole-second units
-     7: "B-years",
-     6: "M-years",
-     5: "k-years",
-     4: "years",
-     3: "days",
-     2: "hrs",
-     1: "mins",
-     0: "s",
-    # Sub-second units (10^N seconds)
-    -1:  "ds",
-    -2:  "cs",
-    -3:  "ms",
-    -4:  "100\u00b5s",
-    -5:  "10\u00b5s",
-    -6:  "\u00b5s",
-    -7:  "100ns",
-    -8:  "10ns",
-    -9:  "ns",
-    -10: "100ps",
-    -11: "10ps",
-    -12: "ps",
-    -13: "100fs",
-    -14: "10fs",
-    -15: "fs",
-    -16: "100as",
-    -17: "10as",
-    -18: "as",
-}
 
 
 def _dur_level(dur: "UnivDuration") -> int:
@@ -57,12 +16,12 @@ def _level_quantum(level: int) -> Decimal:
     """Seconds per quantum for the given coarseness level."""
     if level < 0:
         return Decimal(10) ** level
-    return _LEVEL_QUANTUM[level]
+    return UnivDuration.LEVEL_QUANTUM[level]
 
 
 def _abbrev(level: int, count: int) -> str:
     """Abbreviation for *level*, singular (no trailing 's') when count == 1."""
-    label = _LEVEL_ABBREV.get(level, f"10^{level}s")
+    label = UnivDuration.LEVEL_ABBREV.get(level, f"10^{level}s")
     if count == 1 and 1 <= level <= 7:   # only named units carry a plural 's'
         label = label.rstrip("s")
     return label
@@ -70,9 +29,52 @@ def _abbrev(level: int, count: int) -> str:
 
 @dataclass(frozen=True)
 class UnivDuration:
-    seconds   : Decimal  # Total duration in seconds; may be negative (duration in the past)
-    precision : int = 0  # Coarseness level: 0=second, positive=coarser, negative=sub-second
-                         # Matches MomPrecLevel values: e.g. 3=day, 7=billion-year, -3=ms
+    # --- Class-level read-only lookup tables ---
+    LEVEL_QUANTUM: ClassVar[MappingProxyType] = MappingProxyType({
+        0: Decimal("1"),
+        1: Decimal("60"),
+        2: Decimal("3600"),
+        3: Decimal("86400"),
+        4: Decimal("31557600"),
+        5: Decimal("31557600000"),
+        6: Decimal("31557600000000"),
+        7: Decimal("31557600000000000"),
+    })
+
+    LEVEL_ABBREV: ClassVar[MappingProxyType] = MappingProxyType({
+        # Coarse / whole-second units
+         7: "B-years",
+         6: "M-years",
+         5: "k-years",
+         4: "years",
+         3: "days",
+         2: "hrs",
+         1: "mins",
+         0: "s",
+        # Sub-second units (10^N seconds)
+        -1:  "ds",
+        -2:  "cs",
+        -3:  "ms",
+        -4:  "100µs",
+        -5:  "10µs",
+        -6:  "µs",
+        -7:  "100ns",
+        -8:  "10ns",
+        -9:  "ns",
+        -10: "100ps",
+        -11: "10ps",
+        -12: "ps",
+        -13: "100fs",
+        -14: "10fs",
+        -15: "fs",
+        -16: "100as",
+        -17: "10as",
+        -18: "as",
+    })
+
+    seconds   : Decimal     # Total duration in seconds; may be negative (duration in the past)
+    precision : int = 0     # Coarseness level: 0=second, positive=coarser, negative=sub-second
+                            # Matches MomPrecLevel values: e.g. 3=day, 7=billion-year, -3=ms
 
     def __post_init__(self):
         if isinstance(self.seconds, Decimal):
@@ -112,8 +114,6 @@ class UnivDuration:
         seconds   = Decimal(data["seconds"])
         precision = int(data["precision"])    # always stored as a plain int string
         return UnivDuration(seconds, precision)
-
-
 
     def to_StdLexicalKey(self) -> str:
         """
@@ -162,9 +162,61 @@ class UnivDuration:
             precision = prec_code         # 0=second, 3=day, 7=billion-year
 
         return UnivDuration(seconds, precision)
-    
-    # --- Comparison operators (ordered by total seconds) ---
 
+    @classmethod
+    def from_string(cls, text: str) -> "UnivDuration":
+        """
+        Construct a UnivDuration from a human-readable compound string.
+
+        Each ``<number> <unit>`` pair contributes to the total seconds.  The
+        unit must be one of the abbreviations in LEVEL_ABBREV; both singular
+        and plural forms of named units (levels 1-7) are accepted.
+
+        Precision is determined by the finest effective level across all pairs,
+        where decimal places on a value subdivide its unit one level per digit:
+
+            '10.001 s'      → precision -3  (milliseconds)
+            '10.5 M-years'  → precision  5  (k-years)
+            '1 day 2 hrs'   → precision  2  (hours)
+            '1 day 2.5 hrs' → precision  1  (minutes)
+
+        Raises ValueError if no valid (number, unit) pairs are found.
+        """
+        # Build reverse map: abbreviation -> level.
+        # Include both the stored plural form and the singular (strip trailing 's')
+        # for named units at levels 1-7 so that format_for_display output round-trips.
+        abbrev_to_level: dict[str, int] = {}
+        for level, abbrev in cls.LEVEL_ABBREV.items():
+            abbrev_to_level[abbrev] = level
+            if 1 <= level <= 7 and abbrev.endswith("s"):
+                abbrev_to_level[abbrev[:-1]] = level   # e.g. "days" -> "day"
+
+        # Sort longest-first so the regex won't match "s" inside "days", etc.
+        sorted_abbrevs = sorted(abbrev_to_level, key=len, reverse=True)
+        abbrev_pat = "|".join(re.escape(a) for a in sorted_abbrevs)
+
+        pair_re = re.compile(rf"(\d+(?:\.\d+)?)\s+({abbrev_pat})")
+        pairs = pair_re.findall(text.strip())
+        if not pairs:
+            raise ValueError(f"No valid (number, unit) pairs found in: {text!r}")
+
+        total_seconds = Decimal(0)
+        finest_prec   = 7   # will be reduced toward the finest (most negative) level seen
+
+        for num_str, abbrev in pairs:
+            level   = abbrev_to_level[abbrev]
+            quantum = cls.LEVEL_QUANTUM[level] if level >= 0 else Decimal(10) ** level
+            total_seconds += Decimal(num_str) * quantum
+
+            dec_places     = len(num_str.split(".")[1]) if "." in num_str else 0
+            effective_prec = level - dec_places
+            if effective_prec < finest_prec:
+                finest_prec = effective_prec
+
+        finest_prec = max(-18, min(7, finest_prec))
+        return cls(total_seconds, finest_prec)
+
+    # --- Comparison operators (ordered by total seconds) ---
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, UnivDuration):
             return NotImplemented
@@ -217,9 +269,9 @@ class UnivDuration:
         Decompose the duration into a human-readable compound string scaled to
         the stored precision level, e.g.:
 
-            UnivDuration(90061, SECOND)          → "1 day 1 hr 1 min 1 s"
-            UnivDuration(3661,  MINUTE)           → "1 hr 1 min"
             UnivDuration(31557600000000, M_YEAR)  → "1 M-year"
+            UnivDuration(90061, SECOND)           → "1 day 1 hr 1 min 1 s"
+            UnivDuration(3661,  MINUTE)           → "1 hr 1 min"
             UnivDuration(Decimal('5.123'), -3)    → "5 s 123 ms"
             UnivDuration(Decimal('0.001'), -3)    → "1 ms"
         """
@@ -231,7 +283,7 @@ class UnivDuration:
 
         # Decompose whole units from level 7 down to floor
         for level in range(7, floor - 1, -1):
-            q     = _LEVEL_QUANTUM[level]
+            q     = UnivDuration.LEVEL_QUANTUM[level]
             count = int(remaining / q)
             if count > 0:
                 parts.append(f"{count} {_abbrev(level, count)}")
@@ -241,7 +293,7 @@ class UnivDuration:
         if bottom < 0:
             frac_q = Decimal(10) ** bottom
             frac_n = int((remaining / frac_q).to_integral_value(ROUND_HALF_EVEN))
-            label  = _LEVEL_ABBREV.get(bottom, f"10^{bottom}s")
+            label  = UnivDuration.LEVEL_ABBREV.get(bottom, f"10^{bottom}s")
             if frac_n > 0 or not parts:
                 parts.append(f"{frac_n} {label}")
 
@@ -255,3 +307,6 @@ class UnivDuration:
         if self.precision < 0:
             return f"UnivDuration({self.seconds}, {self.precision})"
         return f"UnivDuration({self.seconds})"
+    
+    def __repr__(self) -> str:
+        return f"UnivDuration(seconds={self.seconds}, precision={self.precision})"
