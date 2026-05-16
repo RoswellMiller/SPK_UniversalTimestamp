@@ -303,13 +303,18 @@ class Test_UnivDuration:
         with pytest.raises(ValueError, match="Precision span too large"):
             UnivDuration.from_string("1 M-years 1 µs")
 
-        # years + ns: coarsest=4, finest=-9 → too fine (allowed finest=-1)
+        # years + ns: coarsest=4, finest=-9 → too fine (allowed finest=-6)
         with pytest.raises(ValueError, match="Precision span too large"):
             UnivDuration.from_string("1 years 1 ns")
 
         # On the boundary: years + ds (level -1) must succeed
         d = UnivDuration.from_string("1 year 1 ds")
         assert d.precision == -1
+
+        # Decimal years: 0.615187 years (6 decimal places → effective_prec = 4-6 = -2)
+        d = UnivDuration.from_string("0.615187 years")
+        assert d.precision == -2   # centiseconds
+        assert d.seconds == Decimal("0.615187") * UnivDuration.LEVEL_QUANTUM[4]
 
         # B-years + years (level 4) is exactly at the limit — must succeed
         d = UnivDuration.from_string("1 B-years 1 year")

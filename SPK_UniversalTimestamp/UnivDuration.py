@@ -80,7 +80,7 @@ class UnivDuration:
         7:  4,   # B-years  → years finest         (span  3)
         6:  2,   # M-years  → hours finest          (span  4)
         5:  0,   # k-years  → seconds finest        (span  5)
-        4: -1,   # years    → deciseconds finest    (span  5)
+        4: -6,   # years    → microseconds finest   (span 10)
         3: -6,   # days     → microseconds finest   (span  9)
         2: -9,   # hours    → nanoseconds finest    (span 11)
         1: -12,  # minutes  → picoseconds finest    (span 13)

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-05-16
+
+### Fixed
+- `UnivDuration.MAX_FINE_FOR_COARSE` for level 4 (years) relaxed from −1 to −6, allowing
+  fractional-year strings with up to 6 decimal places (e.g. `"0.615187 years"`) to be parsed
+  by `UnivDuration.from_string()`.
+
 ## [2.0.0] - 2026-05-15
 
 ### Added
