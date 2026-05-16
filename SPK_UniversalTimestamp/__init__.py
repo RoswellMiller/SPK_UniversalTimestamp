@@ -115,10 +115,6 @@ __all__ = [
     "Calendar",
     "CalendarAtts",
     "UnivMomPrecision",
-    "MomPrecLevel",
-    "MomPrecPower",
-    "MomPrecAbbrev",
-    "MomLevelPrec",
     
     # Calendar-specific implementations
     "Present_GEOLOGICAL",

@@ -1,8 +1,8 @@
 from decimal import Decimal
 from .CC02_Gregorian import gregorian_from_rd
-from .Constants_aCommon import Calendar, UnivMomPrecision, MomPrecLevel
+from .Constants_aCommon import Calendar
 from .Constants_Gregorian import gregorian_MONTH_ATTS
-from .UnivMoment import UnivMoment
+from .UnivMoment import UnivMoment, UnivMomPrecision
 from .Moment_bPresent_Calendars import Present_Calendars
 
 class Present_Gregorian(Present_Calendars):
@@ -21,9 +21,9 @@ class Present_Gregorian(Present_Calendars):
         if self.year != Decimal('-Infinity'):
             self.month = 1
             self.day = 1
-            if MomPrecLevel[self.precision] <= MomPrecLevel[UnivMomPrecision.DAY]:
+            if UnivMoment.PREC_LEVEL[self.precision] <= UnivMoment.PREC_LEVEL[UnivMomPrecision.DAY]:
                 self.month = month
-            if MomPrecLevel[self.precision] <= MomPrecLevel[UnivMomPrecision.DAY]: 
+            if UnivMoment.PREC_LEVEL[self.precision] <= UnivMoment.PREC_LEVEL[UnivMomPrecision.DAY]: 
                 self.day = day
         return
     

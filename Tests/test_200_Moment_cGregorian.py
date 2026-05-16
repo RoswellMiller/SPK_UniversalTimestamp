@@ -7,9 +7,9 @@ import random
 
 from decimal import Decimal
 from SPK_UniversalTimestamp.CC00_Decimal_library import trunc
-from SPK_UniversalTimestamp.Constants_aCommon import Calendar, UnivMomPrecision
+from SPK_UniversalTimestamp.Constants_aCommon import Calendar
 from SPK_UniversalTimestamp.Constants_Gregorian import gregorian_MONTH_ATTS
-from SPK_UniversalTimestamp.UnivMoment import UnivMoment
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment, UnivMomPrecision
 from SPK_UniversalTimestamp.Moment_bPresent_Calendars import Present_Calendars
 
 class Test_Present_Gregorian: 

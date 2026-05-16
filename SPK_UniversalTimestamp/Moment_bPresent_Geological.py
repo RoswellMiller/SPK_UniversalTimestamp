@@ -1,6 +1,6 @@
 from decimal import Decimal
-from .Constants_aCommon import Calendar, UnivMomPrecision, MomPrecLevel, MomPrecAbbrev
-from .UnivMoment import UnivMoment
+from .Constants_aCommon import Calendar
+from .UnivMoment import UnivMoment, UnivMomPrecision
 
 import bisect
 
@@ -884,7 +884,7 @@ class Present_Geological(UnivMoment.Presentation):
     """
     # CONSTRUCTOR ############################################################################
     def __init__(self, moment: UnivMoment):
-        if (MomPrecLevel[moment.precision] < MomPrecLevel[UnivMomPrecision.YEAR]):
+        if (UnivMoment.PREC_LEVEL[moment.precision] < UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]):
             raise ValueError("Geological moments must have precision of at least year or coarser.")
         if moment == UnivMoment.beginning_of_time():
             year = Decimal('-inf')
@@ -944,11 +944,11 @@ class Present_Geological(UnivMoment.Presentation):
             # Handle negative vales
             fmt = year
             if seg_type == "Y":
-                if (MomPrecLevel[self.precision] > MomPrecLevel[UnivMomPrecision.YEAR]):
-                    fmt += f" {MomPrecAbbrev[self.precision]}"
+                if (UnivMoment.PREC_LEVEL[self.precision] > UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]):
+                    fmt += f" {UnivMoment.PREC_ABBREV[self.precision]}"
             elif seg_type == "y":
-                if (MomPrecLevel[self.precision] > MomPrecLevel[UnivMomPrecision.YEAR]):
-                    fmt += f" {MomPrecAbbrev[self.precision]}"
+                if (UnivMoment.PREC_LEVEL[self.precision] > UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]):
+                    fmt += f" {UnivMoment.PREC_ABBREV[self.precision]}"
             return fmt
         elif seg_type in 'O':
             """

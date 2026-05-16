@@ -198,19 +198,22 @@ class Test_UnivDuration:
         assert UnivDuration(UnivDuration.LEVEL_QUANTUM[6],            precision=6).format_for_display()  == "1 M-year"
         assert UnivDuration(UnivDuration.LEVEL_QUANTUM[7],            precision=7).format_for_display()  == "1 B-year"
 
-        # --- sub-second compound: s + ms ---
-        assert UnivDuration(Decimal('5.123'), precision=-3).format_for_display() == "5 s 123 ms"
+        # --- sub-second: seconds expressed as a decimal to abs(precision) places ---
+        assert UnivDuration(Decimal('5.123'), precision=-3).format_for_display() == "5.123 s"
 
         # --- pure sub-second (no whole seconds) ---
-        assert UnivDuration(Decimal('0.001'), precision=-3).format_for_display() == "1 ms"
+        assert UnivDuration(Decimal('0.001'), precision=-3).format_for_display() == "0.001 s"
 
         # --- µs precision: compound and pure ---
-        assert UnivDuration(Decimal('1.000001'), precision=-6).format_for_display() == "1 s 1 \u00b5s"
-        assert UnivDuration(Decimal('0.000001'), precision=-6).format_for_display() == "1 \u00b5s"
+        assert UnivDuration(Decimal('1.000001'), precision=-6).format_for_display() == "1.000001 s"
+        assert UnivDuration(Decimal('0.000001'), precision=-6).format_for_display() == "0.000001 s"
+
+        # --- coarse part + decimal seconds ---
+        assert UnivDuration(Decimal('90061.123'), precision=-3).format_for_display() == "1 day 1 hr 1 min 1.123 s"
 
         # --- zero duration at whole-second and sub-second ---
         assert UnivDuration(0,              precision=0).format_for_display() == "0 s"
-        assert UnivDuration(Decimal('0'),   precision=-3).format_for_display() == "0 ms"
+        assert UnivDuration(Decimal('0'),   precision=-3).format_for_display() == "0.000 s"
 
         # --- negative duration: sign prepended, magnitudes identical ---
         assert UnivDuration(-3661, precision=0).format_for_display() == "-1 hr 1 min 1 s"
@@ -288,3 +291,78 @@ class Test_UnivDuration:
             assert False, "Should have raised ValueError"
         except ValueError:
             pass
+
+        # --- precision-span validation: absurd combinations raise ValueError ---
+        import pytest
+
+        # B-years + ms: coarsest=7, finest=-3 → too fine (allowed finest=4)
+        with pytest.raises(ValueError, match="Precision span too large"):
+            UnivDuration.from_string("1 B-years 500 ms")
+
+        # M-years + µs: coarsest=6, finest=-6 → too fine (allowed finest=2)
+        with pytest.raises(ValueError, match="Precision span too large"):
+            UnivDuration.from_string("1 M-years 1 µs")
+
+        # years + ns: coarsest=4, finest=-9 → too fine (allowed finest=-1)
+        with pytest.raises(ValueError, match="Precision span too large"):
+            UnivDuration.from_string("1 years 1 ns")
+
+        # On the boundary: years + ds (level -1) must succeed
+        d = UnivDuration.from_string("1 year 1 ds")
+        assert d.precision == -1
+
+        # B-years + years (level 4) is exactly at the limit — must succeed
+        d = UnivDuration.from_string("1 B-years 1 year")
+        assert d.precision == 4
+
+        # days + µs (level -6) is exactly at the days limit — must succeed
+        d = UnivDuration.from_string("1 day 1 µs")
+        assert d.precision == -6
+
+    # ------------------------------------------------------------------
+    # __format__ spec
+    # ------------------------------------------------------------------
+    def test_format_spec(self):
+        """f-string format spec: '' | 'udur' | 'udur:<abbrev>'"""
+        import pytest
+
+        # 90 061 s = 1 day 1 hr 1 min 1 s
+        dur = UnivDuration(90061, precision=0)
+
+        # --- empty spec and 'udur' are identical to format_for_display() ---
+        assert f"{dur}"        == dur.format_for_display()
+        assert f"{dur:udur}"   == dur.format_for_display()
+        assert format(dur, "")     == dur.format_for_display()
+        assert format(dur, "udur") == dur.format_for_display()
+
+        # --- precision override: abbreviation coarser than stored ---
+        dur_s = UnivDuration(Decimal("259200"), precision=0)   # 3 days in seconds, sec precision
+        assert f"{dur_s:udur:days}" == "3 days"                # coarsen to DAY
+
+        # --- precision override: abbreviation finer than stored ---
+        dur_d = UnivDuration(Decimal("86400"), precision=3)    # 1 day, day precision
+        # at SECOND precision it expands to the full second count
+        assert f"{dur_d:udur:s}" == UnivDuration(Decimal("86400"), precision=0).format_for_display()
+
+        # --- sub-second: seconds expressed as decimal to abs(precision) places ---
+        dur_ms = UnivDuration(Decimal("5.123"), precision=-3)
+        assert f"{dur_ms:udur}"    == "5.123 s"
+        assert f"{dur_ms:udur:ms}" == "5.123 s"
+
+        # --- coarse geological level ---
+        by_secs = UnivDuration.LEVEL_QUANTUM[7] * Decimal("4")
+        dur_geo = UnivDuration(by_secs, precision=7)
+        assert f"{dur_geo:udur}"          == "4 B-years"
+        assert f"{dur_geo:udur:B-years}"  == "4 B-years"
+
+        # --- microsecond abbreviation (Unicode µ) ---
+        dur_us = UnivDuration(Decimal("0.000001"), precision=-6)
+        assert f"{dur_us:udur:\u00b5s}" == "0.000001 s"
+
+        # --- unknown abbreviation raises ValueError ---
+        with pytest.raises(ValueError, match="Unknown duration precision abbreviation"):
+            format(dur, "udur:fortnight")
+
+        # --- spec without recognised prefix raises ValueError ---
+        with pytest.raises(ValueError, match="Unsupported UnivDuration format spec"):
+            format(dur, "bad_spec")

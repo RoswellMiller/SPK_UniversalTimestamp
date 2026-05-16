@@ -2,7 +2,7 @@
 Comprehensive tests for the UnivMoment class.
 """
 import inspect
-from SPK_UniversalTimestamp.Constants_aCommon import UnivMomPrecision
+from SPK_UniversalTimestamp.UnivMoment import UnivMomPrecision
 from SPK_UniversalTimestamp.UnivMoment  import UnivMoment
 from decimal import Decimal
 

@@ -5,8 +5,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from tzlocal import get_localzone
 from .CC00_Decimal_library import trunc
 from .CC02_Gregorian import gregorian_from_rd
-from .Constants_aCommon import Calendar, CalendarAtts, UnivMomPrecision, MomPrecLevel, MomPrecPower, MomPrecAbbrev
-from .UnivMoment import UnivMoment
+from .Constants_aCommon import Calendar, CalendarAtts
+from .UnivMoment import UnivMoment, UnivMomPrecision
 
 class Present_Calendars(UnivMoment.Presentation):
     """
@@ -178,21 +178,21 @@ class Present_Calendars(UnivMoment.Presentation):
         """
         Format the year component based on the segment type and language.
         """
-        if MomPrecLevel[self.precision] > MomPrecLevel[UnivMomPrecision.YEAR]:
+        if UnivMoment.PREC_LEVEL[self.precision] > UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]:
             raise ValueError("Year is not defined for the current precision level.")
         else:
             year = f"{self.year}"
         # Handle negative vales
         fmt = year
         if seg_type == "Y":
-            if (MomPrecLevel[self.precision] > MomPrecLevel[UnivMomPrecision.YEAR]):
-                fmt += f" {MomPrecAbbrev[self.precision]}"
+            if (UnivMoment.PREC_LEVEL[self.precision] > UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]):
+                fmt += f" {UnivMoment.PREC_ABBREV[self.precision]}"
         elif seg_type == "y":
             if self.year < 0:
                 fmt = year[1:]
                 fmt += f" {CalendarAtts[language][self.calendar]['bce_suffix']}"
-            if (MomPrecLevel[self.precision] > MomPrecLevel[UnivMomPrecision.YEAR]):
-                fmt += f" {MomPrecAbbrev[self.precision]}"
+            if (UnivMoment.PREC_LEVEL[self.precision] > UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]):
+                fmt += f" {UnivMoment.PREC_ABBREV[self.precision]}"
         return fmt
 
     def _strftime_month(self, seg_type : str, language :str, eliminate_leading_zero: bool = False) -> str:
@@ -252,7 +252,7 @@ class Present_Calendars(UnivMoment.Presentation):
         if seg_type in 'HIp':
             if self.hour is None:
                 return ".."
-            elif MomPrecLevel[self.precision] <= MomPrecLevel[UnivMomPrecision.HOUR]:
+            elif UnivMoment.PREC_LEVEL[self.precision] <= UnivMoment.PREC_LEVEL[UnivMomPrecision.HOUR]:
                 if seg_type == 'H':
                     # 24-hour clock
                     fmt = f"{self.hour:02.0f}" 
@@ -268,7 +268,7 @@ class Present_Calendars(UnivMoment.Presentation):
         elif seg_type == 'M':
             if self.minute is None:
                 fmt = ".."
-            elif MomPrecLevel[self.precision] <= MomPrecLevel[UnivMomPrecision.MINUTE]:
+            elif UnivMoment.PREC_LEVEL[self.precision] <= UnivMoment.PREC_LEVEL[UnivMomPrecision.MINUTE]:
                 fmt =  f"{self.minute:02.0f}"
             else:
                 fmt = '..'
@@ -276,8 +276,8 @@ class Present_Calendars(UnivMoment.Presentation):
         elif seg_type in 'S':
             if self.seconds is None:
                 fmt = ".."
-            elif MomPrecLevel[self.precision] <= MomPrecLevel[UnivMomPrecision.SECOND]:
-                # decimal_places = -MomPrecPower[self.precision]
+            elif UnivMoment.PREC_LEVEL[self.precision] <= UnivMoment.PREC_LEVEL[UnivMomPrecision.SECOND]:
+                # decimal_places = -UnivMoment.PREC_POWER[self.precision]
                 # fmt = f"0{2 + (1 if decimal_places>0 else 0) + decimal_places}.{decimal_places}f"
                 # fmt = f"{trunc(self.seconds,decimals=decimal_places):{fmt}}"
                 integer_part = int(self.seconds)
@@ -291,9 +291,9 @@ class Present_Calendars(UnivMoment.Presentation):
         elif seg_type == 'f':
             if self.seconds is None:
                 fmt = ".."
-            elif MomPrecLevel[self.precision] <= MomPrecLevel[UnivMomPrecision.SECOND]:
+            elif UnivMoment.PREC_LEVEL[self.precision] <= UnivMoment.PREC_LEVEL[UnivMomPrecision.SECOND]:
                 # fractional seconds
-                decimal_places = -MomPrecPower[self.precision]
+                decimal_places = -UnivMoment.PREC_POWER[self.precision]
                 if frac_digits is not None:
                     decimal_places = min(frac_digits, decimal_places)
                 fractional_part = self.seconds - Decimal(int(self.seconds))

@@ -19,8 +19,11 @@ import langcodes
 import re
 from datetime import datetime, timezone
 from decimal import Decimal, getcontext, ROUND_DOWN
+from enum import Enum
+from types import MappingProxyType
 from .CC00_Decimal_library import floor
-from typing import Optional, Union
+from dataclasses import dataclass, field
+from typing import ClassVar, Optional, Union
 from abc import abstractmethod
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -29,54 +32,132 @@ from .CC02_Gregorian import is_gregorian_leap_year, rd_from_gregorian, gregorian
 from .CC03_Julian import is_julian_leap_year, rd_from_julian
 from .CC08_Hebrew import rd_from_hebrew, last_day_of_hebrew_month, last_hebrew_month_of_year
 from .CC19_Chinese_1645 import rd_from_chinese, chinese_new_moon_before, chinese_new_moon_on_or_after
-from .Constants_aCommon import Calendar, CalendarAtts, UnivMomPrecision, MomPrecLevel, MomPrecPower
+from .Constants_aCommon import Calendar, CalendarAtts
 from .UnivDuration import UnivDuration
 
-# Maps each UnivMomPrecision to the matching int precision level used by UnivDuration.
-# (SECOND=0, positive=coarser, negative=sub-second — same as MomPrecLevel values.)
-_MOM_TO_DUR_PREC: dict[UnivMomPrecision, int] = {
-    UnivMomPrecision.BILLION_YEARS:  7,
-    UnivMomPrecision.MILLION_YEARS:  6,
-    UnivMomPrecision.THOUSAND_YEARS: 5,
-    UnivMomPrecision.YEAR:           4,
-    # MONTH removed — months are calendar-specific and have no universal quantum.
-    UnivMomPrecision.DAY:            3,
-    UnivMomPrecision.HOUR:           2,
-    UnivMomPrecision.MINUTE:         1,
-    UnivMomPrecision.SECOND:         0,
-    UnivMomPrecision.MILLISECOND:    -3,
-    UnivMomPrecision.MICROSECOND:    -6,
-    UnivMomPrecision.NANOSECOND:     -9,
-    UnivMomPrecision.PICOSECOND:     -12,
-    UnivMomPrecision.FEMTOSECOND:    -15,
-    UnivMomPrecision.ATTOSECOND:     -18,
-}
+# ---------------------------------------------------------------------------
+# Precision enum for UnivMoment — lives here (not in Constants_aCommon) so that
+# the lookup tables can be class-level constants on UnivMoment itself, mirroring
+# the LEVEL_QUANTUM / LEVEL_ABBREV pattern in UnivDuration.
+# MONTH is intentionally omitted: months are calendar-specific and therefore
+# cannot represent a universal time quantum.
+# ---------------------------------------------------------------------------
+class UnivMomPrecision(Enum):
+    """Precision levels for date and time components of a UnivMoment."""
+    BILLION_YEARS  = "10\u2079years"    # billion years
+    MILLION_YEARS  = "10\u2076years"    # million years
+    THOUSAND_YEARS = "10\u00b3years"    # 1000 years
+    YEAR           = "year"             # 1 year
+    DAY            = "day"              # 1 day
+    HOUR           = "hour"             # hour
+    MINUTE         = "minute"           # minute
+    SECOND         = "second"           # second
+    MILLISECOND    = "10\u207b\u00b3second"   # ms
+    MICROSECOND    = "10\u207b\u2076second"   # \u03bcs
+    NANOSECOND     = "10\u207b\u2079second"   # ns
+    PICOSECOND     = "10\u207b\u00b9\u00b2second"  # ps
+    FEMTOSECOND    = "10\u207b\u00b9\u2075second"  # fs
+    ATTOSECOND     = "10\u207b\u00b9\u2078second"  # as
 from .Constants_Gregorian import gregorian_MONTH_ATTS
 from .Constants_Julian import julian_MONTH_ATTS
 #from .UnivMoment import UnivMoment
 # Set high precision Decimal computations
 getcontext().prec = 50
 
+# ---------------------------------------------------------------------------
+# Calendar abbreviation map for UnivMoment.__format__.
+# Keys are lower-cased before lookup; maps to Calendar enum members.
+# ---------------------------------------------------------------------------
+_FORMAT_CAL_ABBREV: dict[str, Calendar] = {
+    # Full Calendar names (lower-case)
+    "gregorian":  Calendar.GREGORIAN,
+    "julian":     Calendar.JULIAN,
+    "hebrew":     Calendar.HEBREW,
+    "chinese":    Calendar.CHINESE,
+    "geological": Calendar.GEOLOGICAL,
+    # Short mnemonic codes
+    "greg": Calendar.GREGORIAN,
+    "jul":  Calendar.JULIAN,
+    "heb":  Calendar.HEBREW,
+    "chin": Calendar.CHINESE,
+    "geo":  Calendar.GEOLOGICAL,
+    # CalendarAtts 'abbrv' codes (lower-cased)
+    "jc": Calendar.JULIAN,
+    "am": Calendar.HEBREW,
+    "cc": Calendar.CHINESE,
+    "ge": Calendar.GEOLOGICAL,
+}
 
+
+@dataclass(frozen=True, eq=False)
 class UnivMoment:
     """
     Attributes:
     A universal moment in time represented as a Rata Die (RD) decimal number.
     """
 
-    # __slots__ #######################################################################################
-    rd_day: Decimal                    # Rata Die moment
-    rd_time: tuple[int, int, Decimal]  # (hour, minute, second)
-    precision: UnivMomPrecision        # UnivMomPrecision level of the moment
-    # IMMUTABLE #######################################################################################
-    __slots__ = ("rd_day", "rd_time", "precision", "description")
+    # --- Class-level read-only lookup tables (mirrors LEVEL_QUANTUM/LEVEL_ABBREV in UnivDuration) ---
+    # NOTE: Level integers match UnivDuration's scheme exactly.
+    #   SECOND = 0; coarser (larger time span) = positive integer (max 7 = BILLION_YEARS);
+    #   finer (sub-second) = negative integer aligned to the SI exponent (-3, -6 … -18).
+    #   Higher value → coarser;  lower (more negative) value → finer.
+    PREC_LEVEL: ClassVar[MappingProxyType] = MappingProxyType({
+        UnivMomPrecision.BILLION_YEARS:  7,
+        UnivMomPrecision.MILLION_YEARS:  6,
+        UnivMomPrecision.THOUSAND_YEARS: 5,
+        UnivMomPrecision.YEAR:           4,
+        UnivMomPrecision.DAY:            3,
+        UnivMomPrecision.HOUR:           2,
+        UnivMomPrecision.MINUTE:         1,
+        UnivMomPrecision.SECOND:         0,
+        UnivMomPrecision.MILLISECOND:   -3,
+        UnivMomPrecision.MICROSECOND:   -6,
+        UnivMomPrecision.NANOSECOND:    -9,
+        UnivMomPrecision.PICOSECOND:   -12,
+        UnivMomPrecision.FEMTOSECOND:  -15,
+        UnivMomPrecision.ATTOSECOND:   -18,
+    })
+    LEVEL_PREC: ClassVar[MappingProxyType] = MappingProxyType(
+        {v: k for k, v in PREC_LEVEL.items()}
+    )
+    PREC_POWER: ClassVar[MappingProxyType] = MappingProxyType({
+        UnivMomPrecision.BILLION_YEARS:  9,
+        UnivMomPrecision.MILLION_YEARS:  6,
+        UnivMomPrecision.THOUSAND_YEARS: 3,
+        UnivMomPrecision.YEAR:           0,
+        UnivMomPrecision.DAY:            None,
+        UnivMomPrecision.HOUR:           None,
+        UnivMomPrecision.MINUTE:         None,
+        UnivMomPrecision.SECOND:         0,
+        UnivMomPrecision.MILLISECOND:   -3,
+        UnivMomPrecision.MICROSECOND:   -6,
+        UnivMomPrecision.NANOSECOND:    -9,
+        UnivMomPrecision.PICOSECOND:   -12,
+        UnivMomPrecision.FEMTOSECOND:  -15,
+        UnivMomPrecision.ATTOSECOND:   -18,
+    })
+    PREC_ABBREV: ClassVar[MappingProxyType] = MappingProxyType({
+        UnivMomPrecision.BILLION_YEARS:  'G-yr',
+        UnivMomPrecision.MILLION_YEARS:  'M-yr',
+        UnivMomPrecision.THOUSAND_YEARS: 'k-yr',
+        UnivMomPrecision.YEAR:           'yr',
+        UnivMomPrecision.DAY:            'day',
+        UnivMomPrecision.HOUR:           'hr',
+        UnivMomPrecision.MINUTE:         'min',
+        UnivMomPrecision.SECOND:         's',
+        UnivMomPrecision.MILLISECOND:    'ms',
+        UnivMomPrecision.MICROSECOND:    'μs',
+        UnivMomPrecision.NANOSECOND:     'ns',
+        UnivMomPrecision.PICOSECOND:     'ps',
+        UnivMomPrecision.FEMTOSECOND:    'fs',
+        UnivMomPrecision.ATTOSECOND:     'as',
+    })
 
-    def __setattr__(self, name, value):
-        """Prevent modification of attributes after initialization"""
-        if hasattr(self, name):
-            raise AttributeError(f"Cannot modify attribute '{name}' of UnivMoment")
-        super().__setattr__(name, value)
-        return
+    # Instance fields (frozen=True enforces immutability after construction) ----------
+    rd_day:      Decimal                           # Rata Die; accepts str | int at construction
+    rd_time:     tuple[int, int, Decimal]  = field(default=(0, 0, Decimal('0.0')))
+    precision:   Optional[UnivMomPrecision] = UnivMomPrecision.SECOND
+    description: Optional[str]             = None
 
     # CONSTANTS ##################################################################################################
     @staticmethod
@@ -88,44 +169,32 @@ class UnivMoment:
         return "SPK_UniversalTimestamp\\Moment_aUniversal.py"
 
     # UnivMoment CONSTRUCTOR ###################################################################################
-    def __init__(
-        self,
-        rd_day: str | int | Decimal,
-        rd_time: Optional[tuple[int, int, Decimal]] = (0, 0, Decimal('0.0')),
-        precision: Optional[UnivMomPrecision] = UnivMomPrecision.SECOND,
-        description: Optional[str] = None
-    ):
+    def __post_init__(self) -> None:
         """
-        Initialize Universal Moment
+        Validate and coerce field values after the dataclass-generated __init__.
 
-        Args:
-            rd_day (str | int | Decimal]): Rata Die
-            td_time (Optional[tuple[int, int, Decimal]]): (hour, minute, second)
-            precision (Optional[UnivMomPrecision]): UnivMomPrecision level of the moment
+        Fields received via the generated __init__:
+            rd_day      (str | int | Decimal): Rata Die — coerced to Decimal
+            rd_time     (tuple[int, int, Decimal]): (hour, minute, second) — second coerced to Decimal
+            precision   (Optional[UnivMomPrecision]): precision level of the moment
+            description (Optional[str]): human-readable label
         """
-        if isinstance(rd_day, int):
-            self.rd_day = Decimal(rd_day)
-        elif isinstance(rd_day, Decimal):
-            self.rd_day = rd_day
-        elif isinstance(rd_day, str):
-            self.rd_day = Decimal(rd_day)
-        else:
+        # --- coerce rd_day to Decimal ---
+        if isinstance(self.rd_day, (int, str)):
+            object.__setattr__(self, 'rd_day', Decimal(self.rd_day))
+        elif not isinstance(self.rd_day, Decimal):
             raise TypeError("RD must be of type str, int, or Decimal")
-        if isinstance(rd_time, tuple) and len(rd_time) == 3:
-            hour, minute, second = rd_time
-            if not (isinstance(hour, int) and 0 <= hour <= 23):
-                raise ValueError("Hour must be an integer between 0 and 23")
-            if not (isinstance(minute, int) and 0 <= minute <= 59):
-                raise ValueError("Minute must be an integer between 0 and 59")
-            if not (isinstance(second, (int, Decimal)) and Decimal('0') <= Decimal(second) < Decimal('60')):
-                raise ValueError("Second must be an integer or Decimal between 0 and less than 60")
-            self.rd_time = (hour, minute, Decimal(second))
-        else:
+        # --- validate and coerce rd_time ---
+        if not (isinstance(self.rd_time, tuple) and len(self.rd_time) == 3):
             raise TypeError("rd_time must be a tuple of (hour : int, minute : int, second : int | Decimal)")
-        self.precision = precision
-        if description and isinstance(description, str):
-            self.description = description
-        return
+        hour, minute, second = self.rd_time
+        if not (isinstance(hour, int) and 0 <= hour <= 23):
+            raise ValueError("Hour must be an integer between 0 and 23")
+        if not (isinstance(minute, int) and 0 <= minute <= 59):
+            raise ValueError("Minute must be an integer between 0 and 59")
+        if not (isinstance(second, (int, Decimal)) and Decimal('0') <= Decimal(second) < Decimal('60')):
+            raise ValueError("Second must be an integer or Decimal between 0 and less than 60")
+        object.__setattr__(self, 'rd_time', (hour, minute, Decimal(second)))
     
     # Support for JSON serialization
     def to_dict(self) -> dict:
@@ -140,7 +209,7 @@ class UnivMoment:
             "rd_time": (self.rd_time[0], self.rd_time[1], str(self.rd_time[2])),
             "precision": self.precision.name,
         }
-        if hasattr(self, 'description'):
+        if self.description is not None:
             data["description"] = self.description
         return data
     @staticmethod
@@ -158,10 +227,9 @@ class UnivMoment:
         precision = UnivMomPrecision[data["precision"]]
         description = data.get("description", None)
         return UnivMoment(rd_day, rd_time, precision, description)
-
-
-
+    # Text representation for sorting and comparison
     def to_StdLexicalKey(self) -> str:
+        
         """
         Convert the UnivMoment to a standardized lexical key for sorting and comparison.
 
@@ -178,10 +246,9 @@ class UnivMoment:
         rd_time_str = f"H{self.rd_time[0]:02d}M{self.rd_time[1]:02d}S{self.rd_time[2]:021.18f}"
         # Encode level with +20 offset so the result is always a positive 2-digit int
         # (range 02-27 for levels -18 to +7).  Decoded in from_StdLexicalKey.
-        prec_code = MomPrecLevel[self.precision] + 20
+        prec_code = UnivMoment.PREC_LEVEL[self.precision] + 20
         rd_lex_str = f"univRD{rd_day_str}{rd_time_str}UTC:{prec_code:02d}"
         return rd_lex_str
-    
     @staticmethod
     def from_StdLexicalKey(lex_key: str) -> "UnivMoment":
         """
@@ -207,10 +274,10 @@ class UnivMoment:
         precision = None
         last_prec = UnivMomPrecision.BILLION_YEARS
         for prec in UnivMomPrecision:
-            if MomPrecLevel[prec] == precision_level:
+            if UnivMoment.PREC_LEVEL[prec] == precision_level:
                 precision = prec
                 break
-            elif MomPrecLevel[prec] < precision_level:
+            elif UnivMoment.PREC_LEVEL[prec] < precision_level:
                 # Overshot downward — use the last (coarser) precision
                 precision = last_prec
                 break
@@ -327,21 +394,21 @@ class UnivMoment:
         if isinstance(other, self.__class__):
             raw   = self._add_sub(self, -1, other)
             total = raw[0] * 86400 + raw[1] * 3600 + raw[2] * 60 + raw[3]
-            # adopt the coarser precision (higher MomPrecLevel = coarser)
+            # adopt the coarser precision (higher PREC_LEVEL = coarser)
             coarser  = (other.precision
-                        if MomPrecLevel[other.precision] > MomPrecLevel[self.precision]
+                        if UnivMoment.PREC_LEVEL[other.precision] > UnivMoment.PREC_LEVEL[self.precision]
                         else self.precision)
-            return _UnivDuration(total, _MOM_TO_DUR_PREC[coarser])
+            return _UnivDuration(total, UnivMoment.PREC_LEVEL[coarser])
         if isinstance(other, _UnivDuration):
             period = self._dur_to_period(other)
             s = -1 if other.seconds >= 0 else 1
             result = self._add_sub(self, s, period)
             return UnivMoment(result[0], (result[1], result[2], result[3]),
-                              self.precision, getattr(self, 'description', None))
+                              self.precision, self.description)
         other = self._get_time_period(other)
         # __class__ = __class__ __sub__ tuple
         result = self._add_sub(self, -1, other)
-        return UnivMoment(result[0], (result[1], result[2], result[3]), self.precision, getattr(self, 'description', None))
+        return UnivMoment(result[0], (result[1], result[2], result[3]), self.precision, self.description)
     
     def __add__(self, other) -> "UnivMoment":
         """
@@ -354,11 +421,11 @@ class UnivMoment:
             s = 1 if other.seconds >= 0 else -1
             result = self._add_sub(self, s, period)
             return UnivMoment(result[0], (result[1], result[2], result[3]),
-                              self.precision, getattr(self, 'description', None))
+                              self.precision, self.description)
         other = self._get_time_period(other)
         # __class__ = __class__ __add__ tuple
         result = self._add_sub(self, 1, other)
-        return UnivMoment(result[0], (result[1], result[2], result[3]), self.precision, getattr(self, 'description', None))
+        return UnivMoment(result[0], (result[1], result[2], result[3]), self.precision, self.description)
     
     # COMPARISON METHODS ##########################################################################
     def __lt__(self, other) -> bool:
@@ -408,7 +475,48 @@ class UnivMoment:
 
     def __repr__(self) -> str:
         """ Generate repr string for UnivMoment."""
-        return f"UnivMoment(Decimal({repr(str(self.rd_day))}), {self.rd_time}, {self.precision}, description={repr(getattr(self, 'description', None))})"
+        return f"UnivMoment(Decimal({repr(str(self.rd_day))}), {self.rd_time}, {self.precision}, description={repr(self.description)})"
+
+    def __format__(self, spec: str) -> str:
+        """
+        Format the moment using a format spec.
+
+        Format spec grammar::
+
+            spec      ::= "" | "umom" | "umom:" cal_abbrv ":" fmt_str
+            cal_abbrv ::= "greg" | "jul" | "heb" | "chin" | "geo"
+                          (also full Calendar names and CalendarAtts codes: "JC", "AM", "CC", "Ge")
+            fmt_str   ::= present() format string, e.g. "%Y-%m-%d %H:%M:%S"
+
+        The time zone defaults to ``'UTC'`` and the language to ``'en'``.
+        For non-default tz or language use :meth:`present` directly.
+
+        Examples::
+
+            f"{moment}"                         →  format_signature()
+            f"{moment:umom}"                    →  format_signature()
+            f"{moment:umom:greg:%Y-%m-%d}"      →  Gregorian date (UTC, en)
+            f"{moment:umom:heb:%d %B %Y AM}"    →  Hebrew calendar
+            f"{moment:umom:geo:%y %O}"          →  Geological format
+        """
+        if spec in ("", "umom"):
+            return self.format_signature()
+        if spec.startswith("umom:"):
+            rest = spec[5:]
+            colon = rest.find(":")
+            if colon == -1:
+                raise ValueError(
+                    f"UnivMoment format spec 'umom:<cal>:<fmt>' is missing format string: {spec!r}"
+                )
+            cal_key = rest[:colon].lower()
+            fmt_str = rest[colon + 1:]
+            if cal_key not in _FORMAT_CAL_ABBREV:
+                raise ValueError(
+                    f"Unknown calendar abbreviation {rest[:colon]!r} in format spec {spec!r}. "
+                    f"Valid abbreviations: {sorted(_FORMAT_CAL_ABBREV)}"
+                )
+            return self.present(_FORMAT_CAL_ABBREV[cal_key], fmt_str)
+        raise ValueError(f"Unsupported UnivMoment format spec {spec!r}")
 
     @staticmethod
     def eval_repr(repr_str) -> "UnivMoment":
@@ -503,7 +611,7 @@ class UnivMoment:
         """
         Format the complete timestamp for display.
         """
-        if hasattr(self, 'description') and len(self.description) > 0:
+        if self.description:
             signature = f"{self.description} rd: {self.rd_moment()} pr: {self.precision.name}"
         else:
             signature = f"RD: {self.rd_moment()} pr: {self.precision.name}"
@@ -623,9 +731,9 @@ class UnivMoment:
             precision = parm_precision
         elif init_precision == parm_precision:
             precision = init_precision
-        elif MomPrecLevel[init_precision] > MomPrecLevel[parm_precision]:
+        elif UnivMoment.PREC_LEVEL[init_precision] > UnivMoment.PREC_LEVEL[parm_precision]:
             raise ValueError(f"Invalid precision {init_precision}. {parm_precision} is less than the precision specified.")
-        elif parm_precision == UnivMomPrecision.SECOND and MomPrecLevel[init_precision] <= 0:
+        elif parm_precision == UnivMomPrecision.SECOND and UnivMoment.PREC_LEVEL[init_precision] <= 0:
             precision = init_precision
         else:
             raise ValueError(f"Invalid precision {init_precision}. Must be at least {parm_precision}.")
@@ -659,12 +767,12 @@ class UnivMoment:
         if years_ago != Decimal("-Infinity"):
             if (
                 precision is None
-                or MomPrecLevel[precision] < MomPrecLevel[UnivMomPrecision.YEAR]
+                or UnivMoment.PREC_LEVEL[precision] < UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]
             ):
                 raise ValueError(
                     f"Invalid precision {precision} for geological time. Must be YEAR or coarser."
                 )
-            power = MomPrecPower[precision]
+            power = UnivMoment.PREC_POWER[precision]
             years_ago *= Decimal("1e" + str(power))
             # Scale to the correct precision
             years_ago = int(years_ago)
@@ -923,9 +1031,9 @@ class UnivMoment:
         description = now_utc.strftime("now %Y-%m-%dT%H:%M:%S.%fZ")
         if not isinstance(precision, UnivMomPrecision):
             raise ValueError("precision must be an instance of the UnivMomPrecision enum")
-        if MomPrecLevel[precision] < MomPrecLevel[UnivMomPrecision.MICROSECOND]:
+        if UnivMoment.PREC_LEVEL[precision] < UnivMoment.PREC_LEVEL[UnivMomPrecision.MICROSECOND]:
             precision = UnivMomPrecision.MICROSECOND
-        elif MomPrecLevel[precision] > MomPrecLevel[UnivMomPrecision.YEAR]:
+        elif UnivMoment.PREC_LEVEL[precision] > UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]:
             precision = UnivMomPrecision.YEAR
         return UnivMoment(rd_day, rd_time, precision, description=description)
     

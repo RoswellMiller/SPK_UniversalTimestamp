@@ -3,8 +3,8 @@ Comprehensive tests for the UnivMoment class.
 """
 from decimal import Decimal
 
-from SPK_UniversalTimestamp.Constants_aCommon import Calendar, UnivMomPrecision
-from SPK_UniversalTimestamp.UnivMoment import UnivMoment
+from SPK_UniversalTimestamp.Constants_aCommon import Calendar
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment, UnivMomPrecision
 
 class Test_Moment_aUniversal: 
     """Test cases for UnivMoment class."""
@@ -94,3 +94,61 @@ class Test_Moment_aUniversal:
         
         print(f"✅ SUCCESS: {self.test_subtraction.__doc__}")
         return
+
+    # ------------------------------------------------------------------
+    # __format__ spec
+    # ------------------------------------------------------------------
+    def test_format_spec(self):
+        """f-string format spec: '' | 'umom' | 'umom:<cal>:<fmt>'"""
+        import pytest
+
+        moment = UnivMoment.from_gregorian(2025, 9, 8, description="Format spec test date")
+
+        # --- empty spec and 'umom' delegate to format_signature() ---
+        assert f"{moment}"       == moment.format_signature()
+        assert f"{moment:umom}"  == moment.format_signature()
+        assert format(moment, "")     == moment.format_signature()
+        assert format(moment, "umom") == moment.format_signature()
+
+        # --- Gregorian: short mnemonic and full name ---
+        greg_fmt = moment.present(Calendar.GREGORIAN, "%Y-%m-%d")
+        assert f"{moment:umom:greg:%Y-%m-%d}"      == greg_fmt
+        assert f"{moment:umom:gregorian:%Y-%m-%d}" == greg_fmt
+
+        # --- Julian calendar: mnemonic and CalendarAtts code ---
+        jul_fmt = moment.present(Calendar.JULIAN, "%Y-%m-%d")
+        assert f"{moment:umom:jul:%Y-%m-%d}" == jul_fmt
+        assert f"{moment:umom:jc:%Y-%m-%d}"  == jul_fmt
+
+        # --- Hebrew calendar: mnemonic and CalendarAtts code ---
+        heb_fmt = moment.present(Calendar.HEBREW, "%d/%m/%Y")
+        assert f"{moment:umom:heb:%d/%m/%Y}" == heb_fmt
+        assert f"{moment:umom:am:%d/%m/%Y}"  == heb_fmt
+
+        # --- Geological calendar ---
+        geo_moment = UnivMoment.from_geological(0.5, precision=UnivMomPrecision.MILLION_YEARS)
+        geo_fmt = geo_moment.present(Calendar.GEOLOGICAL, "%Y | %O | %R")
+        assert f"{geo_moment:umom:geo:%Y | %O | %R}" == geo_fmt
+        assert f"{geo_moment:umom:ge:%Y | %O | %R}"  == geo_fmt
+
+        # --- fmt_str containing ':' characters is preserved intact ---
+        time_fmt = moment.present(Calendar.GREGORIAN, "%H:%M:%S")
+        assert f"{moment:umom:greg:%H:%M:%S}" == time_fmt
+
+        # --- full datetime format string (contains colons) ---
+        full_fmt = moment.present(Calendar.GREGORIAN, "%Y-%m-%d %H:%M:%S")
+        assert f"{moment:umom:greg:%Y-%m-%d %H:%M:%S}" == full_fmt
+
+        # --- unknown calendar abbreviation raises ValueError ---
+        with pytest.raises(ValueError, match="Unknown calendar abbreviation"):
+            format(moment, "umom:xyz:%Y-%m-%d")
+
+        # --- missing format string (no second colon) raises ValueError ---
+        with pytest.raises(ValueError, match="missing format string"):
+            format(moment, "umom:greg")
+
+        # --- spec without recognised prefix raises ValueError ---
+        with pytest.raises(ValueError, match="Unsupported UnivMoment format spec"):
+            format(moment, "bad_spec")
+
+        print(f"✅ SUCCESS: {self.test_format_spec.__doc__}")

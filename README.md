@@ -47,8 +47,6 @@ from SPK_UniversalTimestamp import (
     UnivDuration,
     Calendar,
     UnivMomPrecision,
-    MomPrecLevel,
-    MomPrecAbbrev,
 )
 from decimal import Decimal
 
@@ -83,6 +81,13 @@ print(gap.format_for_display())     # → "1 day 1 hr 1 min 1 s"
 one_week = UnivDuration(Decimal("604800"), precision=3)  # 7 days
 next_week = t1 + one_week
 print(next_week.present(Calendar.GREGORIAN, "%Y-%m-%d"))
+
+# f-string format spec (__format__ protocol)
+print(f"{greg_date}")                                # → format_signature() result
+print(f"{greg_date:umom:greg:%Y-%m-%d}")             # → "2025-09-08"
+print(f"{greg_date:umom:gregorian:%A, %B %d, %Y}")   # → "Monday, September 08, 2025"
+print(f"{greg_date:umom:jul:%d/%m/%Y}")              # → Julian calendar date
+print(f"{greg_date:umom:heb:%d %B %Y}")              # → Hebrew calendar date
 ```
 
 ### UnivDuration
@@ -115,11 +120,11 @@ print(dur_geo.format_for_display())                # → "65 M-years"
 
 # Sub-second: 5.123 seconds at millisecond precision (precision=-3)
 dur_ms = UnivDuration(Decimal("5.123"), precision=-3)
-print(dur_ms.format_for_display())                 # → "5 s 123 ms"
+print(dur_ms.format_for_display())                 # → "5.123 s"
 
 # Nanosecond precision (precision=-9)
 dur_ns = UnivDuration(Decimal("0.000000001"), precision=-9)
-print(dur_ns.format_for_display())                 # → "1 ns"
+print(dur_ns.format_for_display())                 # → "0.000000001 s"
 
 # --- Arithmetic ---
 
@@ -184,7 +189,7 @@ print(d.format_for_display())                  # → "5 s"
 # Decimal value: each decimal digit shifts precision one level finer
 d = UnivDuration.from_string("10.001 s")
 assert d.precision == -3                       # 3 decimal places → ms
-print(d.format_for_display())                  # → "10 s 1 ms"
+print(d.format_for_display())                  # → "10.001 s"
 
 # Decimal on a coarse unit subdivides it
 d = UnivDuration.from_string("10.5 M-years")
@@ -200,11 +205,18 @@ original = UnivDuration(90061, precision=0)    # 1 day 1 hr 1 min 1 s
 restored = UnivDuration.from_string(original.format_for_display())
 assert restored.seconds   == original.seconds
 assert restored.precision == original.precision
+
+# f-string format spec (__format__ protocol)
+print(f"{dur_s}")                  # → "1 day 1 hr 1 min 1 s" (same as format_for_display)
+print(f"{dur_s:udur}")             # → identical to above
+print(f"{dur_s:udur:days}")        # → "1 day" (coarsen to day precision)
+print(f"{dur_ms:udur:s}")          # → "5 s"   (coarsen ms duration to second precision)
+print(f"{dur_geo:udur:M-years}")   # → "65 M-years"
 ```
 
 ### Precision Level Reference
 
-`UnivDuration.precision` and `MomPrecLevel[UnivMomPrecision.*]` use the same integer scheme:
+`UnivDuration.precision` and `UnivMoment.PREC_LEVEL[UnivMomPrecision.*]` use the same integer scheme:
 
 | Level | UnivMomPrecision      | Quantum           |
 |------:|:----------------------|:------------------|
@@ -226,6 +238,124 @@ assert restored.precision == original.precision
 Higher value = coarser; lower (more negative) = finer.
 `MONTH` is intentionally absent: month length is calendar-specific and cannot
 represent a universal time quantum.
+
+### Format Spec Reference
+
+Both `UnivDuration` and `UnivMoment` implement Python's `__format__` protocol,
+so you can embed them directly in f-strings with calendar-aware format specifications.
+
+#### UnivDuration Format Spec
+
+```
+format_spec ::= "" | "udur" | "udur:" abbrev
+abbrev      ::= one of the LEVEL_ABBREV values listed in the table below
+```
+
+When `abbrev` is supplied, a temporary `UnivDuration` is created at that precision level
+and `format_for_display()` is called on it.  Raises `ValueError` for an unrecognised spec.
+
+```
+dur = UnivDuration(90061, precision=0)   # 1 day 1 hr 1 min 1 s
+
+f"{dur}"           # → "1 day 1 hr 1 min 1 s"  (format_for_display at stored precision)
+f"{dur:udur}"      # → identical to above
+f"{dur:udur:days}" # → "1 day"                  (coarsen to DAY precision)
+f"{dur:udur:mins}" # → "1 day 1 hr 1 min"       (coarsen to MINUTE precision)
+```
+
+**All precision abbreviations recognised by `udur:`:**
+
+| Abbrev   | Level | Description          |
+|:---------|------:|:---------------------|
+| `B-years`|     7 | billion years        |
+| `M-years`|     6 | million years        |
+| `k-years`|     5 | thousand years       |
+| `years`  |     4 | years                |
+| `days`   |     3 | days                 |
+| `hrs`    |     2 | hours                |
+| `mins`   |     1 | minutes              |
+| `s`      |     0 | seconds              |
+| `ds`     |    −1 | deciseconds          |
+| `cs`     |    −2 | centiseconds         |
+| `ms`     |    −3 | milliseconds         |
+| `100µs`  |    −4 | 100 microseconds     |
+| `10µs`   |    −5 | 10 microseconds      |
+| `µs`     |    −6 | microseconds         |
+| `100ns`  |    −7 | 100 nanoseconds      |
+| `10ns`   |    −8 | 10 nanoseconds       |
+| `ns`     |    −9 | nanoseconds          |
+| `100ps`  |   −10 | 100 picoseconds      |
+| `10ps`   |   −11 | 10 picoseconds       |
+| `ps`     |   −12 | picoseconds          |
+| `100fs`  |   −13 | 100 femtoseconds     |
+| `10fs`   |   −14 | 10 femtoseconds      |
+| `fs`     |   −15 | femtoseconds         |
+| `100as`  |   −16 | 100 attoseconds      |
+| `10as`   |   −17 | 10 attoseconds       |
+| `as`     |   −18 | attoseconds          |
+
+#### UnivMoment Format Spec
+
+```
+format_spec ::= "" | "umom" | "umom:" cal_key ":" fmt_str
+cal_key     ::= (case-insensitive) calendar abbreviation — see table below
+fmt_str     ::= calendar-specific format string (may itself contain ":")
+```
+
+Raises `ValueError` for an unrecognised spec or an unknown `cal_key`.
+
+```
+moment = UnivMoment.from_gregorian(2025, 9, 8)
+
+f"{moment}"                            # → format_signature() result
+f"{moment:umom}"                       # → identical to above
+f"{moment:umom:greg:%Y-%m-%d}"        # → "2025-09-08"
+f"{moment:umom:gregorian:%A, %B %d}"  # → "Monday, September 08"
+f"{moment:umom:jul:%d/%m/%Y}"         # → Julian calendar date
+f"{moment:umom:heb:%A %d %B, %Y}"    # → Hebrew calendar date
+f"{moment:umom:greg:%H:%M:%S}"        # colons inside fmt_str are preserved
+```
+
+**Calendar abbreviations recognised by `umom:`** (all case-insensitive):
+
+| Abbreviation(s)            | Calendar   | `Calendar` enum          |
+|:---------------------------|:-----------|:-------------------------|
+| `gregorian`, `greg`        | Gregorian  | `Calendar.GREGORIAN`     |
+| `julian`, `jul`, `jc`      | Julian     | `Calendar.JULIAN`        |
+| `hebrew`, `heb`, `am`      | Hebrew     | `Calendar.HEBREW`        |
+| `chinese`, `chin`, `cc`    | Chinese    | `Calendar.CHINESE`       |
+| `geological`, `geo`, `ge`  | Geological | `Calendar.GEOLOGICAL`    |
+
+**Format codes — Gregorian, Julian, and Hebrew (shared set):**
+
+| Code  | Meaning                      | Example (`2025-09-08`, Monday) |
+|:------|:-----------------------------|:-------------------------------|
+| `%Y`  | 4-digit year                 | `2025`                         |
+| `%y`  | 2-digit year (or BCE year)   | `25`                           |
+| `%m`  | Month number, zero-padded    | `09`                           |
+| `%d`  | Day number, zero-padded      | `08`                           |
+| `%H`  | Hour, zero-padded            | `00`                           |
+| `%M`  | Minute, zero-padded          | `00`                           |
+| `%S`  | Second, zero-padded          | `00`                           |
+| `%A`  | Full weekday name            | `Monday`                       |
+| `%a`  | Abbreviated weekday name     | `Mon`                          |
+| `%B`  | Full month name              | `September`                    |
+| `%b`  | Abbreviated month name       | `Sep`                          |
+| `%#d` | Day without leading zero     | `8`                            |
+| `%#m` | Month without leading zero   | `9`                            |
+
+**Format codes — Geological:**
+
+| Code | Meaning                              | Example (0.5 M-yr ago)         |
+|:-----|:-------------------------------------|:-------------------------------|
+| `%Y` | Age in millions of years             | `-0.50 M-yr`                   |
+| `%y` | Same as `%Y`                         | `-0.50 M-yr`                   |
+| `%O` | Eon name                             | `Phanerozoic`                  |
+| `%R` | Era name                             | `Cenozoic`                     |
+| `%P` | Period name                          | `Quarternary`                  |
+| `%a` | Epoch and age/stage name             | `pleistocene Chibanian`        |
+
+For Chinese calendar format codes, refer to the Chinese calendar documentation.
 
 ## API Reference
 
@@ -276,27 +406,26 @@ by calendar and cannot represent a universal time quantum.
 - `FEMTOSECOND`
 - `ATTOSECOND`
 
-#### Precision Attribute Dictionaries
+#### Precision Attribute Tables
 
-Four module-level dicts map `UnivMomPrecision` values to their numeric properties.
-They are exported from the package and share the same integer level scheme used by
-`UnivDuration.precision`:
+Four `ClassVar[MappingProxyType]` class attributes on `UnivMoment` map `UnivMomPrecision` values to
+their numeric properties.  They share the same integer level scheme used by `UnivDuration.precision`:
 
-```python
-MomPrecLevel  : dict[UnivMomPrecision, int]        # precision → level int (0=SECOND, 7=BILLION_YEARS, -18=ATTOSECOND)
-MomLevelPrec  : dict[int, UnivMomPrecision]        # reverse of MomPrecLevel
-MomPrecPower  : dict[UnivMomPrecision, int | None] # SI exponent (None for day/hour/minute)
-MomPrecAbbrev : dict[UnivMomPrecision, str]        # SI-style abbreviation ('ms', 'μs', 'G-yr', …)
+```
+UnivMoment.PREC_LEVEL  : MappingProxyType[UnivMomPrecision, int]        # precision → level int (0=SECOND, 7=BILLION_YEARS, -18=ATTOSECOND)
+UnivMoment.LEVEL_PREC  : MappingProxyType[int, UnivMomPrecision]        # reverse of PREC_LEVEL
+UnivMoment.PREC_POWER  : MappingProxyType[UnivMomPrecision, int | None] # SI exponent (None for day/hour/minute)
+UnivMoment.PREC_ABBREV : MappingProxyType[UnivMomPrecision, str]        # SI-style abbreviation ('ms', 'μs', 'G-yr', …)
 ```
 
 Example:
 
 ```python
-from SPK_UniversalTimestamp import UnivMomPrecision, MomPrecLevel, MomPrecAbbrev
+from SPK_UniversalTimestamp import UnivMoment, UnivMomPrecision
 
 prec = UnivMomPrecision.MILLISECOND
-print(MomPrecLevel[prec])    # → -3
-print(MomPrecAbbrev[prec])   # → "ms"
+print(UnivMoment.PREC_LEVEL[prec])    # → -3
+print(UnivMoment.PREC_ABBREV[prec])   # → "ms"
 ```
 
 ### Class Methods
@@ -346,7 +475,7 @@ UnivMoment.from_StdLexicalKey(lex_key) → UnivMoment
 UnivDuration(seconds: Decimal | int, precision: int = 0)
 ```
 
-`precision` is a plain `int` using the same level scheme as `MomPrecLevel`:
+`precision` is a plain `int` using the same level scheme as `UnivMoment.PREC_LEVEL`:
 `0` = second, `3` = day, `7` = billion-year, `-3` = millisecond, `-18` = attosecond.
 
 ##### Instance Methods / Operators

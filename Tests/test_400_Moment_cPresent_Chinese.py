@@ -4,9 +4,9 @@ Comprehensive tests for the Moment_Chinese class.
 import os
 import json
 
-from SPK_UniversalTimestamp.Constants_aCommon import Calendar, UnivMomPrecision
+from SPK_UniversalTimestamp.Constants_aCommon import Calendar
 from SPK_UniversalTimestamp.Constants_Chinese import chinese_MONTH_ATTS
-from SPK_UniversalTimestamp.UnivMoment import UnivMoment
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment, UnivMomPrecision
 from SPK_UniversalTimestamp.Moment_bPresent_Calendars import Present_Calendars
 
 

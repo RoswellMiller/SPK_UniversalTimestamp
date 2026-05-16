@@ -72,6 +72,21 @@ class UnivDuration:
         -18: "as",
     })
 
+    # Finest precision level allowed for each coarsest unit level.  Checked by from_string().
+    # Keys are coarsest-unit levels 0-7; values are the most-negative (finest) level allowed.
+    # E.g. a B-year compound may be no finer than year (level 4).
+    # Adjust the values here to tighten or loosen the span constraints.
+    MAX_FINE_FOR_COARSE: ClassVar[MappingProxyType] = MappingProxyType({
+        7:  4,   # B-years  → years finest         (span  3)
+        6:  2,   # M-years  → hours finest          (span  4)
+        5:  0,   # k-years  → seconds finest        (span  5)
+        4: -1,   # years    → deciseconds finest    (span  5)
+        3: -6,   # days     → microseconds finest   (span  9)
+        2: -9,   # hours    → nanoseconds finest    (span 11)
+        1: -12,  # minutes  → picoseconds finest    (span 13)
+        0: -18,  # seconds  → attoseconds finest    (span 18, no restriction)
+    })
+
     seconds   : Decimal     # Total duration in seconds; may be negative (duration in the past)
     precision : int = 0     # Coarseness level: 0=second, positive=coarser, negative=sub-second
                             # Matches MomPrecLevel values: e.g. 3=day, 7=billion-year, -3=ms
@@ -114,7 +129,7 @@ class UnivDuration:
         seconds   = Decimal(data["seconds"])
         precision = int(data["precision"])    # always stored as a plain int string
         return UnivDuration(seconds, precision)
-
+    # Support for sorting and comparison lexically
     def to_StdLexicalKey(self) -> str:
         """
         Convert the UnivMoment to a standardized lexical key for sorting and comparison.
@@ -135,7 +150,7 @@ class UnivDuration:
             type_char = "P"
 
         return f"univDU{int_part:018d}.{frac_digits:018d}.{prec_code:02d}{type_char}"
-    
+  
     @staticmethod
     def from_StdLexicalKey(lex_key: str) -> "UnivDuration":
         """
@@ -180,7 +195,9 @@ class UnivDuration:
             '1 day 2 hrs'   → precision  2  (hours)
             '1 day 2.5 hrs' → precision  1  (minutes)
 
-        Raises ValueError if no valid (number, unit) pairs are found.
+        Raises ValueError if no valid (number, unit) pairs are found, or if
+        the span between the coarsest and finest level exceeds the limit defined
+        in MAX_FINE_FOR_COARSE.
         """
         # Build reverse map: abbreviation -> level.
         # Include both the stored plural form and the singular (strip trailing 's')
@@ -200,8 +217,9 @@ class UnivDuration:
         if not pairs:
             raise ValueError(f"No valid (number, unit) pairs found in: {text!r}")
 
-        total_seconds = Decimal(0)
-        finest_prec   = 7   # will be reduced toward the finest (most negative) level seen
+        total_seconds  = Decimal(0)
+        finest_prec    = 7   # reduced toward the finest (most negative) level seen
+        coarsest_prec  = -18 # raised toward the coarsest (most positive) level seen
 
         for num_str, abbrev in pairs:
             level   = abbrev_to_level[abbrev]
@@ -212,8 +230,25 @@ class UnivDuration:
             effective_prec = level - dec_places
             if effective_prec < finest_prec:
                 finest_prec = effective_prec
+            if level > coarsest_prec:
+                coarsest_prec = level
 
         finest_prec = max(-18, min(7, finest_prec))
+
+        # Validate precision span against MAX_FINE_FOR_COARSE
+        allowed_finest = cls.MAX_FINE_FOR_COARSE.get(coarsest_prec)
+        if allowed_finest is not None and finest_prec < allowed_finest:
+            coarsest_abbrev = cls.LEVEL_ABBREV.get(coarsest_prec, f"10^{coarsest_prec}s")
+            finest_abbrev   = cls.LEVEL_ABBREV.get(finest_prec,   f"10^{finest_prec}s")
+            allowed_abbrev  = cls.LEVEL_ABBREV.get(allowed_finest, f"10^{allowed_finest}s")
+            raise ValueError(
+                f"Precision span too large: coarsest unit {coarsest_abbrev!r} (level "
+                f"{coarsest_prec}) cannot be combined with precision {finest_abbrev!r} "
+                f"(level {finest_prec}). Finest allowed for {coarsest_abbrev!r} is "
+                f"{allowed_abbrev!r} (level {allowed_finest}). "
+                f"See UnivDuration.MAX_FINE_FOR_COARSE."
+            )
+
         return cls(total_seconds, finest_prec)
 
     # --- Comparison operators (ordered by total seconds) ---
@@ -267,41 +302,84 @@ class UnivDuration:
     def format_for_display(self) -> str:
         """
         Decompose the duration into a human-readable compound string scaled to
-        the stored precision level, e.g.:
+        the stored precision level.
 
-            UnivDuration(31557600000000, M_YEAR)  → "1 M-year"
-            UnivDuration(90061, SECOND)           → "1 day 1 hr 1 min 1 s"
-            UnivDuration(3661,  MINUTE)           → "1 hr 1 min"
-            UnivDuration(Decimal('5.123'), -3)    → "5 s 123 ms"
-            UnivDuration(Decimal('0.001'), -3)    → "1 ms"
+        For precisions coarser than or equal to seconds the value is decomposed
+        into whole-unit pairs (e.g. "1 day 1 hr 1 min 1 s").  For sub-second
+        precisions the decomposition stops at minutes and the remaining seconds
+        are expressed as a single decimal number with exactly ``abs(precision)``
+        digits after the point:
+
+            UnivDuration(31557600000000, M_YEAR)     → "1 M-year"
+            UnivDuration(90061, SECOND)              → "1 day 1 hr 1 min 1 s"
+            UnivDuration(3661,  MINUTE)              → "1 hr 1 min"
+            UnivDuration(Decimal('90061.123'), -3)   → "1 day 1 hr 1 min 1.123 s"
+            UnivDuration(Decimal('5.123'), -3)       → "5.123 s"
+            UnivDuration(Decimal('0.001'), -3)       → "0.001 s"
+            UnivDuration(Decimal('0.000000001'), -9) → "0.000000001 s"
         """
         sign      = "-" if self.seconds < 0 else ""
         remaining = abs(self.seconds)
         parts: list[str] = []
-        bottom    = _dur_level(self)    # finest level: negative=sub-second, 0..7=coarse
-        floor     = max(0, bottom)      # highest index we loop down to
+        bottom     = _dur_level(self)   # negative = sub-second; 0..7 = coarse
 
-        # Decompose whole units from level 7 down to floor
-        for level in range(7, floor - 1, -1):
+        # When precision is sub-second, stop the whole-unit loop at minutes (level 1)
+        # and express seconds + fraction together as a decimal.
+        loop_floor = 1 if bottom < 0 else bottom
+
+        # Decompose whole units from level 7 down to loop_floor
+        for level in range(7, loop_floor - 1, -1):
             q     = UnivDuration.LEVEL_QUANTUM[level]
             count = int(remaining / q)
             if count > 0:
                 parts.append(f"{count} {_abbrev(level, count)}")
                 remaining -= count * q
 
-        # Sub-second residual
         if bottom < 0:
-            frac_q = Decimal(10) ** bottom
-            frac_n = int((remaining / frac_q).to_integral_value(ROUND_HALF_EVEN))
-            label  = UnivDuration.LEVEL_ABBREV.get(bottom, f"10^{bottom}s")
-            if frac_n > 0 or not parts:
-                parts.append(f"{frac_n} {label}")
+            # Express remaining seconds as a decimal to abs(bottom) decimal places
+            decimal_places = abs(bottom)
+            quantum        = Decimal(10) ** bottom      # e.g. Decimal("0.001") for -3
+            quantized      = remaining.quantize(quantum, rounding=ROUND_HALF_EVEN)
+            if quantized > 0 or not parts:
+                parts.append(f"{quantized:.{decimal_places}f} s")
+        else:
+            # Sub-second residual does not apply; guard against empty parts
+            pass
 
         if not parts:
             label = _abbrev(bottom, 0)
             parts.append(f"0 {label}")
 
         return sign + " ".join(parts)
+
+    def __format__(self, spec: str) -> str:
+        """
+        Format the duration using a format spec.
+
+        Format spec grammar::
+
+            spec   ::= "" | "udur" | "udur:" abbrev
+            abbrev ::= one of the LEVEL_ABBREV values (e.g. "s", "ms", "days", "µs")
+
+        Examples::
+
+            f"{dur}"           →  format_for_display() at stored precision
+            f"{dur:udur}"      →  same
+            f"{dur:udur:ms}"   →  display at millisecond precision regardless of stored precision
+            f"{dur:udur:days}" →  display at day precision
+        """
+        if spec in ("", "udur"):
+            return self.format_for_display()
+        if spec.startswith("udur:"):
+            abbrev = spec[5:]
+            rev = {v: k for k, v in UnivDuration.LEVEL_ABBREV.items()}
+            if abbrev not in rev:
+                raise ValueError(
+                    f"Unknown duration precision abbreviation {abbrev!r}. "
+                    f"Valid abbreviations: {sorted(rev)}"
+                )
+            return UnivDuration(self.seconds, precision=rev[abbrev]).format_for_display()
+        raise ValueError(f"Unsupported UnivDuration format spec {spec!r}")
 
     def __str__(self) -> str:
         if self.precision < 0:

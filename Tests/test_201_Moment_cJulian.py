@@ -4,9 +4,9 @@ Comprehensive tests for the Moment_Julian class.
 import os
 import json
 
-from SPK_UniversalTimestamp.Constants_aCommon import Calendar, UnivMomPrecision
+from SPK_UniversalTimestamp.Constants_aCommon import Calendar
 from SPK_UniversalTimestamp.Constants_Julian import julian_MONTH_ATTS
-from SPK_UniversalTimestamp.UnivMoment import UnivMoment
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment, UnivMomPrecision
 from SPK_UniversalTimestamp.Moment_bPresent_Calendars import Present_Calendars
 
 class Test_Moment_Julian: 

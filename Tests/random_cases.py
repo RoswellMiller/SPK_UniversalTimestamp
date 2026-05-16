@@ -1,7 +1,8 @@
 
 import random
 import json
-from SPK_UniversalTimestamp import Calendar, UnivMomPrecision, MomPrecLevel
+from SPK_UniversalTimestamp import Calendar, UnivMomPrecision
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment
 from decimal import Decimal
 def main():
 
@@ -15,7 +16,7 @@ def main():
         #"Mayan"
     ]
     cases = []
-    sample_case = {'index' : -1, 'calendar': 'Gregorian', 'year': 1947, 'month': 1, 'day': 20, 'hour': None, 'minute': None, 'second': None, 'precision': MomPrecLevel[UnivMomPrecision.DAY], 'description': 'Sample case for Gregorian calendar'}
+    sample_case = {'index' : -1, 'calendar': 'Gregorian', 'year': 1947, 'month': 1, 'day': 20, 'hour': None, 'minute': None, 'second': None, 'precision': UnivMoment.PREC_LEVEL[UnivMomPrecision.DAY], 'description': 'Sample case for Gregorian calendar'}
     cases.append(sample_case)
     for i in range(250):
         r = random.randint(0, len(calendars) - 1)
@@ -38,7 +39,7 @@ def main():
                 year = str(random.uniform(0.0, 66.0))
                 precision = UnivMomPrecision.MILLION_YEARS
                 description = "Cenozoic era"
-            level = MomPrecLevel[precision]
+            level = UnivMoment.PREC_LEVEL[precision]
             month = None
             day = None
             hour = None
@@ -61,37 +62,37 @@ def main():
             hour = random.randint(0, 23)
             minute = random.randint(0, 59)
             precision = random.choice(list(UnivMomPrecision))
-            if MomPrecLevel[precision] > MomPrecLevel[UnivMomPrecision.YEAR]:
+            if UnivMoment.PREC_LEVEL[precision] > UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]:
                 precision = UnivMomPrecision.YEAR
-            level = MomPrecLevel[precision]
-            if level == MomPrecLevel[UnivMomPrecision.YEAR]:
+            level = UnivMoment.PREC_LEVEL[precision]
+            if level == UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]:
                 month = None
                 day = None
                 hour = None
                 minute = None
                 second = None
-            elif level == MomPrecLevel[UnivMomPrecision.DAY]:
+            elif level == UnivMoment.PREC_LEVEL[UnivMomPrecision.DAY]:
                 hour = None
                 minute = None
                 second = None   
-            elif level == MomPrecLevel[UnivMomPrecision.HOUR]:
+            elif level == UnivMoment.PREC_LEVEL[UnivMomPrecision.HOUR]:
                 minute = None
                 second = None
-            elif level == MomPrecLevel[UnivMomPrecision.MINUTE]:
+            elif level == UnivMoment.PREC_LEVEL[UnivMomPrecision.MINUTE]:
                 second = None
-            elif level == MomPrecLevel[UnivMomPrecision.SECOND]:
+            elif level == UnivMoment.PREC_LEVEL[UnivMomPrecision.SECOND]:
                 second = str(Decimal(random.randint(0, 59)))
-            elif level == MomPrecLevel[UnivMomPrecision.MILLISECOND]:
+            elif level == UnivMoment.PREC_LEVEL[UnivMomPrecision.MILLISECOND]:
                 second = str(Decimal(random.randint(0, 59_999))/ 1_000)
-            elif level == MomPrecLevel[UnivMomPrecision.MICROSECOND]:
+            elif level == UnivMoment.PREC_LEVEL[UnivMomPrecision.MICROSECOND]:
                 second = str(Decimal(random.randint(0, 59_999_999))/ 1_000_000) 
-            elif level == MomPrecLevel[UnivMomPrecision.NANOSECOND]:
+            elif level == UnivMoment.PREC_LEVEL[UnivMomPrecision.NANOSECOND]:
                 second = str(Decimal(random.randint(0, 59_999_999_999))/ 1_000_000_000)
-            elif level == MomPrecLevel[UnivMomPrecision.PICOSECOND]:
+            elif level == UnivMoment.PREC_LEVEL[UnivMomPrecision.PICOSECOND]:
                 second = str(Decimal(random.randint(0, 59_999_999_999_999))/ 1_000_000_000_000) 
-            elif level == MomPrecLevel[UnivMomPrecision.FEMTOSECOND]:
+            elif level == UnivMoment.PREC_LEVEL[UnivMomPrecision.FEMTOSECOND]:
                 second = str(Decimal(random.randint(0, 59_999_999_999_999_999))/ 1_000_000_000_000_000)
-            elif level == MomPrecLevel[UnivMomPrecision.ATTOSECOND]:
+            elif level == UnivMoment.PREC_LEVEL[UnivMomPrecision.ATTOSECOND]:
                 second = str(Decimal(random.randint(0, 59_999_999_999_999_999_999))/ 1_000_000_000_000_000_000_000)
             description = f"Random case {i+1} in {calendar} calendar"
         case = {
