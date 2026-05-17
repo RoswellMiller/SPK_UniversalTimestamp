@@ -318,7 +318,7 @@ class UnivDuration:
             return NotImplemented
         return self._combine(self.seconds - other.seconds, other)
 
-    def format_for_display(self, override_precision: int | None = None) -> str:
+    def format_for_display(self, format: str | None = None) -> str:
         """
         Decompose the duration into a human-readable compound string scaled to
         the stored precision level (or *override_precision* when supplied).
@@ -340,7 +340,23 @@ class UnivDuration:
         sign      = "-" if self.seconds < 0 else ""
         remaining = abs(self.seconds)
         parts: list[str] = []
-        bottom     = override_precision if override_precision is not None else self.precision
+        
+        if format is not None:
+            rev = {v: k for k, v in UnivDuration.LEVEL_ABBREV.items()}
+            if format not in rev:
+                raise ValueError(
+                    f"Unknown duration precision abbreviation {format!r}. "
+                    f"Valid abbreviations: {sorted(rev)}"
+                )
+            bottom = rev[format]
+        else:
+            if self.precision >= 4:
+                # For year-scale precisions, allow display at a coarser level when
+                # the value is large enough (e.g. 10.5 M-years at k-year precision
+                # displays as "10.50 M-years", not "10 M-years 500 k-years").
+                bottom = max(_auto_precision(self.seconds), self.precision)
+            else:
+                bottom = self.precision
 
         # When precision is sub-second, stop the whole-unit loop at minutes (level 1)
         # and express seconds + fraction together as a decimal.
@@ -386,8 +402,11 @@ class UnivDuration:
         # Suppress the minus sign when the formatted output is negative-zero
         # (e.g. -0.00 M-years or -0 k-years where the value rounded to zero).
         if sign and display.startswith("0"):
-            return display
-        return sign + display
+            result = display
+        else:
+            result = sign + display
+        print(f"DEBUG: format_for_display: '{result}' ")
+        return result
 
     def __format__(self, spec: str) -> str:
         """
@@ -406,18 +425,13 @@ class UnivDuration:
             f"{dur:udur:days}" →  display at day precision
         """
         if spec == "":
-            return self.format_for_display(override_precision=_auto_precision(self.seconds))
+            auto_level  = _auto_precision(self.seconds)
+            auto_abbrev = UnivDuration.LEVEL_ABBREV.get(auto_level, f"10^{auto_level}s")
+            return self.format_for_display(format=auto_abbrev)
         if spec == "udur":
             return self.format_for_display()
         if spec.startswith("udur:"):
-            abbrev = spec[5:]
-            rev = {v: k for k, v in UnivDuration.LEVEL_ABBREV.items()}
-            if abbrev not in rev:
-                raise ValueError(
-                    f"Unknown duration precision abbreviation {abbrev!r}. "
-                    f"Valid abbreviations: {sorted(rev)}"
-                )
-            return self.format_for_display(override_precision=rev[abbrev])
+            return self.format_for_display(format=spec[5:])
         raise ValueError(f"Unsupported UnivDuration format spec {spec!r}")
 
     def __str__(self) -> str:

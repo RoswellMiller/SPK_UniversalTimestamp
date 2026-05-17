@@ -171,53 +171,73 @@ class Test_UnivDuration:
 
         # --- classic all-singular compound (docstring example) ---
         # 90061 s = 1 day + 1 hr + 1 min + 1 s
-        assert UnivDuration(90061, precision=0).format_for_display() == "1 day 1 hr 1 min 1 s"
+        r = UnivDuration(90061, precision=0).format_for_display()
+        assert r == "1 day 1 hr 1 min 1 s"
 
         # --- all-plural compound ---
         # 2*86400 + 3*3600 + 4*60 + 5 = 183845 s
-        assert UnivDuration(183845, precision=0).format_for_display() == "2 days 3 hrs 4 mins 5 s"
+        r = UnivDuration(183845, precision=0).format_for_display()
+        assert r == "2 days 3 hrs 4 mins 5 s"
 
         # --- MINUTE precision: floor stops decomposition at minute ---
         # 3661 s = 1 hr 1 min  (the trailing 1 s is below the MINUTE floor)
-        assert UnivDuration(3661, precision=1).format_for_display() == "1 hr 1 min"
+        r = UnivDuration(3661, precision=1).format_for_display()
+        assert r == "1 hr 1 min"
 
         # --- HOUR precision: 2 hrs 1 min of raw seconds but floor=HOUR ---
         # 7261 s = 2 hrs + 61 s; HOUR floor discards the residual 61 s
-        assert UnivDuration(7261, precision=2).format_for_display() == "2 hrs"
+        r = UnivDuration(7261, precision=2).format_for_display()
+        assert r == "2 hrs"
 
         # --- DAY precision: singular and plural ---
-        assert UnivDuration(86400,     precision=3).format_for_display() == "1 day"
-        assert UnivDuration(3 * 86400, precision=3).format_for_display() == "3 days"
+        r = UnivDuration(86400,     precision=3).format_for_display()
+        assert r  == "1 day"
+        r = UnivDuration(3 * 86400, precision=3).format_for_display()
+        assert r == "3 days"
 
         # --- YEAR precision: singular and plural ---
-        assert UnivDuration(Decimal('31557600'),          precision=4).format_for_display() == "1 year"
-        assert UnivDuration(Decimal('2') * UnivDuration.LEVEL_QUANTUM[4], precision=4).format_for_display() == "2 years"
+        r = UnivDuration(Decimal('31557600'),          precision=4).format_for_display()
+        assert r == "1 year"
+        r = UnivDuration(Decimal('2') * UnivDuration.LEVEL_QUANTUM[4], precision=4).format_for_display()
+        assert r == "2 years"
 
         # --- k-year, M-year, B-year: singular stripping ---
-        assert UnivDuration(UnivDuration.LEVEL_QUANTUM[5],            precision=5).format_for_display() == "1 k-year"
-        assert UnivDuration(Decimal('3') * UnivDuration.LEVEL_QUANTUM[5], precision=5).format_for_display() == "3 k-years"
-        assert UnivDuration(UnivDuration.LEVEL_QUANTUM[6],            precision=6).format_for_display()  == "1 M-year"
-        assert UnivDuration(UnivDuration.LEVEL_QUANTUM[7],            precision=7).format_for_display()  == "1 B-year"
+        r = UnivDuration(UnivDuration.LEVEL_QUANTUM[5],            precision=5).format_for_display()
+        assert r == "1 k-year"
+        r = UnivDuration(Decimal('3') * UnivDuration.LEVEL_QUANTUM[5], precision=5).format_for_display()
+        assert r == "3 k-years"
+        r = UnivDuration(UnivDuration.LEVEL_QUANTUM[6],            precision=6).format_for_display()
+        assert r   == "1 M-year"
+        r = UnivDuration(UnivDuration.LEVEL_QUANTUM[7],            precision=7).format_for_display()
+        assert r   == "1 B-year"
 
         # --- sub-second: seconds expressed as a decimal to abs(precision) places ---
-        assert UnivDuration(Decimal('5.123'), precision=-3).format_for_display() == "5.123 s"
+        r = UnivDuration(Decimal('5.123'), precision=-3).format_for_display()
+        assert r  == "5.123 s"
 
         # --- pure sub-second (no whole seconds) ---
-        assert UnivDuration(Decimal('0.001'), precision=-3).format_for_display() == "0.001 s"
+        r = UnivDuration(Decimal('0.001'), precision=-3).format_for_display()
+        assert r  == "0.001 s"
 
         # --- µs precision: compound and pure ---
-        assert UnivDuration(Decimal('1.000001'), precision=-6).format_for_display() == "1.000001 s"
-        assert UnivDuration(Decimal('0.000001'), precision=-6).format_for_display() == "0.000001 s"
+        r = UnivDuration(Decimal('1.000001'), precision=-6).format_for_display()
+        assert r  == "1.000001 s"
+        r = UnivDuration(Decimal('0.000001'), precision=-6).format_for_display()
+        assert r  == "0.000001 s"
 
         # --- coarse part + decimal seconds ---
-        assert UnivDuration(Decimal('90061.123'), precision=-3).format_for_display() == "1 day 1 hr 1 min 1.123 s"
+        r = UnivDuration(Decimal('90061.123'), precision=-3).format_for_display()
+        assert r  == "1 day 1 hr 1 min 1.123 s"
 
         # --- zero duration at whole-second and sub-second ---
-        assert UnivDuration(0,              precision=0).format_for_display() == "0 s"
-        assert UnivDuration(Decimal('0'),   precision=-3).format_for_display() == "0.000 s"
+        r = UnivDuration(0,              precision=0).format_for_display()
+        assert r  == "0 s"
+        r = UnivDuration(Decimal('0'),   precision=-3).format_for_display()
+        assert r  == "0.000 s"
 
         # --- negative duration: sign prepended, magnitudes identical ---
-        assert UnivDuration(-3661, precision=0).format_for_display() == "-1 hr 1 min 1 s"
+        r = UnivDuration(-3661, precision=0).format_for_display()
+        assert r  == "-1 hr 1 min 1 s"
 
     def test_format_for_display_fractional_coarse_units(self):
         """format_for_display preserves decimal fraction for year-scale and coarser units"""
@@ -290,7 +310,7 @@ class Test_UnivDuration:
         # --- coarse unit with decimal: subdivides one level per digit ---
         d = UnivDuration.from_string("10.5 M-years")
         assert d.precision == 5    # 6 - 1 = k-years
-        assert d.format_for_display() == "10 M-years 500 k-years"
+        assert d.format_for_display() == "10.50 M-years"
 
         # --- compound string: precision = finest level across all pairs ---
         d = UnivDuration.from_string("1 day 2 hrs 30 mins")
@@ -401,7 +421,7 @@ class Test_UnivDuration:
         with pytest.raises(ValueError, match="Unknown duration precision abbreviation"):
             format(dur, "udur:fortnight")
 
-        # --- spec without recognised prefix raises ValueError ---
+        # --- spec without recognized prefix raises ValueError ---
         with pytest.raises(ValueError, match="Unsupported UnivDuration format spec"):
             format(dur, "bad_spec")
 
