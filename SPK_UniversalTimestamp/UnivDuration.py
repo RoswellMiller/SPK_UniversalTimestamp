@@ -27,6 +27,25 @@ def _abbrev(level: int, count: int) -> str:
     return label
 
 
+def _auto_precision(seconds: Decimal) -> int:
+    """Return the coarsest level whose quantum is <= abs(seconds).
+
+    Scans from the coarsest unit (level 7, B-years) down to the finest
+    (level -18, attoseconds) and returns the first level whose quantum
+    does not exceed the magnitude.  Returns 0 (seconds) for a zero value.
+    """
+    abs_s = abs(seconds)
+    if abs_s == 0:
+        return 0
+    for level in range(7, -1, -1):
+        if abs_s >= UnivDuration.LEVEL_QUANTUM[level]:
+            return level
+    for level in range(-1, -19, -1):
+        if abs_s >= Decimal(10) ** level:
+            return level
+    return -18
+
+
 @dataclass(frozen=True)
 class UnivDuration:
     # --- Class-level read-only lookup tables ---
@@ -299,10 +318,10 @@ class UnivDuration:
             return NotImplemented
         return self._combine(self.seconds - other.seconds, other)
 
-    def format_for_display(self) -> str:
+    def format_for_display(self, override_precision: int | None = None) -> str:
         """
         Decompose the duration into a human-readable compound string scaled to
-        the stored precision level.
+        the stored precision level (or *override_precision* when supplied).
 
         For precisions coarser than or equal to seconds the value is decomposed
         into whole-unit pairs (e.g. "1 day 1 hr 1 min 1 s").  For sub-second
@@ -321,7 +340,7 @@ class UnivDuration:
         sign      = "-" if self.seconds < 0 else ""
         remaining = abs(self.seconds)
         parts: list[str] = []
-        bottom     = _dur_level(self)   # negative = sub-second; 0..7 = coarse
+        bottom     = override_precision if override_precision is not None else self.precision
 
         # When precision is sub-second, stop the whole-unit loop at minutes (level 1)
         # and express seconds + fraction together as a decimal.
@@ -381,12 +400,14 @@ class UnivDuration:
 
         Examples::
 
-            f"{dur}"           →  format_for_display() at stored precision
-            f"{dur:udur}"      →  same
+            f"{dur}"           →  auto-detect coarsest unit whose quantum <= abs(seconds)
+            f"{dur:udur}"      →  format_for_display() at stored precision
             f"{dur:udur:ms}"   →  display at millisecond precision regardless of stored precision
             f"{dur:udur:days}" →  display at day precision
         """
-        if spec in ("", "udur"):
+        if spec == "":
+            return self.format_for_display(override_precision=_auto_precision(self.seconds))
+        if spec == "udur":
             return self.format_for_display()
         if spec.startswith("udur:"):
             abbrev = spec[5:]
@@ -396,7 +417,7 @@ class UnivDuration:
                     f"Unknown duration precision abbreviation {abbrev!r}. "
                     f"Valid abbreviations: {sorted(rev)}"
                 )
-            return UnivDuration(self.seconds, precision=rev[abbrev]).format_for_display()
+            return self.format_for_display(override_precision=rev[abbrev])
         raise ValueError(f"Unsupported UnivDuration format spec {spec!r}")
 
     def __str__(self) -> str:

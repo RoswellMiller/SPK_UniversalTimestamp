@@ -365,10 +365,12 @@ class Test_UnivDuration:
         # 90 061 s = 1 day 1 hr 1 min 1 s
         dur = UnivDuration(90061, precision=0)
 
-        # --- empty spec and 'udur' are identical to format_for_display() ---
-        assert f"{dur}"        == dur.format_for_display()
-        assert f"{dur:udur}"   == dur.format_for_display()
-        assert format(dur, "")     == dur.format_for_display()
+        # --- empty spec auto-detects coarsest unit (days for 90 061 s) ---
+        assert f"{dur}"        == "1 day"
+        assert format(dur, "") == "1 day"
+
+        # --- 'udur' delegates to format_for_display() at stored precision ---
+        assert f"{dur:udur}"       == dur.format_for_display()
         assert format(dur, "udur") == dur.format_for_display()
 
         # --- precision override: abbreviation coarser than stored ---
@@ -420,4 +422,59 @@ class Test_UnivDuration:
         # Exact zero → no sign
         assert UnivDuration(0, precision=6).format_for_display() == "0 M-years"
         assert UnivDuration(Decimal("0"), precision=5).format_for_display() == "0 k-years"
+
+    # ------------------------------------------------------------------
+    # Auto-detection of coarseness in f"{dur}" (empty spec)
+    # ------------------------------------------------------------------
+    def test_format_auto_detect_coarse(self):
+        """f'{dur}' (no spec) auto-detects the coarsest unit whose quantum <= abs(seconds)"""
+        Q = UnivDuration.LEVEL_QUANTUM
+
+        # years (level 4): 1 Julian year stored at second precision
+        dur_yr = UnivDuration(Q[4], precision=0)
+        assert f"{dur_yr}" == "1 year"
+
+        dur_3yr = UnivDuration(Decimal("3") * Q[4], precision=0)
+        assert f"{dur_3yr}" == "3 years"
+
+        # k-years (level 5)
+        dur_kyr = UnivDuration(Q[5], precision=0)
+        assert f"{dur_kyr}" == "1 k-year"
+
+        dur_4kyr = UnivDuration(Decimal("4") * Q[5], precision=0)
+        assert f"{dur_4kyr}" == "4 k-years"
+
+        # M-years (level 6)
+        dur_myr = UnivDuration(Q[6], precision=0)
+        assert f"{dur_myr}" == "1 M-year"
+
+        dur_5myr = UnivDuration(Decimal("5") * Q[6], precision=0)
+        assert f"{dur_5myr}" == "5 M-years"
+
+        # G/B-years (level 7 — 10^9 Julian years)
+        dur_byr = UnivDuration(Q[7], precision=0)
+        assert f"{dur_byr}" == "1 B-year"
+
+        dur_2byr = UnivDuration(Decimal("2") * Q[7], precision=0)
+        assert f"{dur_2byr}" == "2 B-years"
+
+        # Fractional M-years stored at M-year precision
+        dur_frac_m = UnivDuration(Decimal("2.5") * Q[6], precision=6)
+        assert f"{dur_frac_m}" == "2.50 M-years"
+
+        # Fractional k-years stored at k-year precision
+        dur_frac_k = UnivDuration(Decimal("1.75") * Q[5], precision=5)
+        assert f"{dur_frac_k}" == "1.75 k-years"
+
+        # Sub-year value: 90 061 s → auto-detects days
+        dur_day = UnivDuration(90061, precision=0)
+        assert f"{dur_day}" == "1 day"
+
+        # Zero → falls back to seconds
+        dur_zero = UnivDuration(0, precision=0)
+        assert f"{dur_zero}" == "0 s"
+
+        # Negative: 2 M-years in the past
+        dur_neg = UnivDuration(Decimal("-2") * Q[6], precision=6)
+        assert f"{dur_neg}" == "-2 M-years"
 
