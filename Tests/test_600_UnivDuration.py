@@ -402,3 +402,22 @@ class Test_UnivDuration:
         # --- spec without recognised prefix raises ValueError ---
         with pytest.raises(ValueError, match="Unsupported UnivDuration format spec"):
             format(dur, "bad_spec")
+
+    # ------------------------------------------------------------------
+    # Negative-zero display guard
+    # ------------------------------------------------------------------
+    def test_no_negative_zero_display(self):
+        """format_for_display never emits '-0…' when the value rounds to zero"""
+        Q = UnivDuration.LEVEL_QUANTUM
+
+        # Small negative seconds at M-year precision → rounds to zero display
+        small_neg = UnivDuration(-110_451_600_000, precision=6)   # ~ -3.5 k-years at M-yr scale
+        display = small_neg.format_for_display()
+        assert not display.startswith("-"), \
+            f"Expected no leading '-' for near-zero M-year display, got '{display}'"
+        assert display == "0.00 M-years", f"Expected '0.00 M-years', got '{display}'"
+
+        # Exact zero → no sign
+        assert UnivDuration(0, precision=6).format_for_display() == "0 M-years"
+        assert UnivDuration(Decimal("0"), precision=5).format_for_display() == "0 k-years"
+

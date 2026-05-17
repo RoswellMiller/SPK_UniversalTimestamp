@@ -178,3 +178,39 @@ class Test_Geological:
             f"Expected '66.00 Ma | Phanerozoic | Mesozoic', got '{result}'"
 
         print(f"✅ SUCCESS: {self.test_format_G_annum_notation.__doc__}")
+
+    # ------------------------------------------------------------------
+    # Subtraction of geological moments
+    # ------------------------------------------------------------------
+    def test_geological_ka_subtraction(self):
+        """Subtracting two ka-scale geological moments gives k-years, not M-years"""
+        # 11.70 ka − 8.20 ka = 3.50 k-years (using explicit THOUSAND_YEARS precision)
+        m1 = UnivMoment.from_geological(11.70, precision=UnivMomPrecision.THOUSAND_YEARS)
+        m2 = UnivMoment.from_geological(8.20,  precision=UnivMomPrecision.THOUSAND_YEARS)
+        dur = m1 - m2
+        assert dur.precision == 5, \
+            f"Expected precision 5 (THOUSAND_YEARS), got {dur.precision}"
+        assert dur.format_for_display() == "-3.50 k-years", \
+            f"Expected '-3.50 k-years', got '{dur.format_for_display()}'"
+        print(f"✅ SUCCESS: {self.test_geological_ka_subtraction.__doc__}")
+
+    def test_geological_ka_vs_ma_precision_difference(self):
+        """Demonstrates why ka values require precision=THOUSAND_YEARS.
+
+        Passing ka-scale values (e.g. 0.01170 Ma = 11.70 ka) with the default
+        MILLION_YEARS precision causes the ~3.5 k-year difference to round to
+        zero at the M-year display quantum.  The negative-zero guard ensures
+        the display reads '0.00 M-years' rather than '-0.00 M-years'.
+        """
+        # Expressed as fractions of a million year (wrong approach for ka values)
+        m1_ma = UnivMoment.from_geological(Decimal("0.01170"))   # default = MILLION_YEARS
+        m2_ma = UnivMoment.from_geological(Decimal("0.00820"))
+        dur_ma = m1_ma - m2_ma
+        assert dur_ma.precision == 6, \
+            "Both moments carry MILLION_YEARS precision → result must also be M-year scale"
+        display = dur_ma.format_for_display()
+        assert not display.startswith("-"), \
+            f"Negative-zero guard failed: got '{display}'"
+        assert display == "0.00 M-years", \
+            f"Expected '0.00 M-years' (rounds to zero at M-year scale), got '{display}'"
+        print(f"✅ SUCCESS: {self.test_geological_ka_vs_ma_precision_difference.__doc__}")

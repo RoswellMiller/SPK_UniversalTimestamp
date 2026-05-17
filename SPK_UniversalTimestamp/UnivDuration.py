@@ -363,7 +363,12 @@ class UnivDuration:
             label = _abbrev(bottom, 0)
             parts.append(f"0 {label}")
 
-        return sign + " ".join(parts)
+        display = " ".join(parts)
+        # Suppress the minus sign when the formatted output is negative-zero
+        # (e.g. -0.00 M-years or -0 k-years where the value rounded to zero).
+        if sign and display.startswith("0"):
+            return display
+        return sign + display
 
     def __format__(self, spec: str) -> str:
         """
