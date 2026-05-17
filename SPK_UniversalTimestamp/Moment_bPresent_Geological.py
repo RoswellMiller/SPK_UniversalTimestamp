@@ -930,25 +930,35 @@ class Present_Geological(UnivMoment.Presentation):
         if seg_type in 'Yy':
             """
             Format the year component based on the segment type and language.
+            Auto-scales down to the next finer unit when the value would have
+            a leading zero (i.e., |year| < the current unit's magnitude), so
+            that at least one non-zero digit appears to the left of the decimal.
+            Example: -770,000 yr at MILLION_YEARS precision → "-770.00 k-yr"
+            instead of "-0.77 M-yr".
             """
-            if self.precision == UnivMomPrecision.BILLION_YEARS:
+            # Cascade the effective display unit downward if needed
+            effective_precision = self.precision
+            if effective_precision == UnivMomPrecision.BILLION_YEARS and abs(self.year) < 1_000_000_000:
+                effective_precision = UnivMomPrecision.MILLION_YEARS
+            if effective_precision == UnivMomPrecision.MILLION_YEARS and abs(self.year) < 1_000_000:
+                effective_precision = UnivMomPrecision.THOUSAND_YEARS
+            if effective_precision == UnivMomPrecision.THOUSAND_YEARS and abs(self.year) < 1_000:
+                effective_precision = UnivMomPrecision.YEAR
+
+            if effective_precision == UnivMomPrecision.BILLION_YEARS:
                 year = f"{self.year / 1_000_000_000:.2f}"
-            elif self.precision == UnivMomPrecision.MILLION_YEARS:
+            elif effective_precision == UnivMomPrecision.MILLION_YEARS:
                 year = f"{self.year / 1_000_000:.2f}"
-            elif self.precision == UnivMomPrecision.THOUSAND_YEARS:
+            elif effective_precision == UnivMomPrecision.THOUSAND_YEARS:
                 year = f"{self.year / 1_000:.2f}"
-            elif self.precision == UnivMomPrecision.YEAR:
+            elif effective_precision == UnivMomPrecision.YEAR:
                 year = f"{self.year}"
             else:
                 raise ValueError("Year is not defined for the current precision level.")
-            # Handle negative vales
+            # Append the scaled unit abbreviation
             fmt = year
-            if seg_type == "Y":
-                if (UnivMoment.PREC_LEVEL[self.precision] > UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]):
-                    fmt += f" {UnivMoment.PREC_ABBREV[self.precision]}"
-            elif seg_type == "y":
-                if (UnivMoment.PREC_LEVEL[self.precision] > UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]):
-                    fmt += f" {UnivMoment.PREC_ABBREV[self.precision]}"
+            if UnivMoment.PREC_LEVEL[effective_precision] > UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]:
+                fmt += f" {UnivMoment.PREC_ABBREV[effective_precision]}"
             return fmt
         elif seg_type in 'O':
             """
@@ -1026,6 +1036,37 @@ class Present_Geological(UnivMoment.Presentation):
                 return "pre-epochs"
             period = GEOLOGICAL_EPOCHSandAGES[ins_pnt]
             return period["name"] if period else "Unknown epoch"
+        elif seg_type == 'G':
+            """
+            Format the year in standard geological "annum" notation (ICS/USGS convention).
+            Displays time as a *positive* magnitude with SI annum suffixes, dropping the
+            sign — the suffix itself implies "before present":
+                Ga  giga-annum   =  billion years ago
+                Ma  mega-annum   =  million years ago
+                ka  kilo-annum   =  thousand years ago
+                a   annum        =  years ago
+            Applies the same auto-scale cascade as %Y/%y to avoid leading zeros.
+            Examples:  35.33 Ma  |  770.00 ka  |  4.50 Ga  |  500 a
+            Special case: beginning_of_time (year = -Infinity) → "-Infinity"
+            """
+            if self.year.is_infinite():
+                return str(self.year)   # "-Infinity", matching %y behaviour
+            effective_precision = self.precision
+            if effective_precision == UnivMomPrecision.BILLION_YEARS and abs(self.year) < 1_000_000_000:
+                effective_precision = UnivMomPrecision.MILLION_YEARS
+            if effective_precision == UnivMomPrecision.MILLION_YEARS and abs(self.year) < 1_000_000:
+                effective_precision = UnivMomPrecision.THOUSAND_YEARS
+            if effective_precision == UnivMomPrecision.THOUSAND_YEARS and abs(self.year) < 1_000:
+                effective_precision = UnivMomPrecision.YEAR
+
+            if effective_precision == UnivMomPrecision.BILLION_YEARS:
+                return f"{abs(self.year) / 1_000_000_000:.2f} Ga"
+            elif effective_precision == UnivMomPrecision.MILLION_YEARS:
+                return f"{abs(self.year) / 1_000_000:.2f} Ma"
+            elif effective_precision == UnivMomPrecision.THOUSAND_YEARS:
+                return f"{abs(self.year) / 1_000:.2f} ka"
+            else:  # YEAR
+                return f"{abs(self.year)} a"
         else:
             return f'%{seg_type}'  # Unknown segment, return as is
         

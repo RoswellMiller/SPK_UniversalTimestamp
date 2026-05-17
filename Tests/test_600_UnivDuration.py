@@ -1,5 +1,6 @@
 from decimal import Decimal
 from SPK_UniversalTimestamp.UnivDuration import UnivDuration
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment, UnivMomPrecision
 
 class Test_UnivDuration:
     """
@@ -217,6 +218,36 @@ class Test_UnivDuration:
 
         # --- negative duration: sign prepended, magnitudes identical ---
         assert UnivDuration(-3661, precision=0).format_for_display() == "-1 hr 1 min 1 s"
+
+    def test_format_for_display_fractional_coarse_units(self):
+        """format_for_display preserves decimal fraction for year-scale and coarser units"""
+        Q = UnivDuration.LEVEL_QUANTUM
+
+        # --- M-years: 1.70 M-years worth of seconds → "1.70 M-years" ---
+        assert UnivDuration(Decimal('1.7') * Q[6], precision=6).format_for_display() == "1.70 M-years"
+
+        # --- The motivating case: (-23.03 M-yr) - (-5.33 M-yr) = 17.70 M-yr ---
+        m1 = UnivMoment.from_geological(23.03, precision=UnivMomPrecision.MILLION_YEARS)
+        m2 = UnivMoment.from_geological(5.33,  precision=UnivMomPrecision.MILLION_YEARS)
+        dur = m1 - m2
+        assert dur.format_for_display() == "-17.70 M-years", \
+            f"Expected '-17.70 M-years', got '{dur.format_for_display()}'"
+
+        # --- k-years fractional: 1.50 k-years ---
+        assert UnivDuration(Decimal('1.5') * Q[5], precision=5).format_for_display() == "1.50 k-years"
+
+        # --- B-years fractional: 2.25 B-years ---
+        assert UnivDuration(Decimal('2.25') * Q[7], precision=7).format_for_display() == "2.25 B-years"
+
+        # --- Whole-number values are unchanged (no spurious .00 added) ---
+        assert UnivDuration(Q[6],            precision=6).format_for_display() == "1 M-year"
+        assert UnivDuration(Decimal('3') * Q[5], precision=5).format_for_display() == "3 k-years"
+        assert UnivDuration(Q[7],            precision=7).format_for_display() == "1 B-year"
+
+        # --- Negative fractional coarse duration ---
+        assert UnivDuration(Decimal('-1.7') * Q[6], precision=6).format_for_display() == "-1.70 M-years"
+
+        print(f"✅ SUCCESS: {self.test_format_for_display_fractional_coarse_units.__doc__}")
 
     def test_class_constants(self):
         """LEVEL_QUANTUM and LEVEL_ABBREV are public, read-only MappingProxyType class vars"""

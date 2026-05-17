@@ -330,10 +330,23 @@ class UnivDuration:
         # Decompose whole units from level 7 down to loop_floor
         for level in range(7, loop_floor - 1, -1):
             q     = UnivDuration.LEVEL_QUANTUM[level]
-            count = int(remaining / q)
-            if count > 0:
-                parts.append(f"{count} {_abbrev(level, count)}")
-                remaining -= count * q
+            if level == loop_floor and bottom >= 4:
+                # For year-scale and coarser units (years, k-years, M-years, B-years),
+                # preserve any fractional part so that values like 17.70 M-years are
+                # not silently truncated to 17 M-years.
+                value   = remaining / q
+                int_val = int(value)
+                if value != int_val:          # fractional part present → decimal display
+                    if value > 0 or not parts:
+                        parts.append(f"{value:.2f} {_abbrev(level, 2)}")  # 2 → always plural
+                else:                         # exact whole-unit value → integer display
+                    if int_val > 0 or not parts:
+                        parts.append(f"{int_val} {_abbrev(level, int_val)}")
+            else:
+                count = int(remaining / q)
+                if count > 0:
+                    parts.append(f"{count} {_abbrev(level, count)}")
+                    remaining -= count * q
 
         if bottom < 0:
             # Express remaining seconds as a decimal to abs(bottom) decimal places

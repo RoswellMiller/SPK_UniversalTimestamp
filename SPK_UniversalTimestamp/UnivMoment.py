@@ -65,8 +65,9 @@ from .Constants_Julian import julian_MONTH_ATTS
 getcontext().prec = 50
 
 # ---------------------------------------------------------------------------
-# Calendar abbreviation map for UnivMoment.__format__.
+# Calendar abbreviation map for UnivMoment.__format__ (ucal: prefix only).
 # Keys are lower-cased before lookup; maps to Calendar enum members.
+# Geological calendar is handled exclusively via the "ugeo:" prefix.
 # ---------------------------------------------------------------------------
 _FORMAT_CAL_ABBREV: dict[str, Calendar] = {
     # Full Calendar names (lower-case)
@@ -74,19 +75,22 @@ _FORMAT_CAL_ABBREV: dict[str, Calendar] = {
     "julian":     Calendar.JULIAN,
     "hebrew":     Calendar.HEBREW,
     "chinese":    Calendar.CHINESE,
-    "geological": Calendar.GEOLOGICAL,
     # Short mnemonic codes
     "greg": Calendar.GREGORIAN,
     "jul":  Calendar.JULIAN,
     "heb":  Calendar.HEBREW,
     "chin": Calendar.CHINESE,
-    "geo":  Calendar.GEOLOGICAL,
     # CalendarAtts 'abbrv' codes (lower-cased)
     "jc": Calendar.JULIAN,
     "am": Calendar.HEBREW,
     "cc": Calendar.CHINESE,
-    "ge": Calendar.GEOLOGICAL,
 }
+
+# Default geological format string used by the "wrong prefix" fallbacks.
+_GEO_DEFAULT_FMT: str = "%G %O"
+
+# Minimum rd_day value for which calendar systems are defined (~year −9999).
+_CAL_RD_MIN: Decimal = Decimal('-9999') * Decimal('365.25')
 
 
 @dataclass(frozen=True, eq=False)
@@ -483,30 +487,58 @@ class UnivMoment:
 
         Format spec grammar::
 
-            spec      ::= "" | "umom" | "umom:" cal_abbrv ":" fmt_str
-            cal_abbrv ::= "greg" | "jul" | "heb" | "chin" | "geo"
-                          (also full Calendar names and CalendarAtts codes: "JC", "AM", "CC", "Ge")
+            spec      ::= "" | "umom"
+                        | "ugeo:" fmt_str
+                        | "ucal:" cal_abbrv ":" fmt_str
+            cal_abbrv ::= "greg" | "jul" | "heb" | "chin"
+                          (also full Calendar names and CalendarAtts codes: "JC", "AM", "CC")
             fmt_str   ::= present() format string, e.g. "%Y-%m-%d %H:%M:%S"
+
+        ``ugeo:`` always routes to the geological calendar.  If the moment's
+        ``rd_day > 0`` (after AD 1, not a geological date) the format string is
+        ignored and :meth:`format_signature` is returned as the calendar default.
+
+        ``ucal:`` routes to the specified non-geological calendar.  If the
+        moment's ``rd_day < -9999 * 365.25`` (too ancient for any calendar
+        system) the format string is ignored and a geological default display
+        ``"%y %O"`` is returned instead.
 
         The time zone defaults to ``'UTC'`` and the language to ``'en'``.
         For non-default tz or language use :meth:`present` directly.
 
         Examples::
 
-            f"{moment}"                         →  format_signature()
-            f"{moment:umom}"                    →  format_signature()
-            f"{moment:umom:greg:%Y-%m-%d}"      →  Gregorian date (UTC, en)
-            f"{moment:umom:heb:%d %B %Y AM}"    →  Hebrew calendar
-            f"{moment:umom:geo:%y %O}"          →  Geological format
+            f"{moment}"                            →  format_signature()
+            f"{moment:umom}"                       →  format_signature()
+            f"{geo_moment:ugeo:%Y | %O | %R}"      →  Geological date
+            f"{geo_moment:ugeo:%y %O}"             →  Geological compact
+            f"{moment:ucal:greg:%Y-%m-%d}"         →  Gregorian date (UTC, en)
+            f"{moment:ucal:heb:%d %B %Y AM}"       →  Hebrew calendar
         """
         if spec in ("", "umom"):
             return self.format_signature()
-        if spec.startswith("umom:"):
+
+        # ugeo: — Geological calendar; format string follows directly after the prefix.
+        if spec.startswith("ugeo:"):
+            fmt_str = spec[5:]
+            if self.rd_day > 0:
+                # Date is after AD 1 — not a geological moment.
+                # Fall back to the calendar default: format_signature().
+                return self.format_signature()
+            return self.present(Calendar.GEOLOGICAL, fmt_str)
+
+        # ucal: — Non-geological calendar; "ucal:<cal>:<fmt>".
+        if spec.startswith("ucal:"):
             rest = spec[5:]
+            if self.rd_day < _CAL_RD_MIN:
+                # Too ancient for any calendar system.
+                # Fall back to the geological default format.
+                from .Moment_bPresent_Geological import Present_Geological
+                return Present_Geological(self)._format(_GEO_DEFAULT_FMT, 'en')
             colon = rest.find(":")
             if colon == -1:
                 raise ValueError(
-                    f"UnivMoment format spec 'umom:<cal>:<fmt>' is missing format string: {spec!r}"
+                    f"UnivMoment format spec 'ucal:<cal>:<fmt>' is missing format string: {spec!r}"
                 )
             cal_key = rest[:colon].lower()
             fmt_str = rest[colon + 1:]
@@ -516,6 +548,7 @@ class UnivMoment:
                     f"Valid abbreviations: {sorted(_FORMAT_CAL_ABBREV)}"
                 )
             return self.present(_FORMAT_CAL_ABBREV[cal_key], fmt_str)
+
         raise ValueError(f"Unsupported UnivMoment format spec {spec!r}")
 
     @staticmethod
@@ -589,7 +622,7 @@ class UnivMoment:
             return Present_Geological(self)._format(format, language)
         elif self.rd_day < -9999*Decimal('365.25'):
             from .Moment_bPresent_Geological import Present_Geological
-            return Present_Geological(self)._format("%y %O", language)
+            return Present_Geological(self)._format(_GEO_DEFAULT_FMT, language)
         elif calendar == Calendar.GREGORIAN:
             from .Moment_cPresent_Gregorian import Present_Gregorian
             return Present_Gregorian(self, tz)._format(format, language)

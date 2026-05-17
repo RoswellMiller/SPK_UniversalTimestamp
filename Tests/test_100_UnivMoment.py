@@ -99,7 +99,7 @@ class Test_Moment_aUniversal:
     # __format__ spec
     # ------------------------------------------------------------------
     def test_format_spec(self):
-        """f-string format spec: '' | 'umom' | 'umom:<cal>:<fmt>'"""
+        """f-string format spec: '' | 'umom' | 'ugeo:<fmt>' | 'ucal:<cal>:<fmt>'"""
         import pytest
 
         moment = UnivMoment.from_gregorian(2025, 9, 8, description="Format spec test date")
@@ -110,42 +110,50 @@ class Test_Moment_aUniversal:
         assert format(moment, "")     == moment.format_signature()
         assert format(moment, "umom") == moment.format_signature()
 
-        # --- Gregorian: short mnemonic and full name ---
+        # --- Gregorian: ucal: short mnemonic and full name ---
         greg_fmt = moment.present(Calendar.GREGORIAN, "%Y-%m-%d")
-        assert f"{moment:umom:greg:%Y-%m-%d}"      == greg_fmt
-        assert f"{moment:umom:gregorian:%Y-%m-%d}" == greg_fmt
+        assert f"{moment:ucal:greg:%Y-%m-%d}"      == greg_fmt
+        assert f"{moment:ucal:gregorian:%Y-%m-%d}" == greg_fmt
 
         # --- Julian calendar: mnemonic and CalendarAtts code ---
         jul_fmt = moment.present(Calendar.JULIAN, "%Y-%m-%d")
-        assert f"{moment:umom:jul:%Y-%m-%d}" == jul_fmt
-        assert f"{moment:umom:jc:%Y-%m-%d}"  == jul_fmt
+        assert f"{moment:ucal:jul:%Y-%m-%d}" == jul_fmt
+        assert f"{moment:ucal:jc:%Y-%m-%d}"  == jul_fmt
 
         # --- Hebrew calendar: mnemonic and CalendarAtts code ---
         heb_fmt = moment.present(Calendar.HEBREW, "%d/%m/%Y")
-        assert f"{moment:umom:heb:%d/%m/%Y}" == heb_fmt
-        assert f"{moment:umom:am:%d/%m/%Y}"  == heb_fmt
+        assert f"{moment:ucal:heb:%d/%m/%Y}" == heb_fmt
+        assert f"{moment:ucal:am:%d/%m/%Y}"  == heb_fmt
 
-        # --- Geological calendar ---
+        # --- Geological calendar: ugeo: (no calendar specifier needed) ---
         geo_moment = UnivMoment.from_geological(0.5, precision=UnivMomPrecision.MILLION_YEARS)
         geo_fmt = geo_moment.present(Calendar.GEOLOGICAL, "%Y | %O | %R")
-        assert f"{geo_moment:umom:geo:%Y | %O | %R}" == geo_fmt
-        assert f"{geo_moment:umom:ge:%Y | %O | %R}"  == geo_fmt
+        assert f"{geo_moment:ugeo:%Y | %O | %R}" == geo_fmt
 
         # --- fmt_str containing ':' characters is preserved intact ---
         time_fmt = moment.present(Calendar.GREGORIAN, "%H:%M:%S")
-        assert f"{moment:umom:greg:%H:%M:%S}" == time_fmt
+        assert f"{moment:ucal:greg:%H:%M:%S}" == time_fmt
 
         # --- full datetime format string (contains colons) ---
         full_fmt = moment.present(Calendar.GREGORIAN, "%Y-%m-%d %H:%M:%S")
-        assert f"{moment:umom:greg:%Y-%m-%d %H:%M:%S}" == full_fmt
+        assert f"{moment:ucal:greg:%Y-%m-%d %H:%M:%S}" == full_fmt
+
+        # --- "wrong prefix" fallbacks ---
+        # ugeo: on a positive-rdate (calendar) date → format_signature() as calendar default
+        assert f"{moment:ugeo:%Y | %O | %R}" == moment.format_signature()
+
+        # ucal: on a geological (very ancient) date → geological default "%G %O"
+        ancient = UnivMoment.from_geological(100, precision=UnivMomPrecision.MILLION_YEARS)
+        geo_default = ancient.present(Calendar.GEOLOGICAL, "%G %O")
+        assert f"{ancient:ucal:greg:%Y-%m-%d}" == geo_default
 
         # --- unknown calendar abbreviation raises ValueError ---
         with pytest.raises(ValueError, match="Unknown calendar abbreviation"):
-            format(moment, "umom:xyz:%Y-%m-%d")
+            format(moment, "ucal:xyz:%Y-%m-%d")
 
         # --- missing format string (no second colon) raises ValueError ---
         with pytest.raises(ValueError, match="missing format string"):
-            format(moment, "umom:greg")
+            format(moment, "ucal:greg")
 
         # --- spec without recognised prefix raises ValueError ---
         with pytest.raises(ValueError, match="Unsupported UnivMoment format spec"):

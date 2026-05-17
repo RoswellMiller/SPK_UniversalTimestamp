@@ -83,11 +83,11 @@ next_week = t1 + one_week
 print(next_week.present(Calendar.GREGORIAN, "%Y-%m-%d"))
 
 # f-string format spec (__format__ protocol)
-print(f"{greg_date}")                                # → format_signature() result
-print(f"{greg_date:umom:greg:%Y-%m-%d}")             # → "2025-09-08"
-print(f"{greg_date:umom:gregorian:%A, %B %d, %Y}")   # → "Monday, September 08, 2025"
-print(f"{greg_date:umom:jul:%d/%m/%Y}")              # → Julian calendar date
-print(f"{greg_date:umom:heb:%d %B %Y}")              # → Hebrew calendar date
+print(f"{greg_date}")                                 # → format_signature() result
+print(f"{greg_date:ucal:greg:%Y-%m-%d}")              # → "2025-09-08"
+print(f"{greg_date:ucal:gregorian:%A, %B %d, %Y}")    # → "Monday, September 08, 2025"
+print(f"{greg_date:ucal:jul:%d/%m/%Y}")               # → Julian calendar date
+print(f"{greg_date:ucal:heb:%d %B %Y}")               # → Hebrew calendar date
 ```
 
 ### UnivDuration
@@ -297,34 +297,50 @@ f"{dur:udur:mins}" # → "1 day 1 hr 1 min"       (coarsen to MINUTE precision)
 #### UnivMoment Format Spec
 
 ```
-format_spec ::= "" | "umom" | "umom:" cal_key ":" fmt_str
+format_spec ::= "" | "umom"
+              | "ugeo:" fmt_str
+              | "ucal:" cal_key ":" fmt_str
 cal_key     ::= (case-insensitive) calendar abbreviation — see table below
 fmt_str     ::= calendar-specific format string (may itself contain ":")
 ```
+
+`ugeo:` always routes to the geological calendar.  If the moment's `rd_day > 0`
+(after AD 1, not a geological date) the format string is ignored and
+`format_signature()` is returned as a calendar-range default.
+
+`ucal:` routes to the specified non-geological calendar.  If the moment's
+`rd_day < −9999 × 365.25` (too ancient for any calendar system) the format
+string is ignored and a geological default display `"%y %O"` is returned
+instead.
 
 Raises `ValueError` for an unrecognised spec or an unknown `cal_key`.
 
 ```
 moment = UnivMoment.from_gregorian(2025, 9, 8)
+geo    = UnivMoment.from_geological(66, precision=UnivMomPrecision.MILLION_YEARS)
 
-f"{moment}"                            # → format_signature() result
-f"{moment:umom}"                       # → identical to above
-f"{moment:umom:greg:%Y-%m-%d}"        # → "2025-09-08"
-f"{moment:umom:gregorian:%A, %B %d}"  # → "Monday, September 08"
-f"{moment:umom:jul:%d/%m/%Y}"         # → Julian calendar date
-f"{moment:umom:heb:%A %d %B, %Y}"    # → Hebrew calendar date
-f"{moment:umom:greg:%H:%M:%S}"        # colons inside fmt_str are preserved
+f"{moment}"                             # → format_signature() result
+f"{moment:umom}"                        # → identical to above
+f"{geo:ugeo:%Y | %O | %R}"             # → "66.00 M-yr BCE | Cenozoic | …"
+f"{geo:ugeo:%y %O}"                    # → "-66.00 M-yr Cenozoic"
+f"{moment:ucal:greg:%Y-%m-%d}"         # → "2025-09-08"
+f"{moment:ucal:gregorian:%A, %B %d}"   # → "Monday, September 08"
+f"{moment:ucal:jul:%d/%m/%Y}"          # → Julian calendar date
+f"{moment:ucal:heb:%A %d %B, %Y}"     # → Hebrew calendar date
+f"{moment:ucal:greg:%H:%M:%S}"         # colons inside fmt_str are preserved
 ```
 
-**Calendar abbreviations recognised by `umom:`** (all case-insensitive):
+**Calendar abbreviations recognised by `ucal:`** (all case-insensitive):
 
-| Abbreviation(s)            | Calendar   | `Calendar` enum          |
-|:---------------------------|:-----------|:-------------------------|
-| `gregorian`, `greg`        | Gregorian  | `Calendar.GREGORIAN`     |
-| `julian`, `jul`, `jc`      | Julian     | `Calendar.JULIAN`        |
-| `hebrew`, `heb`, `am`      | Hebrew     | `Calendar.HEBREW`        |
-| `chinese`, `chin`, `cc`    | Chinese    | `Calendar.CHINESE`       |
-| `geological`, `geo`, `ge`  | Geological | `Calendar.GEOLOGICAL`    |
+| Abbreviation(s)         | Calendar  | `Calendar` enum       |
+|:------------------------|:----------|:----------------------|
+| `gregorian`, `greg`     | Gregorian | `Calendar.GREGORIAN`  |
+| `julian`, `jul`, `jc`   | Julian    | `Calendar.JULIAN`     |
+| `hebrew`, `heb`, `am`   | Hebrew    | `Calendar.HEBREW`     |
+| `chinese`, `chin`, `cc` | Chinese   | `Calendar.CHINESE`    |
+
+The geological calendar is accessed exclusively via the `ugeo:` prefix (no
+calendar specifier needed).
 
 **Format codes — Gregorian, Julian, and Hebrew (shared set):**
 
