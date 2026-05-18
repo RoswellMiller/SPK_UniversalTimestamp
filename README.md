@@ -267,7 +267,7 @@ f"{dur:udur:mins}" # → "1 day 1 hr 1 min"       (coarsen to MINUTE precision)
 
 | Abbrev   | Level | Description          |
 |:---------|------:|:---------------------|
-| `B-years`|     7 | billion years        |
+| `G-years`|     7 | giga-years (10⁹ Julian years) |
 | `M-years`|     6 | million years        |
 | `k-years`|     5 | thousand years       |
 | `years`  |     4 | years                |
@@ -600,10 +600,9 @@ twine upload --repository testpypi dist/*
 twine upload dist/*
 ```
 
-## 🚧 Active Development Branch
+## Active Development
 
-We are currently working on `release/v1.1.0`.  
-Please submit bug fixes and enhancements to this branch until the next stable release.
+Development continues on the `main` branch.  The current stable release is **v2.0.3**.
 
 ## Contributing
 
@@ -638,16 +637,38 @@ See the [LICENSE](LICENSE) file for complete terms and conditions.
 
 ## Changelog
 
-### [1.1.0] - 2026-05-13
+See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
-#### Added
-- `UnivDuration` class — immutable, frozen dataclass representing a time span as a `Decimal` number of seconds with a plain-`int` precision level.  Supports arithmetic (`+`, `-`), comparison, `format_for_display()`, dict/lexical-key serialization.
-- `MomPrecLevel`, `MomLevelPrec`, `MomPrecPower`, `MomPrecAbbrev` — four precision attribute dicts exported from the package, replacing the old `PrecisionAtts` dict-of-dicts.
-- `UnivMoment.__sub__(UnivMoment)` now returns a `UnivDuration`.
-- `UnivMoment.__add__(UnivDuration)` and `UnivMoment.__sub__(UnivDuration)` now return a `UnivMoment`.
+### [2.0.3] - 2026-05-18
 
 #### Changed
-- `UnivMomPrecision.MONTH` has been **removed**. Month length is calendar-specific (Gregorian, Hebrew, and Chinese months differ) and cannot represent a universal time quantum. Constructors that accept a `month` argument continue to work; precision defaults to `DAY`.
+- Display string for precision level 7 renamed from `B-years` to `G-years` (giga-annum, Ga),
+  consistent with cosmological convention.  `UnivDuration.from_string()` now accepts `G-years` /
+  `G-year`; the `>G-years` decompose prefix also works.  `UnivMoment.from_string()` accepts
+  both `GYA` and legacy `BYA` geological strings.
+
+### [2.0.2] - 2026-05-17
+
+#### Added
+- 4-decimal-place display for fractional year-scale durations (levels 4–7).
+- Decompose mode — `format_for_display(">unit")` / `f"{dur:udur:>unit}"` expands a coarse
+  duration into a compound string down to the named unit.
+- Negative-zero guard in `format_for_display()`.
+
+### [2.0.0] - 2026-05-15
+
+#### Added
+- `UnivDuration` class — immutable frozen dataclass for time spans with arithmetic,
+  comparison, `format_for_display()`, and dict/lexical-key serialization.
+- `UnivDuration.LEVEL_QUANTUM` and `LEVEL_ABBREV` — public read-only `ClassVar[MappingProxyType]`
+  constants replacing the former private module-level dicts.
+- `UnivDuration.from_string(text)` — parses compound human-readable duration strings.
+- `UnivMoment.__sub__(UnivMoment)` now returns a `UnivDuration`.
+- `UnivMoment.__add__` / `__sub__` with a `UnivDuration` argument now return a `UnivMoment`.
+
+#### Changed
+- `UnivMomPrecision.MONTH` removed — month length is calendar-specific and cannot represent
+  a universal time quantum.
 - `UnivDuration.precision` is now a plain `int` instead of a `UnivDurPrecision` enum value. The integer values match `MomPrecLevel` exactly (0 = second, 3 = day, 7 = billion-year, -3 = ms, -18 = as).
 - `UnivDurPrecision` enum has been **removed**; use plain `int` literals or `MomPrecLevel[prec]` instead.
 

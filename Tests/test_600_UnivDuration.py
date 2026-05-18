@@ -201,7 +201,7 @@ class Test_UnivDuration:
         r = UnivDuration(Decimal('2') * UnivDuration.LEVEL_QUANTUM[4], precision=4).format_for_display()
         assert r == "2 years"
 
-        # --- k-year, M-year, B-year: singular stripping ---
+        # --- k-year, M-year, G-year: singular stripping ---
         r = UnivDuration(UnivDuration.LEVEL_QUANTUM[5],            precision=5).format_for_display()
         assert r == "1 k-year"
         r = UnivDuration(Decimal('3') * UnivDuration.LEVEL_QUANTUM[5], precision=5).format_for_display()
@@ -209,7 +209,7 @@ class Test_UnivDuration:
         r = UnivDuration(UnivDuration.LEVEL_QUANTUM[6],            precision=6).format_for_display()
         assert r   == "1 M-year"
         r = UnivDuration(UnivDuration.LEVEL_QUANTUM[7],            precision=7).format_for_display()
-        assert r   == "1 B-year"
+        assert r   == "1 G-year"
 
         # --- sub-second: seconds expressed as a decimal to abs(precision) places ---
         r = UnivDuration(Decimal('5.123'), precision=-3).format_for_display()
@@ -243,31 +243,88 @@ class Test_UnivDuration:
         """format_for_display preserves decimal fraction for year-scale and coarser units"""
         Q = UnivDuration.LEVEL_QUANTUM
 
-        # --- M-years: 1.70 M-years worth of seconds → "1.70 M-years" ---
-        assert UnivDuration(Decimal('1.7') * Q[6], precision=6).format_for_display() == "1.70 M-years"
+        # --- M-years: 1.7000 M-years worth of seconds → "1.7000 M-years" ---
+        assert UnivDuration(Decimal('1.7') * Q[6], precision=6).format_for_display() == "1.7000 M-years"
 
         # --- The motivating case: (-23.03 M-yr) - (-5.33 M-yr) = 17.70 M-yr ---
         m1 = UnivMoment.from_geological(23.03, precision=UnivMomPrecision.MILLION_YEARS)
         m2 = UnivMoment.from_geological(5.33,  precision=UnivMomPrecision.MILLION_YEARS)
         dur = m1 - m2
-        assert dur.format_for_display() == "-17.70 M-years", \
-            f"Expected '-17.70 M-years', got '{dur.format_for_display()}'"
+        assert dur.format_for_display() == "-17.7000 M-years", \
+            f"Expected '-17.7000 M-years', got '{dur.format_for_display()}'"
 
-        # --- k-years fractional: 1.50 k-years ---
-        assert UnivDuration(Decimal('1.5') * Q[5], precision=5).format_for_display() == "1.50 k-years"
+        # --- k-years fractional: 1.5000 k-years ---
+        assert UnivDuration(Decimal('1.5') * Q[5], precision=5).format_for_display() == "1.5000 k-years"
 
-        # --- B-years fractional: 2.25 B-years ---
-        assert UnivDuration(Decimal('2.25') * Q[7], precision=7).format_for_display() == "2.25 B-years"
+        # --- G-years fractional: 2.2500 G-years ---
+        assert UnivDuration(Decimal('2.25') * Q[7], precision=7).format_for_display() == "2.2500 G-years"
 
         # --- Whole-number values are unchanged (no spurious .00 added) ---
         assert UnivDuration(Q[6],            precision=6).format_for_display() == "1 M-year"
         assert UnivDuration(Decimal('3') * Q[5], precision=5).format_for_display() == "3 k-years"
-        assert UnivDuration(Q[7],            precision=7).format_for_display() == "1 B-year"
+        assert UnivDuration(Q[7],            precision=7).format_for_display() == "1 G-year"
 
         # --- Negative fractional coarse duration ---
-        assert UnivDuration(Decimal('-1.7') * Q[6], precision=6).format_for_display() == "-1.70 M-years"
+        assert UnivDuration(Decimal('-1.7') * Q[6], precision=6).format_for_display() == "-1.7000 M-years"
 
         print(f"✅ SUCCESS: {self.test_format_for_display_fractional_coarse_units.__doc__}")
+
+    # ------------------------------------------------------------------
+    # format_for_display — decompose mode (">unit")
+    # ------------------------------------------------------------------
+    def test_format_for_display_decompose(self):
+        """format_for_display('>unit') decomposes through integer levels to a decimal last level"""
+        Q = UnivDuration.LEVEL_QUANTUM
+
+        # --- G-years → M-years: integer G-year, then exact integer M-years ---
+        # 1.75 G-years = 1 G-year + 750 M-years (exact integer at final level → no decimals)
+        r = UnivDuration(Decimal("1.75") * Q[7], precision=7).format_for_display(">M-years")
+        assert r == "1 G-year 750 M-years"
+
+        # 1.7321 G-years = 1 G-year + 732.1000 M-years (fractional at final level → 4dp)
+        r = UnivDuration(Decimal("1.7321") * Q[7], precision=7).format_for_display(">M-years")
+        assert r == "1 G-year 732.1000 M-years"
+
+        # --- G-years → k-years: integer G-year and M-years, integer k-years at final level ---
+        # 1.7321 G-years = 1 G-year, 732 M-years, 100 k-years (100.0 is exact integer)
+        r = UnivDuration(Decimal("1.7321") * Q[7], precision=7).format_for_display(">k-years")
+        assert r == "1 G-year 732 M-years 100 k-years"
+
+        # --- M-years → k-years: decompose 17.70 M-years ---
+        # 17.70 M-years = 17 M-years + 700 k-years (exact integer at final level)
+        r = UnivDuration(Decimal("17.70") * Q[6], precision=6).format_for_display(">k-years")
+        assert r == "17 M-years 700 k-years"
+
+        # --- M-years → years: decompose with integer years at final level ---
+        # 1.7321 M-years = 1 M-year + 732 k-years + 100 years (100.0 is exact integer)
+        r = UnivDuration(Decimal("1.7321") * Q[6], precision=6).format_for_display(">years")
+        assert r == "1 M-year 732 k-years 100 years"
+
+        # --- fractional final level: 1.73215 M-years → k-years ---
+        # 0.73215 * 1000 = 732.15 k-years (fractional → 4dp)
+        r = UnivDuration(Decimal("1.73215") * Q[6], precision=6).format_for_display(">k-years")
+        assert r == "1 M-year 732.1500 k-years"
+
+        # --- Target is coarsest unit (nothing above it to decompose) ---
+        # 17.70 M-years, decompose to M-years → single fractional value
+        r = UnivDuration(Decimal("17.70") * Q[6], precision=6).format_for_display(">M-years")
+        assert r == "17.7000 M-years"
+
+        # --- Zero at final level is suppressed when coarser parts already exist ---
+        # 1.75 G-years → k-years: 1 G-year + 750 M-years + 0 k-years → "0 k-years" suppressed
+        r = UnivDuration(Decimal("1.75") * Q[7], precision=7).format_for_display(">k-years")
+        assert r == "1 G-year 750 M-years"
+
+        # --- Negative: sign handled correctly ---
+        r = UnivDuration(Decimal("-1.75") * Q[7], precision=7).format_for_display(">M-years")
+        assert r == "-1 G-year 750 M-years"
+
+        # --- f-string spec: udur:>M-years works via __format__ ---
+        dur = UnivDuration(Decimal("1.75") * Q[7], precision=7)
+        assert f"{dur:udur:>M-years}" == "1 G-year 750 M-years"
+        assert f"{dur:udur:>k-years}" == "1 G-year 750 M-years"   # 0 k-years suppressed
+
+        print(f"✅ SUCCESS: {self.test_format_for_display_decompose.__doc__}")
 
     def test_class_constants(self):
         """LEVEL_QUANTUM and LEVEL_ABBREV are public, read-only MappingProxyType class vars"""
@@ -310,7 +367,7 @@ class Test_UnivDuration:
         # --- coarse unit with decimal: subdivides one level per digit ---
         d = UnivDuration.from_string("10.5 M-years")
         assert d.precision == 5    # 6 - 1 = k-years
-        assert d.format_for_display() == "10.50 M-years"
+        assert d.format_for_display() == "10.5000 M-years"
 
         # --- compound string: precision = finest level across all pairs ---
         d = UnivDuration.from_string("1 day 2 hrs 30 mins")
@@ -346,9 +403,9 @@ class Test_UnivDuration:
         # --- precision-span validation: absurd combinations raise ValueError ---
         import pytest
 
-        # B-years + ms: coarsest=7, finest=-3 → too fine (allowed finest=4)
+        # G-years + ms: coarsest=7, finest=-3 → too fine (allowed finest=4)
         with pytest.raises(ValueError, match="Precision span too large"):
-            UnivDuration.from_string("1 B-years 500 ms")
+            UnivDuration.from_string("1 G-years 500 ms")
 
         # M-years + µs: coarsest=6, finest=-6 → too fine (allowed finest=2)
         with pytest.raises(ValueError, match="Precision span too large"):
@@ -367,8 +424,8 @@ class Test_UnivDuration:
         assert d.precision == -2   # centiseconds
         assert d.seconds == Decimal("0.615187") * UnivDuration.LEVEL_QUANTUM[4]
 
-        # B-years + years (level 4) is exactly at the limit — must succeed
-        d = UnivDuration.from_string("1 B-years 1 year")
+        # G-years + years (level 4) is exactly at the limit — must succeed
+        d = UnivDuration.from_string("1 G-years 1 year")
         assert d.precision == 4
 
         # days + µs (level -6) is exactly at the days limit — must succeed
@@ -410,8 +467,8 @@ class Test_UnivDuration:
         # --- coarse geological level ---
         by_secs = UnivDuration.LEVEL_QUANTUM[7] * Decimal("4")
         dur_geo = UnivDuration(by_secs, precision=7)
-        assert f"{dur_geo:udur}"          == "4 B-years"
-        assert f"{dur_geo:udur:B-years}"  == "4 B-years"
+        assert f"{dur_geo:udur}"          == "4 G-years"
+        assert f"{dur_geo:udur:G-years}"  == "4 G-years"
 
         # --- microsecond abbreviation (Unicode µ) ---
         dur_us = UnivDuration(Decimal("0.000001"), precision=-6)
@@ -429,15 +486,20 @@ class Test_UnivDuration:
     # Negative-zero display guard
     # ------------------------------------------------------------------
     def test_no_negative_zero_display(self):
-        """format_for_display never emits '-0…' when the value rounds to zero"""
+        """format_for_display never emits '-0…' when the value truly rounds to all-zero digits"""
         Q = UnivDuration.LEVEL_QUANTUM
 
-        # Small negative seconds at M-year precision → rounds to zero display
+        # Small negative value that rounds to a non-zero display still keeps its sign.
         small_neg = UnivDuration(-110_451_600_000, precision=6)   # ~ -3.5 k-years at M-yr scale
         display = small_neg.format_for_display()
-        assert not display.startswith("-"), \
-            f"Expected no leading '-' for near-zero M-year display, got '{display}'"
-        assert display == "0.00 M-years", f"Expected '0.00 M-years', got '{display}'"
+        assert display == "-0.0035 M-years", f"Expected '-0.0035 M-years', got '{display}'"
+
+        # A truly-zero display (all digits are 0) suppresses the minus sign.
+        tiny_neg = UnivDuration(-31_557_600, precision=6)   # ~ -1 year → 0.000001 M-years → 0.0000
+        tiny_display = tiny_neg.format_for_display()
+        assert not tiny_display.startswith("-"), \
+            f"Expected no leading '-' for true negative-zero M-year display, got '{tiny_display}'"
+        assert tiny_display == "0.0000 M-years", f"Expected '0.0000 M-years', got '{tiny_display}'"
 
         # Exact zero → no sign
         assert UnivDuration(0, precision=6).format_for_display() == "0 M-years"
@@ -471,20 +533,20 @@ class Test_UnivDuration:
         dur_5myr = UnivDuration(Decimal("5") * Q[6], precision=0)
         assert f"{dur_5myr}" == "5 M-years"
 
-        # G/B-years (level 7 — 10^9 Julian years)
+        # G-years (level 7 — 10^9 Julian years)
         dur_byr = UnivDuration(Q[7], precision=0)
-        assert f"{dur_byr}" == "1 B-year"
+        assert f"{dur_byr}" == "1 G-year"
 
         dur_2byr = UnivDuration(Decimal("2") * Q[7], precision=0)
-        assert f"{dur_2byr}" == "2 B-years"
+        assert f"{dur_2byr}" == "2 G-years"
 
         # Fractional M-years stored at M-year precision
         dur_frac_m = UnivDuration(Decimal("2.5") * Q[6], precision=6)
-        assert f"{dur_frac_m}" == "2.50 M-years"
+        assert f"{dur_frac_m}" == "2.5000 M-years"
 
         # Fractional k-years stored at k-year precision
         dur_frac_k = UnivDuration(Decimal("1.75") * Q[5], precision=5)
-        assert f"{dur_frac_k}" == "1.75 k-years"
+        assert f"{dur_frac_k}" == "1.7500 k-years"
 
         # Sub-year value: 90 061 s → auto-detects days
         dur_day = UnivDuration(90061, precision=0)

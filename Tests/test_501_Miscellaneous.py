@@ -144,7 +144,7 @@ class TestUniversalTimestamp:
         moment = UnivMoment.from_string("2024-01-01")
         assert UnivMoment.from_gregorian(2024, 1, 1) == moment
         
-        moment = UnivMoment.from_string("34.5BYA")
+        moment = UnivMoment.from_string("34.5GYA")
         assert UnivMoment.from_geological(34.5, precision=UnivMomPrecision.BILLION_YEARS) == moment
         
         moment = UnivMoment.from_string("12bc-03-15")

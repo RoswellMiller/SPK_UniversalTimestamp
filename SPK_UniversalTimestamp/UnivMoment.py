@@ -166,11 +166,11 @@ class UnivMoment:
     # CONSTANTS ##################################################################################################
     @staticmethod
     def __version__():
-        return "1.0.0"
+        return "2.0.3"
 
     @staticmethod
     def __file__():
-        return "SPK_UniversalTimestamp\\Moment_aUniversal.py"
+        return "SPK_UniversalTimestamp\\UnivMoment.py"
 
     # UnivMoment CONSTRUCTOR ###################################################################################
     def __post_init__(self) -> None:
@@ -1257,8 +1257,8 @@ class UnivMoment:
     # Geological time patterns
     _GEOLOGICAL_PATTERNS = [
         (
-            # ddd BYA, ddd.ddd BYA, ddd.dddd BYA, etc. billion years ago
-            r"(\d+\.?\d*)\s*BYA",
+            # ddd GYA, ddd.ddd GYA, etc. giga-years ago (BYA accepted for backward compat)
+            r"(\d+\.?\d*)\s*(?:GYA|BYA)",
             lambda m, description="": UnivMoment.from_geological(
                 Decimal(m.group(1)),
                 precision=UnivMomPrecision.BILLION_YEARS,

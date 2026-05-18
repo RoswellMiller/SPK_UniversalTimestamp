@@ -30,7 +30,7 @@ def _abbrev(level: int, count: int) -> str:
 def _auto_precision(seconds: Decimal) -> int:
     """Return the coarsest level whose quantum is <= abs(seconds).
 
-    Scans from the coarsest unit (level 7, B-years) down to the finest
+    Scans from the coarsest unit (level 7, G-years) down to the finest
     (level -18, attoseconds) and returns the first level whose quantum
     does not exceed the magnitude.  Returns 0 (seconds) for a zero value.
     """
@@ -48,6 +48,15 @@ def _auto_precision(seconds: Decimal) -> int:
 
 @dataclass(frozen=True)
 class UnivDuration:
+    # CONSTANTS ##################################################################################################
+    @staticmethod
+    def __version__():
+        return "2.0.3"
+
+    @staticmethod
+    def __file__():
+        return "SPK_UniversalTimestamp\\UnivDuration.py"
+
     # --- Class-level read-only lookup tables ---
     LEVEL_QUANTUM: ClassVar[MappingProxyType] = MappingProxyType({
         0: Decimal("1"),
@@ -62,7 +71,7 @@ class UnivDuration:
 
     LEVEL_ABBREV: ClassVar[MappingProxyType] = MappingProxyType({
         # Coarse / whole-second units
-         7: "B-years",
+         7: "G-years",
          6: "M-years",
          5: "k-years",
          4: "years",
@@ -91,12 +100,14 @@ class UnivDuration:
         -18: "as",
     })
 
+    ABBREV_LEVEL = {abbrv: level for level, abbrv in LEVEL_ABBREV.items()}
+
     # Finest precision level allowed for each coarsest unit level.  Checked by from_string().
     # Keys are coarsest-unit levels 0-7; values are the most-negative (finest) level allowed.
-    # E.g. a B-year compound may be no finer than year (level 4).
+    # E.g. a G-year compound may be no finer than year (level 4).
     # Adjust the values here to tighten or loosen the span constraints.
     MAX_FINE_FOR_COARSE: ClassVar[MappingProxyType] = MappingProxyType({
-        7:  4,   # B-years  → years finest         (span  3)
+        7:  4,   # G-years  → years finest         (span  3)
         6:  2,   # M-years  → hours finest          (span  4)
         5:  0,   # k-years  → seconds finest        (span  5)
         4: -6,   # years    → microseconds finest   (span 10)
@@ -169,7 +180,6 @@ class UnivDuration:
             type_char = "P"
 
         return f"univDU{int_part:018d}.{frac_digits:018d}.{prec_code:02d}{type_char}"
-  
     @staticmethod
     def from_StdLexicalKey(lex_key: str) -> "UnivDuration":
         """
@@ -321,14 +331,31 @@ class UnivDuration:
     def format_for_display(self, format: str | None = None) -> str:
         """
         Decompose the duration into a human-readable compound string scaled to
-        the stored precision level (or *override_precision* when supplied).
+        the stored precision level (or *format* when supplied).
 
         For precisions coarser than or equal to seconds the value is decomposed
         into whole-unit pairs (e.g. "1 day 1 hr 1 min 1 s").  For sub-second
         precisions the decomposition stops at minutes and the remaining seconds
         are expressed as a single decimal number with exactly ``abs(precision)``
-        digits after the point:
+        digits after the point.
 
+        For year-scale precisions (years, k-years, M-years, B-years) the value
+        is shown as a single decimal number at the coarsest fitting unit with
+        four decimal places, e.g. "17.7000 M-years".
+
+        Decompose mode (``format`` prefixed with ``>``):
+            Decompose from the coarsest containing unit down to the specified
+            level.  All levels above the target are shown as integers; the
+            target (finest) level uses four decimal places when year-scale or
+            ``abs(precision)`` decimal places when sub-second.
+
+            Example:
+                UnivDuration(1.75 * Q[7], precision=7).format_for_display(">M-years")
+                    → "1 B-year 750 M-years"
+                UnivDuration(1.7321 * Q[6], precision=6).format_for_display(">k-years")
+                    → "1 M-year 732.1000 k-years"
+
+        Docstring examples (single-unit mode):
             UnivDuration(31557600000000, M_YEAR)     → "1 M-year"
             UnivDuration(90061, SECOND)              → "1 day 1 hr 1 min 1 s"
             UnivDuration(3661,  MINUTE)              → "1 hr 1 min"
@@ -337,44 +364,63 @@ class UnivDuration:
             UnivDuration(Decimal('0.001'), -3)       → "0.001 s"
             UnivDuration(Decimal('0.000000001'), -9) → "0.000000001 s"
         """
-        sign      = "-" if self.seconds < 0 else ""
-        remaining = abs(self.seconds)
-        parts: list[str] = []
-        
+        # --- Detect decompose mode (leading ">") ---
+        decompose = False
         if format is not None:
-            rev = {v: k for k, v in UnivDuration.LEVEL_ABBREV.items()}
-            if format not in rev:
+            if format.startswith(">"):
+                decompose = True
+                format    = format[1:]
+            if format not in UnivDuration.ABBREV_LEVEL:
                 raise ValueError(
                     f"Unknown duration precision abbreviation {format!r}. "
-                    f"Valid abbreviations: {sorted(rev)}"
+                    f"Valid abbreviations: {sorted(UnivDuration.ABBREV_LEVEL.keys())}."
                 )
-            bottom = rev[format]
+            bottom = UnivDuration.ABBREV_LEVEL[format]
         else:
             if self.precision >= 4:
-                # For year-scale precisions, allow display at a coarser level when
-                # the value is large enough (e.g. 10.5 M-years at k-year precision
-                # displays as "10.50 M-years", not "10 M-years 500 k-years").
+                # For year-scale precisions, coarsen to the largest unit that fits
+                # the magnitude (e.g. 10.5 M-years at k-year precision → M-year level).
                 bottom = max(_auto_precision(self.seconds), self.precision)
             else:
                 bottom = self.precision
 
-        # When precision is sub-second, stop the whole-unit loop at minutes (level 1)
-        # and express seconds + fraction together as a decimal.
-        loop_floor = 1 if bottom < 0 else bottom
+        sign     = "-" if self.seconds < 0 else ""
+        abs_secs = abs(self.seconds)
 
-        # Decompose whole units from level 7 down to loop_floor
+        # ------------------------------------------------------------------
+        # Single-unit year-scale path (default / no ">")
+        # Show the entire value as one decimal number at the target level.
+        # ------------------------------------------------------------------
+        if not decompose and bottom >= 4:
+            q       = UnivDuration.LEVEL_QUANTUM[bottom]
+            value   = abs_secs / q
+            int_val = int(value)
+            if value != int_val:
+                display = f"{value:.4f} {_abbrev(bottom, 2)}"   # always plural
+            else:
+                display = f"{int_val} {_abbrev(bottom, int_val)}"
+            # Suppress sign only for true negative-zero (all displayed digits are 0).
+            if sign and not any(c in '123456789' for c in display):
+                return display
+            return sign + display
+
+        # ------------------------------------------------------------------
+        # Decomposition path (time units OR decompose mode with ">")
+        # ------------------------------------------------------------------
+        loop_floor = 1 if bottom < 0 else bottom
+        remaining  = abs_secs
+        parts: list[str] = []
+
         for level in range(7, loop_floor - 1, -1):
-            q     = UnivDuration.LEVEL_QUANTUM[level]
-            if level == loop_floor and bottom >= 4:
-                # For year-scale and coarser units (years, k-years, M-years, B-years),
-                # preserve any fractional part so that values like 17.70 M-years are
-                # not silently truncated to 17 M-years.
+            q = UnivDuration.LEVEL_QUANTUM[level]
+            if level == loop_floor and decompose and bottom >= 4:
+                # Final year-scale level in decompose mode: 4 decimal places.
                 value   = remaining / q
                 int_val = int(value)
-                if value != int_val:          # fractional part present → decimal display
+                if value != int_val:
                     if value > 0 or not parts:
-                        parts.append(f"{value:.2f} {_abbrev(level, 2)}")  # 2 → always plural
-                else:                         # exact whole-unit value → integer display
+                        parts.append(f"{value:.4f} {_abbrev(level, 2)}")
+                else:
                     if int_val > 0 or not parts:
                         parts.append(f"{int_val} {_abbrev(level, int_val)}")
             else:
@@ -384,29 +430,23 @@ class UnivDuration:
                     remaining -= count * q
 
         if bottom < 0:
-            # Express remaining seconds as a decimal to abs(bottom) decimal places
+            # Express remaining seconds as a decimal to abs(bottom) decimal places.
             decimal_places = abs(bottom)
-            quantum        = Decimal(10) ** bottom      # e.g. Decimal("0.001") for -3
+            quantum        = Decimal(10) ** bottom
             quantized      = remaining.quantize(quantum, rounding=ROUND_HALF_EVEN)
             if quantized > 0 or not parts:
                 parts.append(f"{quantized:.{decimal_places}f} s")
-        else:
-            # Sub-second residual does not apply; guard against empty parts
-            pass
 
         if not parts:
             label = _abbrev(bottom, 0)
             parts.append(f"0 {label}")
 
         display = " ".join(parts)
-        # Suppress the minus sign when the formatted output is negative-zero
-        # (e.g. -0.00 M-years or -0 k-years where the value rounded to zero).
-        if sign and display.startswith("0"):
-            result = display
-        else:
-            result = sign + display
-        print(f"DEBUG: format_for_display: '{result}' ")
-        return result
+        # Suppress the minus sign only when the formatted output is true negative-zero
+        # (i.e. every displayed digit is 0; a value like -0.0035 M-years keeps its sign).
+        if sign and not any(c in '123456789' for c in display):
+            return display
+        return sign + display
 
     def __format__(self, spec: str) -> str:
         """
@@ -414,15 +454,20 @@ class UnivDuration:
 
         Format spec grammar::
 
-            spec   ::= "" | "udur" | "udur:" abbrev
+            spec   ::= "" | "udur" | "udur:" [">" ] abbrev
             abbrev ::= one of the LEVEL_ABBREV values (e.g. "s", "ms", "days", "µs")
+
+        A leading ``>`` before the abbreviation enables decompose mode: the value
+        is broken into integer counts at each unit above the target, with decimal
+        places only at the target (finest) level.
 
         Examples::
 
-            f"{dur}"           →  auto-detect coarsest unit whose quantum <= abs(seconds)
-            f"{dur:udur}"      →  format_for_display() at stored precision
-            f"{dur:udur:ms}"   →  display at millisecond precision regardless of stored precision
-            f"{dur:udur:days}" →  display at day precision
+            f"{dur}"              →  auto-detect coarsest unit whose quantum <= abs(seconds)
+            f"{dur:udur}"         →  format_for_display() at stored precision
+            f"{dur:udur:ms}"      →  single-unit display at millisecond precision
+            f"{dur:udur:days}"    →  single-unit display at day precision
+            f"{dur:udur:>M-years}"→  decompose down to M-years (integer B-years above)
         """
         if spec == "":
             auto_level  = _auto_precision(self.seconds)

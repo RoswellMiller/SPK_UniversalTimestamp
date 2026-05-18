@@ -7,7 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.0.1] - 2026-05-16
+## [2.0.3] - 2026-05-18
+
+### Changed
+- **G-years replaces B-years** — display strings and parser now use `G-years` / `G-year`
+  (giga-annum, Ga) for precision level 7, consistent with cosmological convention.
+  `UnivDuration.LEVEL_ABBREV[7]` is now `"G-years"`.
+  `UnivDuration.from_string()` accepts `"G-years"` / `"G-year"` (and the `>G-years`
+  decompose prefix); `"B-years"` / `"B-year"` are **no longer accepted** by that parser.
+- `UnivMoment._GEOLOGICAL_PATTERNS` BYA regex updated to `(?:GYA|BYA)` so both
+  `"4.5 GYA"` and legacy `"4.5 BYA"` strings are accepted when constructing a
+  geological `UnivMoment` via `from_string()`.
+
+### Notes
+- The internal enum member `UnivMomPrecision.BILLION_YEARS` is **not** renamed;
+  only display/parse strings change.  `PREC_ABBREV[BILLION_YEARS]` was already `'G-yr'`.
+
+## [2.0.2] - 2026-05-17
+
+### Added
+- **4-decimal-place display for year-scale units** — `format_for_display()` now renders
+  fractional values at levels 4–7 (years, k-years, M-years, G-years) with four decimal
+  places (e.g. `"1.7321 G-years"`), matching the behaviour of sub-second levels.
+- **Decompose mode (`>` prefix)** — `format_for_display(">unit")` and the `"udur:>unit"`
+  f-string spec decompose a coarse duration into a compound string down to the named
+  unit (e.g. `"1 G-year 732.1000 M-years"`).
+- **Negative-zero guard** — `format_for_display()` no longer emits `"-0 …"` for values
+  that round to zero at the requested precision.
+
+### Fixed
+- `format_for_display()` with a target unit passed as an argument now preserves the
+  sign of negative durations when decomposing into compound form.
+
+
 
 ### Fixed
 - `UnivDuration.MAX_FINE_FOR_COARSE` for level 4 (years) relaxed from −1 to −6, allowing
