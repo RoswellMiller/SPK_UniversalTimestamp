@@ -100,7 +100,18 @@ class UnivDuration:
         -18: "as",
     })
 
-    ABBREV_LEVEL = {abbrv: level for level, abbrv in LEVEL_ABBREV.items()}
+    # Build reverse map: abbreviation -> level.
+    # Include both the stored plural form and the singular (strip trailing 's')
+    # for named units at levels 1-7 so that format_for_display output round-trips.
+    # Also include non-SI allowed abbreviations: 'd' (day) and 'h' (hour).
+    ABBREV_LEVEL: ClassVar[MappingProxyType] = MappingProxyType({
+        **{abbrev: level for level, abbrev in LEVEL_ABBREV.items()},
+        **{abbrev[:-1]: level for level, abbrev in LEVEL_ABBREV.items()
+            if 1 <= level <= 7 and abbrev.endswith("s")},  # e.g. "days" -> "day"
+        'd': 3,   # day    SI allowed non-SI unit abbreviation
+        'h': 2,   # hour   SI allowed non-SI unit abbreviation
+        #'m': 1,   # minute (compact abbreviation) not allowed in SI (m is meter)
+    })
 
     # Finest precision level allowed for each coarsest unit level.  Checked by from_string().
     # Keys are coarsest-unit levels 0-7; values are the most-negative (finest) level allowed.
@@ -231,18 +242,26 @@ class UnivDuration:
         # Build reverse map: abbreviation -> level.
         # Include both the stored plural form and the singular (strip trailing 's')
         # for named units at levels 1-7 so that format_for_display output round-trips.
-        abbrev_to_level: dict[str, int] = {}
-        for level, abbrev in cls.LEVEL_ABBREV.items():
-            abbrev_to_level[abbrev] = level
-            if 1 <= level <= 7 and abbrev.endswith("s"):
-                abbrev_to_level[abbrev[:-1]] = level   # e.g. "days" -> "day"
+        # abbrev_to_level: dict[str, int] = {}
+        # for level, abbrev in cls.LEVEL_ABBREV.items():
+        #     abbrev_to_level[abbrev] = level
+        #     if 1 <= level <= 7 and abbrev.endswith("s"):
+        #         abbrev_to_level[abbrev[:-1]] = level   # e.g. "days" -> "day"
 
         # Sort longest-first so the regex won't match "s" inside "days", etc.
-        sorted_abbrevs = sorted(abbrev_to_level, key=len, reverse=True)
+        sorted_abbrevs = sorted(cls.ABBREV_LEVEL, key=len, reverse=True)
         abbrev_pat = "|".join(re.escape(a) for a in sorted_abbrevs)
 
-        pair_re = re.compile(rf"(\d+(?:\.\d+)?)\s+({abbrev_pat})")
-        pairs = pair_re.findall(text.strip())
+        # Strip a single leading '-' — it negates the whole duration, not individual components.
+        stripped = text.strip()
+        if stripped.startswith("-"):
+            negative = True
+            stripped = stripped[1:].lstrip()
+        else:
+            negative = False
+
+        pair_re = re.compile(rf"(\d+(?:\.\d+)?)\s*({abbrev_pat})")
+        pairs = pair_re.findall(stripped)
         if not pairs:
             raise ValueError(f"No valid (number, unit) pairs found in: {text!r}")
 
@@ -251,7 +270,7 @@ class UnivDuration:
         coarsest_prec  = -18 # raised toward the coarsest (most positive) level seen
 
         for num_str, abbrev in pairs:
-            level   = abbrev_to_level[abbrev]
+            level   = cls.ABBREV_LEVEL[abbrev]
             quantum = cls.LEVEL_QUANTUM[level] if level >= 0 else Decimal(10) ** level
             total_seconds += Decimal(num_str) * quantum
 
@@ -261,6 +280,9 @@ class UnivDuration:
                 finest_prec = effective_prec
             if level > coarsest_prec:
                 coarsest_prec = level
+
+        if negative:
+            total_seconds = -total_seconds
 
         finest_prec = max(-18, min(7, finest_prec))
 

@@ -505,6 +505,22 @@ class Test_UnivDuration:
         assert UnivDuration(0, precision=6).format_for_display() == "0 M-years"
         assert UnivDuration(Decimal("0"), precision=5).format_for_display() == "0 k-years"
 
+        # Minus days
+        D = UnivDuration.from_string("-6.387230 days")
+        assert D.format_for_display() == "-6 days 9 hrs 17 mins 36.672 s", f"Expected '-6 days 9 hrs 17 mins 36.672 s', got '{D.format_for_display()}'"
+        
+        # Test no blanks
+        D = UnivDuration.from_string("6d 9h 17min 36.672s")
+        assert D.format_for_display() == "6 days 9 hrs 17 mins 36.672 s", f"Expected '6 days 9 hrs 17 mins 36.672 s', got '{D.format_for_display()}'"
+        D = UnivDuration.from_string("-6d 9h 17min 36.672s")
+        assert D.format_for_display() == "-6 days 9 hrs 17 mins 36.672 s", f"Expected '-6 days 9 hrs 17 mins 36.672 s', got '{D.format_for_display()}'"
+        
+        D = UnivDuration.from_string("6d9h17min36.672s")
+        assert D.format_for_display() == "6 days 9 hrs 17 mins 36.672 s", f"Expected '6 days 9 hrs 17 mins 36.672 s', got '{D.format_for_display()}'"
+        D = UnivDuration.from_string("-0d 0.3min")
+        assert D.format_for_display() == "-18 s", f"Expected '-18 s', got '{D.format_for_display()}'"
+        return
+    
     # ------------------------------------------------------------------
     # Auto-detection of coarseness in f"{dur}" (empty spec)
     # ------------------------------------------------------------------
