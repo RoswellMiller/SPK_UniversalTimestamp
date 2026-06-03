@@ -4,7 +4,7 @@ from .UnivMoment import UnivMoment, UnivMomPrecision
 
 import bisect
 
-GEOLOGICAL_TIME_STRUCTURE = {
+GEOLOGICAL_TIME_SCALE = {
     "Source": "https://rock.geosociety.org/net/documents/gsa/timescale/timescl.pdf",
     "Title": "Geological Time Scale",
     "version": "6.0",
@@ -1324,7 +1324,7 @@ def main():
     GEOLOGICAL_EPOCHSandAGES = []
 
     begin_earth = convert_time(4550, UnivMomPrecision.MILLION_YEARS, "Earth formation era")
-    pre_cam = GEOLOGICAL_TIME_STRUCTURE.get("pre-phanerozoic", [None])[0]
+    pre_cam = GEOLOGICAL_TIME_SCALE.get("pre-phanerozoic", [None])[0]
     last_date = create_eons(
         GEOLOGICAL_EONS,
         GEOLOGICAL_ERAS,
@@ -1339,7 +1339,7 @@ def main():
         GEOLOGICAL_PERIODS,
         GEOLOGICAL_EPOCHSandAGES,
         last_date,
-        GEOLOGICAL_TIME_STRUCTURE.get("eons", []),
+        GEOLOGICAL_TIME_SCALE.get("eons", []),
     )
 
     # Sort end date, then start date
