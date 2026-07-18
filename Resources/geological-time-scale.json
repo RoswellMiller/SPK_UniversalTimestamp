@@ -1,0 +1,539 @@
+{
+  "Source":"https://rock.geosociety.org/net/documents/gsa/timescale/timescl.pdf",
+  "Title": "Geological Time Scale",
+  "version": "6.0",
+  "download-date": "2024-06-10",
+  "units": "millions of years ago (Ma)",
+  "note": "The time scale is divided into hierarchical units: eons, eras, periods, epochs and ages. The Phanerozoic Eon is subdivided into three eras: Paleozoic, Mesozoic, and Cenozoic. The Precambrian is a term that encompasses the Hadean, Archean, and Proterozoic eons.",
+
+  "pre-phanerozoic": [
+    {
+    "name": "Precambrian",
+    "start": 4550,
+    "end": 541,
+    "eons": [
+      {
+        "name": "Hadean",
+        "start": 4550,
+        "end": 4000
+      },
+      {
+        "name": "Archean",
+        "start": 4000,
+        "end": 2500,
+        "eras": [
+          {
+            "name": "Eoarchean",
+            "start": 4000,
+            "end": 3600
+          },
+          {
+            "name": "Paleoarchean",
+            "start": 3600,
+            "end": 3200
+          },
+          {
+            "name": "Mesoarchean",
+            "start": 3200,
+            "end": 2800
+          },
+          {
+            "name": "Neoarchean",
+            "start": 2800,
+            "end": 2500
+          }
+        ]
+      },
+      {
+        "name": "Proterozic",
+        "start": 2500,
+        "end": 541,
+        "eras": [
+          {
+            "name": "Paleoproterozoic",
+            "start": 2500,
+            "end": 1600,
+            "periods": [
+              { "name": "Siderian", "start": 2500, "end": 2300 },
+              { "name": "Rhyacian", "start": 2300, "end": 2050 },
+              { "name": "Orosirian", "start": 2050, "end": 1800 },
+              { "name": "Statherian", "start": 1800, "end": 1600 }
+            ]
+          },
+          {
+            "name": "Mesoproterozoic",
+            "start": 1600,
+            "end": 1000,
+            "periods": [
+              { "name": "Calymmian", "start": 1600, "end": 1400 },
+              { "name": "Ectasian", "start": 1400, "end": 1200 },
+              { "name": "Stenian", "start": 1200, "end": 1000 }
+            ]
+          },
+          {
+            "name": "Neoproterozoic",
+            "start": 1000,
+            "end": 541,
+            "periods": [
+              { "name": "Tonian", "start": 1000, "end": 720 },
+              { "name": "Cryogenian", "start": 720, "end": 635 },
+              { "name": "Ediacaran", "start": 635, "end": 541 }
+            ]
+          }
+        ]
+      }
+    ]
+    }
+  ],
+  "eons": [
+    {
+      "name": "Phanerozoic",
+      "start": 541.0,
+      "end": null,
+      "eras": [
+        {
+          "name": "Paleozoic",
+          "start": 541.0,
+          "end": 251.90,
+          "periods": [
+            {
+              "name": "Cambrian",
+              "start": 541.0,
+              "end": 485.4,
+              "epochs": [
+                {
+                  "name": "Terreneuvian",
+                  "start": 541.0,
+                  "end": 521,
+                  "ages": [
+                    { "name": "Fortunuan", "start": 541.0, "end": 529 },
+                    { "name": "Age 2", "start": 529, "end": 521 }
+                  ]
+                },
+                {
+                  "name": "Epoch 2",
+                  "start": 521,
+                  "end": 509,
+                  "ages": [
+                    { "name": "Age 3", "start": 521, "end": 514 },
+                    { "name": "Age 4", "start": 514, "end": 509 }
+                  ]
+                },
+                {
+                  "name": "Mialolingian",
+                  "start": 509,
+                  "end": 497,
+                  "ages": [
+                    { "name": "Wuliuan", "start": 509, "end": 504.5 },
+                    { "name": "Drumian", "start": 504.5, "end": 500.5 },
+                    { "name": "Guzhangian", "start": 500.5, "end": 497 }
+                  ]
+                },
+                {
+                  "name": "Furongian",
+                  "start": 497,
+                  "end": 485.4,
+                  "ages": [
+                    { "name": "Paibian", "start": 497, "end": 494 },
+                    { "name": "Jiangshanianan", "start": 494, "end": 489.5},
+                    { "name": "Age 10", "start": 489.5, "end": 485.4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Ordovician",
+              "start": 485.4,
+              "end": 443.8,
+              "epochs": [
+                {
+                  "name": "Early",
+                  "start": 485.4,
+                  "end": 470,
+                  "ages": [
+                    { "name": "Tremadocian", "start": 485.4, "end": 477.7 },
+                    { "name": "Floian", "start": 477.7, "end": 470 }
+                  ]
+                },
+                {
+                  "name": "Middle",
+                  "start": 470,
+                  "end": 458.4,
+                  "ages": [
+                    { "name": "Dapingian", "start": 470, "end": 467.3 },
+                    { "name": "Darriwilian", "start": 467.3, "end": 458.4}
+                  ]
+                },
+                {
+                  "name": "Late",
+                  "start": 458.4,
+                  "end": 443.8,
+                  "ages": [
+                    { "name": "Sandbian", "start": 458.4, "end": 453.0 },
+                    { "name": "Katian", "start": 453.0, "end": 445.2 },
+                    { "name": "Hirnantian", "start": 445.2, "end": 443.8 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Silurian",
+              "start": 443.8,
+              "end": 419.2,
+              "epochs": [
+                {
+                  "name": "Llandovery",
+                  "start": 443.8,
+                  "end": 433.4,
+                  "ages": [
+                    { "name": "Rhuddanian", "start": 443.8, "end": 440.8 },
+                    { "name": "Aeronian", "start": 440.8, "end": 438.5 },
+                    { "name": "Telychian", "start": 438.5, "end": 433.4 }
+                  ]
+                },
+                {
+                  "name": "Wenlock",
+                  "start": 433.4,
+                  "end": 427.4,
+                  "ages": [
+                    { "name": "Sheinwoodian", "start": 433.4, "end": 430.5},
+                    { "name": "Homerian", "start": 430.5, "end": 427.4 }
+                  ]
+                },
+                {
+                  "name": "Ludlow",
+                  "start": 427.4,
+                  "end": 423.0,
+                  "ages": [
+                    { "name": "Gorstian", "start": 427.4, "end": 425.6 },
+                    { "name": "Ludfordian", "start": 425.6, "end": 423.0 }
+                  ]
+                },
+                {
+                  "name": "Pridoli",
+                  "start": 423.0,
+                  "end": 419.2
+                }
+              ]
+            },
+            {
+              "name": "Devonian",
+              "start": 419.2,
+              "end": 358.9,
+              "epochs": [
+                {
+                  "name": "Early",
+                  "start": 419.2,
+                  "end": 393.3,
+                  "ages": [
+                    { "name": "Lochkovian", "start": 419.2, "end": 410.8 },
+                    { "name": "Pragian", "start": 410.8, "end": 407.6 },
+                    { "name": "Emsian", "start": 407.6, "end": 393.3 }
+                  ]
+                },
+                {
+                  "name": "Middle",
+                  "start": 393.3,
+                  "end": 382.7,
+                  "ages": [
+                    { "name": "eifelian", "start": 393.3, "end": 387.7 },
+                    { "name": "givetian", "start": 387.7, "end": 382.7 }
+                  ]
+                },
+                {
+                  "name": "Late",
+                  "start": 382.7,
+                  "end": 358.9,
+                  "ages": [
+                    { "name": "frasnian", "start": 382.7, "end": 372.2 },
+                    { "name": "famennian", "start": 372.2, "end": 358.9 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Carboniferous",
+              "start": 358.9,
+              "end": 289.9,
+              "epochs": [
+                {
+                  "name": "Mississippian",
+                  "start": 358.9,
+                  "end": 323.2,
+                  "ages": [
+                    { "name": "Tournaisain", "start": 358.9, "end": 346.7 },
+                    { "name": "Visean", "start": 346.7, "end": 330.9 },
+                    { "name": "Serpukhovian", "start": 330.9, "end": 323.2 }
+                  ]
+                },
+                {
+                  "name": "Pennsylvanian",
+                  "start": 323.2,
+                  "end": 298.9,
+                  "ages": [
+                    { "name": "Bashkirian", "start": 323.2, "end": 315.2 },
+                    { "name": "Moscovian", "start": 315.2, "end": 307.0 },
+                    { "name": "Kasimovian", "start": 307.0, "end": 303.7 },
+                    { "name": "Gzhelian", "start": 303.7, "end": 298.9 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Permian",
+              "start": 298.9,
+              "end": 251.90,
+              "epochs": [
+                {
+                  "name": "Cisuralian",
+                  "start": 298.9,
+                  "end": 273.01,
+                  "ages": [
+                    { "name": "Asselian", "start": 298.9, "end": 293.52 },
+                    { "name": "Sakamarian", "start": 293.52, "end": 290.1 },
+                    { "name": "Artinskian", "start": 290.1, "end": 283.5 },
+                    { "name": "Kungurian", "start": 283.5, "end": 273.01 }
+                  ]
+                },
+                {
+                  "name": "Guadalupian",
+                  "start": 273.01,
+                  "end": 259.51,
+                  "ages": [
+                    { "name": "Roadian", "start": 273.01, "end": 266.9 },
+                    { "name": "Wordian", "start": 266.9, "end": 264.28 },
+                    { "name": "Capitanian", "start": 264.28, "end": 259.51 }
+                  ]
+                },
+                {
+                  "name": "Lopingian",
+                  "start": 259.51,
+                  "end": 251.90,
+                  "ages": [
+                    { "name": "Wuchiapingian", "start": 259.51, "end": 254.14 },
+                    { "name": "Changhsingian", "start": 254.14, "end": 251.90}
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Mesozoic",
+          "start": 251.90,
+          "end": 66.0,
+          "periods": [
+            {
+              "name": "Triassic",
+              "start": 251.90,
+              "end": 201.3,
+              "epochs": [
+                {
+                  "name": "Early",
+                  "start": 251.90,
+                  "end": 247.2,
+                  "ages": [
+                    { "name": "Induan", "start": 251.90, "end": 251.2 },
+                    { "name": "Olenekian", "start": 251.2, "end": 247.2 }
+                  ]
+                },
+                {
+                  "name": "Middle",
+                  "start": 247.2,
+                  "end": 237,
+                  "ages": [
+                    { "name": "Anisian", "start": 247.2, "end": 242 },
+                    { "name": "Ladinian", "start": 242, "end": 237 }
+                  ]
+                },
+                {
+                  "name": "Late",
+                  "start": 237,
+                  "end": 201.3,
+                  "ages": [
+                    { "name": "carnian", "start": 237, "end": 227 },
+                    { "name": "Norian", "start": 227, "end": 208.5 },
+                    { "name": "Rhaetian", "start": 208.5, "end": 201.3 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Jurassic",
+              "start": 201.3,
+              "end": 145,
+              "epochs": [
+                {
+                  "name": "Early",
+                  "start": 201.3,
+                  "end": 174.1,
+                  "ages": [
+                    { "name": "Hettangian", "start": 201.4, "end": 199.3 },
+                    { "name": "Sinermurian", "start": 199.3, "end": 190.8 },
+                    { "name": "Pliensbachian", "start": 190.8, "end": 182.7 },
+                    { "name": "Toarcian", "start": 182.7, "end": 174.1 }
+                  ]
+                },
+                {
+                  "name": "Middle",
+                  "start": 174.1,
+                  "end": 163.5,
+                  "ages": [
+                    { "name": "Aalenian", "start": 174.1, "end": 170.3 },
+                    { "name": "Bajocian", "start": 170.3, "end": 168.3 },
+                    { "name": "Bathonian", "start": 168.3, "end": 166.1 },
+                    { "name": "Callovian", "start": 166.1, "end": 163.5 }
+                  ]
+                },
+                {
+                  "name": "Late",
+                  "start": 163.5,
+                  "end": 145.0,
+                  "ages": [
+                    { "name": "Oxfordian", "start": 163.5, "end": 157.3 },
+                    { "name": "Kimmeridgian", "start": 157.3, "end": 152.1 },
+                    { "name": "Tithonian", "start": 152.1, "end": 145.0 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Cretaceous",
+              "start": 145.0,
+              "end": 66.0,
+              "epochs": [
+                {
+                  "name": "Early",
+                  "start": 145.0,
+                  "end": 100.5,
+                  "ages": [
+                    { "name": "Berriasian", "start": 145.0, "end": 139.8 },
+                    { "name": "Valanginian", "start": 139.8, "end": 132.6},
+                    { "name": "Hauterivian", "start": 132.6, "end": 129.4 },
+                    { "name": "Barremian", "start": 129.4, "end": 125 },
+                    { "name": "Aptian", "start": 125, "end": 113 },
+                    { "name": "Aalenian", "start": 113, "end": 100.5 }
+                  ]
+                },
+                {
+                  "name": "Late",
+                  "start": 100.5,
+                  "end": 66.0,
+                  "ages": [
+                    { "name": "Cenomanian", "start": 100.5, "end": 93.9 },
+                    { "name": "Turonian", "start": 93.9, "end": 89.8 },
+                    { "name": "Conician", "start": 89.8, "end": 86.3 },
+                    { "name": "Santonian", "start": 86.3, "end": 83.6 },
+                    { "name": "Campanian", "start": 83.6, "end": 72.1 },
+                    { "name": "Maastrichtian", "start": 72.1, "end": 66.0 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Cenozoic",
+          "start": 66.0,
+          "end": null,
+          "periods": [
+            {
+              "name": "(tertiary)Paleogene",
+              "start": 66.0,
+              "end": 23.03,
+              "epochs": [
+                {
+                  "name": "Paleocene",
+                  "start": 65.0,
+                  "end": 56.0,
+                  "ages": [
+                    { "name": "Danian", "start": 65.0, "end": 61.6 },
+                    { "name": "Selandian", "start": 61.6, "end": 59.2 },
+                    { "name": "Thanetian", "start": 59.2, "end": 56.0 }
+                ]
+                },
+                {
+                  "name": "Eocene",
+                  "start": 56.0,
+                  "end": 33.9,
+                  "ages": [
+                    { "name": "Ypresian", "start": 56.0, "end": 47.8 },
+                    { "name": "Lutetian", "start": 47.8, "end": 41.2 },
+                    { "name": "Bartonian", "start": 41.2, "end": 37.71 },
+                    { "name": "Priabonian", "start": 37.71, "end": 33.9 }
+                  ]
+                },
+                {
+                  "name": "Oligocene",
+                  "start": 33.9,
+                  "end": 23.03,
+                  "ages": [
+                    { "name": "Rupelian", "start": 33.9, "end": 27.82 },
+                    { "name": "Chattian", "start": 27.82, "end": 23.03 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "(tertiary)Neogene",
+              "start": 23.03,
+              "end": 2.58,
+              "epochs": [
+                {
+                  "name": "Miocene",
+                  "start": 23.03,
+                  "end": 5.333,
+                  "ages": [
+                    { "name": "Aquitanian", "start": 23.02, "end": 20.44 },
+                    { "name": "Burdigalian", "start": 20.44, "end": 15.97 },
+                    { "name": "Langhian", "start": 15.97, "end": 13.82 },
+                    { "name": "Serravallian", "start": 13.82, "end": 11.63 },
+                    { "name": "Tortonian", "start": 11.63, "end": 7.246 },
+                    { "name": "Messinian", "start": 7.246, "end": 5.333 }
+                  ]
+                },
+                {
+                  "name": "Pliocene",
+                  "start": 5.333,
+                  "end": 2.58,
+                  "ages": [
+                    { "name": "Zanclean", "start": 5.333, "end": 3.600 },
+                    { "name": "Piacenzian", "start": 3.600, "end": 2.58 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Quarternary",
+              "start": 2.58,
+              "end": null,
+              "epochs": [
+                {
+                  "name": "Pleistocene",
+                  "start": 2.58,
+                  "end": 0.0117,
+                  "ages": [
+                    { "name": "Gelasian", "start": 2.58, "end": 1.8 },
+                    { "name": "Calabrian", "start": 1.8, "end": 0.774 },
+                    { "name": "Chibanian", "start": 0.774, "end": 0.129 },
+                    { "name": "Age 4", "start": 0.129, "end": 0.0117 }
+                  ]
+                },
+                {
+                  "name": "Holocene",
+                  "start": 0.0117,
+                  "end": null,
+                  "ages": [
+                    { "name": "Greenlandian", "start": 0.0117, "end": 0.0082 },
+                    { "name": "Northgrippian", "start": 0.0082, "end": 0.0042},
+                    { "name": "Meghalayan", "start": 0.0042, "end": null }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,28 @@
 """
-Comprehensive tests for the Moment_Chinese class.
+Tests for the Chinese calendar presentation surface, cross-checked
+against Reingold & Dershowitz *Calendrical Calculations, Ultimate Ed.*
+Appendix C (page 447).
+
+Known-failing tests (do not regress):
+    * ``test_appendix_c_Construction``  \u2014 constructor RD outputs
+    * ``test_appendix_c_Presentation``  \u2014 formatted presentation
+
+Symptom: 12/13 rows of Appendix C construct/present with a month/day
+offset of 1\u20133 units against the R&D published table; one row also
+disagrees on the leap-month flag.
+
+Root cause: the pure-Python astronomical routines in
+``CC19_Chinese_1645.py`` \u2014 solar longitude at winter solstice, new-moon
+RDs, sexagesimal-term boundaries \u2014 do not reach the ephemeris accuracy
+Appendix C assumes.  ``CHANGELOG.md`` [1.0.0] documents this and
+anticipates a version-2 rewrite pinned to the JPL DE422 ephemeris.
+
+What these tests pin down: the *current* boundary of the algorithm's
+correctness against R&D's own reference values.  When the DE422 work
+lands (backlog item **B-01**, future plan ``CM-01``) these tests
+become the flip-to-green success criterion.  Until then they stay in
+the PL-01 baseline **allowed-red** set and any new red beyond these
+two is a real regression.
 """
 import os
 import json

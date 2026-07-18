@@ -12,7 +12,7 @@ class PlotManager:
     """
     def __init__(self):
         self.figure_count = 0
-        self.output_dir = os.path.join(os.path.dirname(__file__), '..', 'output', 'plots')
+        self.output_dir = os.path.join(os.path.dirname(__file__), '..', 'Output', 'plots')
         os.makedirs(self.output_dir, exist_ok=True)
         self.current_fig = None
         self.current_ax = None

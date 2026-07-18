@@ -52,9 +52,9 @@ docs = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/yourusername/spk-universal-timestamp"
-"Bug Reports" = "https://github.com/yourusername/spk-universal-timestamp/issues"
-"Source" = "https://github.com/yourusername/spk-universal-timestamp"
+"Homepage" = "https://github.com/RoswellMiller/spk-universal-timestamp"
+"Bug Reports" = "https://github.com/RoswellMiller/spk-universal-timestamp/issues"
+"Source" = "https://github.com/RoswellMiller/spk-universal-timestamp"
 "Documentation" = "https://spk-universal-timestamp.readthedocs.io"
 
 [tool.setuptools.packages.find]

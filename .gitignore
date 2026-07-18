@@ -3,12 +3,54 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Subfolders
-Output/
-Resources/
-Copilot/
-Deprecated/
+# ---------------------------------------------------------------------------
+# Project-specific ignores (Standards § 8.1 / § 8.4).
+# Every non-obvious rule is commented — WHY it is here, not what it is.
+# ---------------------------------------------------------------------------
 
+# Regenerable test/CI output (test_results.xml, plots, coverage reports).
+# Anything a script can rebuild does not belong in git.
+Output/
+
+# Retired code kept LOCALLY for reference; never committed.
+# Standards § 1.1 and § 8.1: `deprecated/` archives are the canonical
+# uncommitted-but-preserved case. `git rm --cached -r deprecated`
+# untracks whatever was previously committed; this rule prevents
+# re-adding.  Case matters on Linux/macOS — use lowercase.
+deprecated/
+
+# Raw upstream reference material — R&D chapter scans, ISO 19108,
+# any book excerpts.  Standards § 8.3 says these live in an
+# out-of-project DATA-SOURCES folder; until they are physically
+# moved off the project tree, keep them untracked here.
+Documentation/
+docs/**/*.pdf
+docs/**/*.PDF
+
+# Root-level scratch (underscore prefix convention, Standards § 8.1).
+# One-off diagnostics and probes live at the repo root as `_name.py`
+# and never get committed.
+/_*.py
+/_*.txt
+/_*.log
+
+# ---------------------------------------------------------------------------
+# Editor / IDE config
+# ---------------------------------------------------------------------------
+# Allowlist the shared VS Code files (Standards § 8.1); ignore
+# per-user churn (workspace state, launch configs).
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ---------------------------------------------------------------------------
+# Python build / packaging artifacts
+# ---------------------------------------------------------------------------
 # C extensions
 *.so
 
@@ -29,6 +71,7 @@ wheels/
 pip-wheel-metadata/
 share/python-wheels/
 *.egg-info/
+spk_universal_timestamp.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
@@ -134,13 +177,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
 # OS
 .DS_Store
 Thumbs.db
+
