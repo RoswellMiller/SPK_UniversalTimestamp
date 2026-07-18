@@ -1,3 +1,53 @@
+"""
+CC14_Time_and_Astronomy — spherical trigonometry, time-scale conversion,
+and solar / lunar position from R&D chapter 14.
+
+**Purpose.**  Provide the astronomical primitives that the Chinese
+calendar (and any future astronomically-driven calendar) needs:
+solar longitude, lunar longitude, lunar phase, mean synodic
+month, new-moon search, seasonal boundaries, ephemeris
+correction, and the observer-location machinery to feed them.
+
+**Public surface (re-exported via `__init__.py`).**
+    DMS / HMS conversion:  `degrees_from_dms`, `dms_from_degrees`,
+        `hms_from_hours`.
+    Observer:              `location`, `AST`, `direction`,
+        `zone_from_longitude`.
+    Time scales:           `universal_from_local`, `local_from_universal`,
+        `standard_from_universal`, `universal_from_standard`,
+        `standard_from_local`, `local_from_standard`.
+
+Also used internally but not re-exported: the `ephemeris_correction`
+family (`_eph_c_*`, `_eph_y_*`), the `dynamical_from_universal` /
+`universal_from_dynamical` scale converters, mean-motion / anomaly
+helpers (`_j2000`, `julian_centuries`, `_obliquity`, `mean_lunar_longitude`,
+`lunar_elongation`, `solar_anomaly`, `lunar_anomaly`, `moon_node`),
+sun / moon primitives (`solar_longitude`, `nutation`, `aberration`,
+`lunar_longitude`, `lunar_phase`, `mean_synodic_month`,
+`mean_tropical_year`, `mean_sidereal_year`), season boundaries
+(`spring`, `summer`, `autumn`, `winter`), and search helpers
+(`solar_longitude_after`, `estimate_prior_solar_longitude`,
+`season_in_gregorian`, `nth_new_moon`, `new_moon_before`,
+`new_moon_at_or_after`, `circular_distance`).
+
+**R&D references.**  Chapter 14 spans the full ephemeris-correction
+tables (14.15–14.29), the astronomical time-scale conversions
+(14.30–14.35), and the solar / lunar theories (14.36–14.75).
+Equation numbers appear as inline comments where relevant.
+
+**Precision model.**  All routines take and return `Decimal`
+quantities.  The 30-digit context set in `CC00_Decimal_library`
+carries through here; astronomical accuracy is limited primarily
+by the R&D truncated series (nutation / aberration / lunar
+longitude), not by numeric precision.
+
+**Not in scope.**  Ephemeris tables for the outer planets, general
+relativity corrections, ICRS/GCRS frame math — R&D's needs are
+Earth-centered and low-precision-astronomical-almanac-grade.
+
+**Change history.**  See `CHANGELOG.md`.
+"""
+
 from decimal import Decimal
 from .CC00_Decimal_library import round, decimal_, sin, cos, tan, DEG2RAD, sign, PI, mod, mod_interval, MAX, MIN, floor 
 from .Astro_Space import psoEarth
@@ -58,6 +108,28 @@ def hms_from_hours(value: Decimal) -> tuple:
 ##################################################################################################################
 # p 204 (14.1-5) location class
 class location:
+    """
+    Observer position on Earth for astronomical calculations — R&D (14.1–14.5).
+
+    Wraps a `psoEarth` (WGS84 point) with the metadata that R&D
+    equations expect: signed latitude/longitude in decimal degrees,
+    elevation in metres, and a UTC offset in hours for local /
+    standard time conversion.  Fields are write-once: `__setattr__`
+    raises after first assignment so an existing instance cannot
+    accidentally drift during a calculation.
+
+    Constructor accepts `latitude` and `longitude` in any of the
+    forms `degrees_from_dms` supports: `int` / `float` / `Decimal` /
+    signed decimal `str` / `(deg, min, sec)` tuple.
+
+    Attributes:
+        latitude, longitude, elevation:  `Decimal`, decimal-degree
+            or metre form after DMS coercion.
+        utc_offset:  Hours east of UT (fractional, e.g. 5.5 for IST).
+        name:        Free-form label (default ``"UTC"``).
+        point_on_surface_of_earth:  `psoEarth` — the geodesic-capable
+            spatial view of the same lat/lon/elev.
+    """
     # __slots__
     point_on_surface_of_earth: psoEarth
     latitude: Decimal

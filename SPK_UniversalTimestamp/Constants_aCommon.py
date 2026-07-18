@@ -1,9 +1,39 @@
 
+"""
+Constants_aCommon — cross-calendar enumerations and localisation tables.
+
+**Purpose.**  Give every calendar module a single import point for
+(a) the `Calendar` enum that names each supported system and
+(b) the multilingual attribute dictionary (`CalendarAtts`) that
+presentation layers consult for names, abbreviations, and era suffixes.
+
+**Public surface (star-exported via `__init__.py`).**
+    `Calendar` (enum), `CalendarAtts` (dict keyed `[language][Calendar]`).
+
+**R&D references.**  The calendar list mirrors R&D's table of
+covered systems (see book table of contents); the arithmetic vs
+astronomical grouping in this file matches R&D Part I / Part II.
+
+**Not in scope.**  Calendar-specific constants (month names, day
+counts) belong in the sibling `Constants_<Calendar>.py` files.
+
+**Change history.**  See `CHANGELOG.md`.  Additions to `Calendar`
+are additive and safe; renaming an enum member is a breaking API
+change and needs a version bump.
+"""
+
 from enum import Enum
 
 
 class Calendar(Enum):
-    """Supported calendar systems"""
+    """
+    Enumeration of every calendar system this package knows about.
+
+    Members marked ``# Done`` in the source are implemented and
+    covered by tests; the rest are placeholder identifiers reserved
+    for future work.  Values are lowercase strings suitable for
+    on-disk serialization.
+    """
     GEOLOGICAL = "geological"   # Done
     # Arithmetic calendars
     GREGORIAN = "gregorian"     # Done

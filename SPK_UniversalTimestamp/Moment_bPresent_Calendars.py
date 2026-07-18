@@ -1,3 +1,44 @@
+"""
+Moment_bPresent_Calendars — base class for every human-calendar
+presentation layer (Gregorian, Julian, Hebrew, Chinese).
+
+**Purpose.**  `Present_Calendars` factors out the plumbing that
+every arithmetic-calendar presentation shares:
+
+  * localised day-of-week names (`DAY_OF_THE_WEEK_ATTS`);
+  * timezone → UTC-offset resolution with historical awareness
+    (`get_utc_offset`);
+  * a strftime-like dispatcher (`_format_segment` + the
+    `_strftime_year` / `_strftime_month` / `_strftime_day` /
+    `_strftime_time` / `_strftime_compound` methods);
+  * the abstract seam `_strftime_month_attr` that each calendar
+    subclass supplies by consulting its own `Constants_*` table.
+
+**Public surface (star-exported via `__init__.py`).**
+    `Present_Calendars` (abstract-ish; instantiated only via the
+    `Present_Gregorian` / `_Julian` / `_Hebrew` / `_Chinese`
+    subclasses).
+
+**Historical note (embedded in code comments).**  Britain
+introduced the first timezone (GMT) in 1847 for train schedules;
+North American railroads adopted time zones in November 1883
+("the Day of Two Noons").  Any pre-1847 `tz != 'UTC'` argument
+returns a timezone offset that is technically anachronistic — the
+library trusts the caller to know what they mean.
+
+**Format-directive table.**  A block-comment docstring inside
+`Present_Calendars` (immediately before `_format_segment`) lists
+every `%X` code recognised by the strftime dispatcher and its
+intended output.  Kept there because that dispatcher is the
+family contract that all `_strftime_*` helpers implement.
+
+**Not in scope.**  Geological presentation (`Moment_bPresent_Geological`),
+UnivMoment core (`UnivMoment`), calendar-specific arithmetic
+(`CC02`–`CC19`).
+
+**Change history.**  See `CHANGELOG.md`.
+"""
+
 from decimal import Decimal
 from abc import abstractmethod
 from datetime import datetime
@@ -10,7 +51,23 @@ from .UnivMoment import UnivMoment, UnivMomPrecision
 
 class Present_Calendars(UnivMoment.Presentation):
     """
-    Calendar representation of a UnivMoment.
+    Base class for arithmetic-calendar presentations of a `UnivMoment`.
+
+    Subclasses (`Present_Gregorian`, `Present_Julian`, `Present_Hebrew`,
+    `Present_Chinese`) supply their calendar-specific R.D. ↔
+    (year, month, day) conversion in `__init__` and implement
+    `_strftime_month_attr` to look up month attributes from their
+    `Constants_<Calendar>` table.  All other formatting logic —
+    day-of-week, time, timezone, compound (`%x`, `%X`) — is
+    inherited from this class.
+
+    Attributes:
+        tz:          Timezone identifier (IANA name, ``'local'``,
+            or ``'UTC'``).
+        tz_offset:   `(hours, minutes)` tuple resolved from `tz`.
+        calendar:    `Calendar` enum member identifying this system.
+        year, month, day, hour, minute, seconds:  Set by subclass
+            `__init__` after R.D. decomposition.
     """
     # CONSTANTS #########################################################################
     DAY_OF_THE_WEEK_ATTS = {
@@ -67,8 +124,31 @@ class Present_Calendars(UnivMoment.Presentation):
     @staticmethod
     def get_utc_offset(tz_name: str, rd_day : Decimal) -> tuple[Decimal, int ,int, Decimal]:
         """
-        Return the UTC offset for a given time zone name and datetime.
-        If dt is None, use current time.
+        Resolve a timezone identifier and R.D. day to a UTC offset.
+
+        Args:
+            tz_name:  IANA timezone name (e.g. ``'America/New_York'``)
+                or the literal string ``'local'`` to consult the
+                system default via `tzlocal.get_localzone`.
+            rd_day:   R.D. day the moment falls on.  Needed to pick
+                the correct offset across DST or historical
+                timezone transitions (e.g. WWII shifts).
+
+        Returns:
+            `(hours, minutes)` — the timezone's UTC offset on that
+            Gregorian date, both fields as `int`.
+
+        Raises:
+            `ValueError`:  `tz_name` cannot be resolved by
+                `zoneinfo.ZoneInfo` (re-raises
+                `ZoneInfoNotFoundError` with a friendlier message).
+
+        Notes:
+            The declared return type
+            ``tuple[Decimal, int, int, Decimal]`` is legacy — the
+            body actually returns a 2-tuple `(int, int)`.  Repair
+            deferred to a future Task 1 pass (out of scope for
+            PL-01's non-behavioral charter).
         """
         try:
             if tz_name.lower() == 'local':
@@ -89,6 +169,29 @@ class Present_Calendars(UnivMoment.Presentation):
     
     # CONSTRUCTOR ############################################################################
     def __init__(self, calendar : Calendar, moment: UnivMoment, year: Decimal, tz : str | dict = 'UTC'):
+        """
+        Construct a calendar presentation of `moment`.
+
+        Args:
+            calendar:  `Calendar` enum member.  Used by the format
+                dispatcher to pick era suffixes, locale conventions,
+                etc.
+            moment:    `UnivMoment` to present.
+            year:      Pre-computed year value for this calendar
+                (subclass computes this from `moment.rd_day` before
+                calling `super().__init__`).
+            tz:        Timezone: IANA name (``'Europe/Paris'``),
+                ``'local'`` (system default), ``'UTC'``, or a
+                pre-built offset dict.  When not UTC, the moment
+                is shifted by the resolved offset before further
+                processing so that all downstream code can assume
+                wall-clock local time.
+
+        Notes:
+            The `-Infinity` year sentinel (deep-time / undefined
+            moment) skips the sub-day decomposition; `hour`,
+            `minute`, and `seconds` remain unset.
+        """
         self.tz = tz
         self.tz_offset = (0,0)  # (hours, minutes)        
         if tz and tz != 'UTC':

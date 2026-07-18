@@ -1,3 +1,54 @@
+"""
+CC19_Chinese_1645 — Chinese lunisolar calendar (1645-onwards Beijing rules)
+from R&D chapter 19.
+
+**Purpose.**  Implement the astronomical Chinese calendar as R&D
+formalise it: solar-term boundaries derived from apparent solar
+longitude, month boundaries from apparent new moons, both computed
+at the meridian of Beijing (with the pre-1929 local-mean-time
+adjustment).  All of the search idioms (`MIN`, `MAX`) come from
+`CC00_Decimal_library`; the astronomical primitives come from
+`CC14_Time_and_Astronomy`.
+
+**Known deviations from R&D reference.**  Two Appendix-C rows in
+`Tests/test_400_Moment_cPresent_Chinese.py` fail with off-by-one
+month counts — tracked as backlog entry B-01 in
+`docs/TODO_BACKLOG.md`.  These are the load-bearing "allowed-red"
+tests: every PL-01 checkpoint must reproduce exactly this set of
+failures, no more and no fewer.
+
+**Public surface (re-exported via `__init__.py`).**
+    Solar-term:  `current_major_solar_term`,
+        `major_solar_term_on_or_after`, `current_minor_solar_term`,
+        `minor_solar_term_on_or_after`.
+    Astronomy:   `chinese_location`, `midnight_in_china`,
+        `chinese_solar_longitude_on_or_after`,
+        `chinese_winter_solstice_on_or_before`,
+        `chinese_new_moon_on_or_after`, `chinese_new_moon_before`.
+    Leap-month:  `is_chinese_no_major_solar_term`,
+        `is_chinese_prior_leap_month`.
+    Year:        `chinese_new_year_in_sui`,
+        `chinese_new_year_on_or_before`.
+    Conversion:  `chinese_from_rd`, `rd_from_chinese`.
+    Sexagesimal: `chinese_sexagesimal_tuple`, `chinese_name_difference`,
+        `chinese_year_tuple`, `chinese_month_epoch`,
+        `chinese_month_tuple`, `chinese_day_epoch`,
+        `chinese_day_tuple`, `chinese_day_tuple_on_or_before`.
+
+**R&D references.**  Each function is preceded by ``# p NNN (19.X)``
+giving the page and equation number in R&D chapter 19 (Ultimate
+Edition); these citations are load-bearing and must never be
+removed during refactor.
+
+**Not in scope.**  Chinese calendar constants (`Constants_Chinese`),
+presentation / localisation (`Moment_cPresent_Chinese`).
+
+**Change history.**  See `CHANGELOG.md`.  Any change that could
+alter the allowed-red set for B-01 (either fixing it or breaking
+additional rows) requires an explicit acceptance-test update and
+an entry in the plan's change log.
+"""
+
 from decimal import Decimal
 
 from .CC00_Decimal_library import mod_adj, floor, ceil, MIN, round
@@ -9,28 +60,38 @@ from .CC14_Time_and_Astronomy import winter
 
 # page 306 (19.1)
 def current_major_solar_term(date : Decimal) -> int:
-    """ Calculate the index of the last major solar term on or before a given date
+    """
+    R&D (19.1): index (1–12) of the last major solar term at or
+    before `date`, using apparent solar longitude at the Beijing
+    meridian.
 
     Args:
-        date (Decimal): _description_
+        date:  R.D. moment as `Decimal`.
 
     Returns:
-        int: _description_
+        Integer 1–12 identifying the current major solar term.
     """
     s = solar_longitude(universal_from_standard(date, chinese_location(date)))
     return mod_adj(2 + floor(s / Decimal(30)), 12)
 
 # page 306 (19.2)
 def chinese_location(date: Decimal) -> Decimal:
-    """ The location, Beijing, used for Chinese calendar calculations
-        year < 1929 uses Beijing lat,long, altitude with UT +7hr 45min 40sec = 1397/180
-        otherwise    ........                        with UT +8hr = 120 meridian
+    """
+    R&D (19.2): observer location for Chinese-calendar computations.
+
+    Always Beijing (39°55′ N, 116°25′ E, 43.5 m elevation).  The
+    timezone offset changes on the Gregorian-year boundary of 1929:
+
+      * year < 1929: local mean time, offset = 1397/180 hours
+        (7 h 45 min 40 s east of UT).
+      * year ≥ 1929: standard China time, offset = +8 h (120° E
+        meridian).
 
     Args:
-        date (Decimal): _description_
+        date:  R.D. moment; only its Gregorian year is inspected.
 
     Returns:
-        Decimal: _description_
+        `location` tuple (lat_dms, lon_dms, elevation_m, offset_h).
     """
     year = gregorian_year_from_rd(floor(date))
     if year < 1929:

@@ -1,3 +1,37 @@
+"""
+Constants_Chinese — Chinese-calendar solar-term table and sexagesimal
+cycle names sourced from R&D Table 19-1 (Ultimate Edition, p. 307).
+
+**Purpose.**  Two committed data tables that the Chinese calendar
+code and its presentation layer both depend on:
+
+  * `chinese_MONTHS` — ordered list of 24 solar-term entries, each
+    carrying its Pinyin / Hanzi / Japanese / English names, the
+    solar longitude in degrees at which the term begins, and an
+    approximate Gregorian starting date.  Note: the ``month.index``
+    and ``month.leap`` fields encode R&D's ambiguous mapping from
+    solar term to lunisolar month; the calendar code in
+    `CC19_Chinese_1645` is authoritative.
+  * `chinese_MONTH_ATTS` — dict flattened out of `chinese_MONTHS`
+    and keyed ``[month_index][is_leap] -> {'pinyin', 'hanzi', ...}``
+    so the presentation layer can look up a term by month tuple.
+  * `chinese_SEXAGESIMALS` — the 60-name cycle used by R&D chapter 19
+    for year/month/day naming.
+
+**Public surface (star-exported via `__init__.py`).**
+    `chinese_MONTHS`, `chinese_MONTH_ATTS`, `chinese_SEXAGESIMALS`.
+
+**R&D reference.**  Table 19-1, Ultimate Edition, p. 307.  Do not
+edit the numeric fields without cross-checking against the printed
+table (they are load-bearing for the astronomical-longitude search
+in `CC19_Chinese_1645`).
+
+**Not in scope.**  Any calendrical *computation* — this file must
+stay declarative.
+
+**Change history.**  See `CHANGELOG.md`.
+"""
+
 # Table 19-1 from Calendrical Calculations, Reingold and Dershowitz, Ultimate Edition, p. 307
 chinese_MONTHS = [
     {

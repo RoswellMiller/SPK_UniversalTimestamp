@@ -56,6 +56,36 @@ pure-Python R&D implementation does not achieve.
 `CHANGELOG.md` [1.0.0].
 
 
+### B-02 — `psoEarth.__ne__` returns wrong value for equal points
+
+**Status**: open, needs a small fix + regression test.
+**Priority**: low — `psoEarth` is a geometry helper on `Astro_Space.py`;
+no current test exercises `!=` on two equal instances so the bug is
+latent.
+
+**Symptom.**  Given two `psoEarth` objects `a == b`, `a != b`
+currently evaluates to `True` instead of `False`.
+
+**Root cause.**  `Astro_Space.py::psoEarth.__ne__` calls
+`self.__eq__(other.point)` — passing the underlying `shapely.Point`
+into `__eq__`, which expects a `psoEarth`.  `__eq__` returns `False`
+for the non-`psoEarth` argument, so `__ne__` returns `not False =
+True` regardless of actual equality.  Should be `self.__eq__(other)`.
+
+**Discovered.**  PL-01 Phase 4 Task 1 (2026-07-18) — surfaced when
+adding type hints on the dunders.  Preserved with `# type: ignore`
++ this backlog reference because PL-01 Phase 4 is charter-limited
+to non-behavioural changes.
+
+**Recommended plan.**  A small `API-01` (or `T-01`) that:
+
+1. Adds a regression test for `!=` on two identical `psoEarth`
+   instances and on `!=` between a `psoEarth` and a non-`psoEarth`.
+2. Changes `other.point` → `other` in `Astro_Space.py::psoEarth.__ne__`.
+3. Removes the `# type: ignore[attr-defined]` comment left by
+   PL-01.
+
+
 ## Retired items
 
 _(none yet — items move here with a pointer to the plan that

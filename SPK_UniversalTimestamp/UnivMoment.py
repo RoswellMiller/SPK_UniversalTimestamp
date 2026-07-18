@@ -1,19 +1,64 @@
 """
-Universal Moment
-Comprehensive multi-scale time system:
-- A rata die system based on the work of Reingold and Dershowitz
-- Supports multiple calendar systems
-- High precision date representation using Decimal
-- Immutable timestamp objects for data integrity
-- Range from the beginning of time Decimal('-inf')
-- The Moment is composed of two factor a rd_day and an rd_time.
-    1. rd_day is the rata die, from Reingold and Dershowitz, is a decimal number 
-    where the integer part represents days (plus or minus)
-    since Midnight Monday January 1, 1 Midnight Gregorian.
-    2. rd_time is a tuple of (hour : int, minute : int, second : Decimal). The second
-    here is the 1/24*60*60 fraction of a single rotation of the earth on its axis.
-    It is NOT a second as measured by the radioactive decay of Cesium 133 atoms.
-- UnivMomPrecision levels to indicate the certainty of the timestamp
+UnivMoment — immutable, calendar-agnostic "instant in time" with
+multi-scale precision.
+
+**Purpose.**  Anchor a single moment on the R&D Rata Die (R.D.)
+time line from `Decimal('-Infinity')` (beginning of time) forward,
+with enough precision to represent attoseconds and enough range to
+cover geological deep time (billion-year units).  Convertible to
+and from every calendar this package supports and to standard
+interchange formats (JSON dict, lexical-sort key, JDN, Unix
+timestamp, ISO 8601).
+
+**Structure of a moment.**  Two components:
+
+  * `rd_day`  — `Decimal` R&D fixed day count.  The integer part
+    is days since Monday January 1, 1 CE Gregorian; the sentinel
+    `Decimal('-Infinity')` represents "before recorded time".
+  * `rd_time` — tuple `(hour: int, minute: int, second: Decimal)`.
+    Note: this `second` is 1 / 86400 of a mean solar day, NOT the
+    SI second defined by cesium-133 hyperfine transitions.  For
+    astronomical precision use `CC14_Time_and_Astronomy.dynamical_from_universal`.
+
+**Public surface (star-exported via `__init__.py`).**
+    `UnivMoment` (frozen dataclass) and `UnivMomPrecision` (enum).
+    Constructors: `from_dict`, `from_StdLexicalKey`, `from_string`,
+        `now`, `from_datetime`, `from_geological`, `from_gregorian`,
+        `from_julian`, `from_hebrew`, `from_chinese`,
+        `from_julian_day_number`, `from_unix_timestamp`,
+        `beginning_of_time`.
+    Presentation: `format`, `present`, `format_signature`,
+        `to_dict`, `to_StdLexicalKey`, `__str__`, `__repr__`,
+        `__format__`.
+    Arithmetic: `__add__`, `__sub__`, comparison operators, `__hash__`.
+    Nested class `Presentation` — base of all `Present_*` adapters.
+
+**Precision enum `UnivMomPrecision`.**  Fourteen levels from
+`BILLION_YEARS` down to `ATTOSECOND`.  `MONTH` is deliberately
+omitted because month lengths are calendar-specific and therefore
+cannot represent a universal time quantum.  Class-level lookup
+tables (`PREC_LEVEL`, `PREC_ABBREV`) live on `UnivMoment` to
+mirror the `LEVEL_QUANTUM` / `LEVEL_ABBREV` pattern in
+`UnivDuration`.
+
+**Format-string dispatch.**  `__format__(spec)` recognises three
+spec prefixes:
+
+  * ``ugeo:``           — geological time-scale formatting.
+  * ``ucal:<calendar>:`` — explicit calendar via `_FORMAT_CAL_ABBREV`
+    (Gregorian / Julian / Hebrew / Chinese; long name, short code,
+    or `CalendarAtts` 'abbrv' code).
+  * default              — Gregorian.
+
+`_CAL_RD_MIN` (≈ year −9999) is the earliest R.D. for which
+calendar systems are defined; earlier moments are handled through
+the geological path only.
+
+**Not in scope.**  Timezone / DST logic (delegated to
+`Moment_bPresent_Calendars.get_utc_offset`), calendar arithmetic
+itself (delegated to `CC01`–`CC19`), duration algebra (`UnivDuration`).
+
+**Change history.**  See `CHANGELOG.md`.
 """
 import langcodes
 import re
@@ -43,7 +88,21 @@ from .UnivDuration import UnivDuration
 # cannot represent a universal time quantum.
 # ---------------------------------------------------------------------------
 class UnivMomPrecision(Enum):
-    """Precision levels for date and time components of a UnivMoment."""
+    """
+    Precision levels for the year and time components of a `UnivMoment`.
+
+    Fourteen levels covering the range from BILLION_YEARS (10⁹ years,
+    used for geological / cosmological moments) down to ATTOSECOND
+    (10⁻¹⁸ s, the finest precision the R&D Decimal context supports
+    at 30 digits).  MONTH is deliberately omitted: month lengths
+    are calendar-specific and therefore cannot represent a universal
+    time quantum.
+
+    The enum values are display strings using Unicode superscripts;
+    the integer coarseness levels live in `UnivMoment.PREC_LEVEL`
+    (higher = coarser, matching `UnivDuration.LEVEL_QUANTUM` sign
+    convention).
+    """
     BILLION_YEARS  = "10\u2079years"    # billion years
     MILLION_YEARS  = "10\u2076years"    # million years
     THOUSAND_YEARS = "10\u00b3years"    # 1000 years
@@ -96,8 +155,39 @@ _CAL_RD_MIN: Decimal = Decimal('-9999') * Decimal('365.25')
 @dataclass(frozen=True, eq=False)
 class UnivMoment:
     """
-    Attributes:
-    A universal moment in time represented as a Rata Die (RD) decimal number.
+    Immutable, calendar-agnostic instant in time on the R&D Rata Die scale.
+
+    Two fields drive the whole class: `rd_day` (R&D fixed day count
+    as `Decimal`; integer part = days since Monday Jan 1 1 CE
+    Gregorian; sentinel `Decimal('-Infinity')` = beginning of time)
+    and `rd_time` (tuple `(hour, minute, second)` — the second is
+    1/86400 of a mean solar day, NOT the SI second).  A
+    `UnivMomPrecision` value declares how much of that data is
+    meaningful, so a `YEAR`-precision moment ignores its `rd_time`
+    at presentation.
+
+    Instances are frozen dataclasses with custom equality (see
+    `__eq__` for the precision-aware comparison rule).  Constructor
+    helpers live as static / class methods on the class itself
+    (`from_gregorian`, `from_julian`, `from_hebrew`, `from_chinese`,
+    `from_geological`, `from_datetime`, `from_unix_timestamp`, etc.)
+    rather than as free functions so that the (rd_day, rd_time,
+    precision) construction contract is enforced in one place.
+
+    Class-level tables:
+        `PREC_LEVEL`   — `UnivMomPrecision` → integer coarseness.
+        `LEVEL_PREC`   — reverse map.
+        `PREC_POWER`   — `UnivMomPrecision` → SI power of ten (or
+            None for HOUR/MINUTE/DAY which are not powers of ten).
+        `PREC_ABBREV`  — `UnivMomPrecision` → short abbreviation
+            used in display (e.g. "G-yr", "µs").
+
+    Instance fields:
+        `rd_day`      — required, `Decimal`; str/int accepted at
+            construction and coerced by `__post_init__`.
+        `rd_time`     — default `(0, 0, Decimal('0.0'))`.
+        `precision`   — default `UnivMomPrecision.SECOND`.
+        `description` — optional free-form annotation.
     """
 
     # --- Class-level read-only lookup tables (mirrors LEVEL_QUANTUM/LEVEL_ABBREV in UnivDuration) ---

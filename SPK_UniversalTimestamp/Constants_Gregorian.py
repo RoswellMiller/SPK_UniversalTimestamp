@@ -1,3 +1,26 @@
+"""
+Constants_Gregorian — Gregorian month names, abbreviations, and lengths
+keyed by ISO language code.
+
+**Purpose.**  Source of truth for `%B` / `%b` / `%m` formatting in
+`Moment_cPresent_Gregorian.Present_Gregorian._strftime_month_attr`.
+The ``days`` field is the non-leap month length; February's leap-year
+adjustment is applied by the calendrical code, not this table.
+
+**Public surface (star-exported via `__init__.py`).**
+    `gregorian_MONTH_ATTS` (dict keyed `[language][month_number] ->
+    {'name', 'abbrv', 'days'}`).
+
+**Languages covered.**  ``'en'``, ``'fr'``, ``'es'``, ``'de'``, ``'it'``.
+Adding a language means adding a top-level key with all 12 months
+present — partial languages will `KeyError` at formatting time.
+
+**Not in scope.**  Weekday names, era suffixes (those live in
+`Constants_aCommon.CalendarAtts`).
+
+**Change history.**  See `CHANGELOG.md`.
+"""
+
 # CONSTANTS #########################################################################
 gregorian_MONTH_ATTS = {
     'en': {

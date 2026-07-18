@@ -1,17 +1,75 @@
+"""
+CC03_Julian — Julian-calendar leap-year test and R.D. ↔ (year, month, day)
+conversion from R&D chapter 3.
+
+**Purpose.**  Implement the Julian-calendar side of the R&D
+calendrical-conversion pair.  Julian differs from Gregorian only
+in the leap rule (Julian: every 4 years; Gregorian: with the
+century correction) so the arithmetic is simpler.
+
+**Public surface (re-exported via `__init__.py`).**
+    `is_julian_leap_year`, `rd_from_julian`, `julian_from_rd`.
+
+**R&D references.**
+    Leap-year test and both converters: pp 75–77 (R&D ch. 3).
+
+**Behavioral notes.**
+    * BCE years are represented as negative `int` and internally
+      shifted by +1 to close the astronomical / historical
+      off-by-one (there is no year 0 in the historical convention).
+    * `julian_from_rd` returns a `(year, month, day)` `tuple[int, int, int]`
+      despite the `-> dict` annotation — the type hint is legacy
+      and slated for repair in a future Task 1 pass (out of scope
+      for PL-01's non-behavioral charter).
+
+**Not in scope.**  Gregorian arithmetic (`CC02_Gregorian`),
+presentation formatting (`Moment_cPresent_Julian`).
+
+**Change history.**  See `CHANGELOG.md`.
+"""
+
 from .CC01_Calendar_Basics import Epoch_rd
 
 # Calendrical Calculations Chapter 3
 def is_julian_leap_year(j_year: int) -> bool:
     """
-    Check if a year is a leap year in the Julian calendar
-    "Calendrical Calculations" by Reingold and Dershowitz pp 75-77
+    R&D pp. 75–77: test whether `j_year` is a Julian leap year.
+
+    Julian rule: divisible by 4, with the BCE branch subtracting 1
+    (because year -1 in this codebase is 1 BCE historically and
+    astronomers count 0 BCE as year 0 — the ``0 if > 0 else 3``
+    residue selection is R&D's compact way to bridge the two).
+
+    Args:
+        j_year:  Julian year as `int`.  Negative values are BCE.
+
+    Returns:
+        `True` if `j_year` is a leap year, else `False`.
     """
     return j_year % 4 == (0 if j_year > 0 else 3)
     
 def rd_from_julian(year: int, month: int = 1, day: int = 1) -> int:
     """
-    Convert Julian date to Rata Die (rd) fixed day number
-    "Calendrical Calculations" by Reingold and Dershowitz pp 75-77
+    R&D pp. 75–77: convert Julian (year, month, day) to Rata Die.
+
+    Args:
+        year:   Julian year; negative values are BCE (year -1 == 1 BCE).
+        month:  1–12; defaults to January.
+        day:    1–31; defaults to the 1st.
+
+    Returns:
+        R.D. fixed day number as `int`.
+
+    Raises:
+        `ValueError`:  Any of `year`, `month`, `day` is non-integer;
+            `month` is outside 1–12; or `day` is outside 1–31.
+            The day check is loose (does not reject e.g. February 30);
+            fine-grained validation is the caller's responsibility.
+
+    Notes:
+        Internally shifts negative `year` by +1 to close the
+        BCE / astronomical off-by-one before running R&D's
+        arithmetic; the returned R.D. is unaffected.
     """
     day = day if day is not None else 1
     month = month if month is not None else 1
@@ -41,8 +99,20 @@ def rd_from_julian(year: int, month: int = 1, day: int = 1) -> int:
     
 def julian_from_rd(rd: int) -> dict:
     """
-    Convert Rata Die (rd) fixed day number to Julian date
-    "Calendrical Calculations" by Reingold and Dershowitz pp 75-77
+    R&D pp. 75–77: convert Rata Die to a Julian `(year, month, day)` triple.
+
+    Args:
+        rd:  R.D. day count as `int`.
+
+    Returns:
+        `tuple[int, int, int]` — `(year, month, day)`.  The
+        declared return type `dict` is legacy and does not match
+        the actual return (a plain tuple); repair is deferred to a
+        future Task 1 pass.
+
+    Raises:
+        `ValueError`:  Any internal `rd_from_julian` call fails
+            validation (wrapped and re-raised with the `rd` value).
     """
     # Convert rd to datetime
     try:

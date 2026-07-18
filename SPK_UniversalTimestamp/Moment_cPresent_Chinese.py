@@ -1,3 +1,33 @@
+"""
+Moment_cPresent_Chinese — Chinese-calendar presentation layer for `UnivMoment`.
+
+**Purpose.**  Adapter class `Present_Chinese` that converts a
+`UnivMoment` into a Chinese `(cycle, year, month, leap_month, day)`
+presentation with strftime-style hooks for year (`%Y/%y` and
+`%C/%c`), sexagesimal cycle, month (with leap-suffix ``L``), day,
+and localised solar-term names.  Calendar arithmetic lives in
+`CC19_Chinese_1645`; solar-term / sexagesimal tables live in
+`Constants_Chinese`.
+
+**Public surface (star-exported via `__init__.py`).**
+    `Present_Chinese` (subclass of `Present_Calendars`).
+
+**Format directive extensions.**  Beyond the standard set:
+
+  * ``%C`` — cycle number, long form (currently "10?" placeholder).
+  * ``%c`` — cycle number, short form (integer).
+  * ``%Y`` — year within cycle, long form.
+  * ``%y`` — year within cycle, short form.
+  * ``%B`` / ``%b`` — Pinyin solar-term name.
+
+**Known issue.**  Two Appendix-C rows fail (backlog B-01 in
+`docs/TODO_BACKLOG.md`); the failures reflect a bug in the
+`CC19_Chinese_1645` layer, not in this presentation module, but
+the failure text is generated here.
+
+**Change history.**  See `CHANGELOG.md`.
+"""
+
 
 from .CC19_Chinese_1645 import chinese_from_rd
 from .Constants_aCommon import Calendar

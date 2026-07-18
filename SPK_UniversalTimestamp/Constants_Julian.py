@@ -1,3 +1,27 @@
+"""
+Constants_Julian — Julian-calendar month names, abbreviations, and lengths
+keyed by ISO language code.
+
+**Purpose.**  Source of truth for `%B` / `%b` / `%m` formatting in
+`Moment_cPresent_Julian.Present_Julian._strftime_month_attr`.  The
+Julian calendar shares the Gregorian month structure (same names,
+same lengths) — the tables are duplicated rather than aliased so
+that divergent-locale conventions (e.g. the Russian Orthodox style
+for September–February) can be applied here without disturbing the
+Gregorian file.
+
+**Public surface (star-exported via `__init__.py`).**
+    `julian_MONTH_ATTS` (dict keyed `[language][month_number] ->
+    {'name', 'abbrv', 'days'}`).
+
+**Languages covered.**  ``'en'``, ``'fr'``, ``'es'``, ``'de'``, ``'it'``.
+
+**Not in scope.**  Leap-year handling (delegated to `CC03_Julian`)
+and cross-calendar era conventions (`Constants_aCommon`).
+
+**Change history.**  See `CHANGELOG.md`.
+"""
+
 # CONSTANTS #########################################################################################
 julian_MONTH_ATTS = {
     'en': {

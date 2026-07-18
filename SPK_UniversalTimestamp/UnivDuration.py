@@ -1,3 +1,42 @@
+"""
+UnivDuration — immutable, multi-scale time span with automatic
+precision snapping.
+
+**Purpose.**  Represent "how long" independently of any calendar,
+from attoseconds (10⁻¹⁸ s) to gigayears (10⁹ years).  Every
+instance carries a raw duration in seconds (as `Decimal`) plus a
+coarseness level derived from the input magnitude via
+`_auto_precision`.  Arithmetic between two `UnivDuration` values
+promotes to the coarser of the two levels so that a millisecond +
+a gigayear rounds to a gigayear rather than pretending to preserve
+millisecond precision.
+
+**Public surface (star-exported via `__init__.py`).**
+    `UnivDuration` — dataclass with constructor helpers
+    (`from_dict`, `from_StdLexicalKey`, `from_string`), display
+    formatters (`to_dict`, `to_StdLexicalKey`, `format_for_display`,
+    `__str__`, `__repr__`, `__format__`), full comparison protocol
+    (`__eq__`, `__lt__`, `__le__`, `__gt__`, `__ge__`, `__hash__`),
+    and arithmetic (`__add__`, `__sub__`).
+
+**Module-private helpers.**  `_dur_level`, `_level_quantum`,
+`_abbrev`, `_auto_precision` — support functions used by the
+formatters and arithmetic; not part of the public API.
+
+**Precision level convention.**
+    Positive levels 1–7: named units (seconds up through gigayears)
+    stored in `UnivDuration.LEVEL_QUANTUM` / `LEVEL_ABBREV`.
+    Zero:              seconds.
+    Negative levels:   powers of ten below the second (−3 = ms,
+        −6 = µs, −9 = ns, −12 = ps, −15 = fs, −18 = as).
+
+**Not in scope.**  Anything anchored to a specific instant in time
+(that's `UnivMoment`), calendar-specific durations like "1 month"
+(months are not universal quanta — see `UnivMomPrecision`).
+
+**Change history.**  See `CHANGELOG.md`.
+"""
+
 import re
 
 from dataclasses import dataclass, field
@@ -48,6 +87,25 @@ def _auto_precision(seconds: Decimal) -> int:
 
 @dataclass(frozen=True)
 class UnivDuration:
+    """
+    Immutable, multi-scale time span.
+
+    Instances carry `seconds` (`Decimal`) and a `precision` level
+    integer (0 = seconds, positive = coarser named units up through
+    G-years, negative = powers of ten below the second down to
+    attoseconds).  Arithmetic promotes to the coarser precision of
+    two operands; construction from a magnitude auto-selects the
+    coarsest level whose quantum does not exceed `abs(seconds)`.
+
+    Class-level tables:
+        `LEVEL_QUANTUM`        — level → seconds-per-quantum.
+        `LEVEL_ABBREV`         — level → short abbreviation.
+        `ABBREV_LEVEL`         — reverse map for string parsing;
+            includes both plural and singular forms for named units.
+        `MAX_FINE_FOR_COARSE`  — span constraint per coarsest level
+            (a G-year compound may be no finer than year; a year
+            compound may go to microseconds; etc.).
+    """
     # CONSTANTS ##################################################################################################
     @staticmethod
     def __version__():

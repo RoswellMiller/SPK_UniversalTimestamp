@@ -1,3 +1,45 @@
+"""
+Moment_bPresent_Geological — geological-time-scale presentation layer
+for `UnivMoment`.
+
+**Purpose.**  Present a `UnivMoment` whose year value carries
+billion-, million-, or thousand-year precision as a name from the
+Geological Society of America's Geological Time Scale (Eon / Era /
+Period / Epoch / Age).  Contrast with the arithmetic-calendar
+presenters (`Moment_cPresent_*`) which express the same underlying
+R.D. moment as a `(year, month, day)` civil date.
+
+**Public surface (star-exported via `__init__.py`).**
+    `Present_Geological` (subclass of `UnivMoment.Presentation`).
+    `GEOLOGICAL_TIME_SCALE`  — the source data dict.
+    `main()`  — rebuilds derived structures from the raw scale;
+        also runnable as a script for maintenance / regeneration.
+
+**Data source.**  Geological Society of America Geological Time
+Scale v6.0 (2024-06-10 download), URL captured in
+`GEOLOGICAL_TIME_SCALE['Source']`.  Values are in millions of
+years ago (Ma) with names carrying start / end boundaries.  Kept
+as an inline module-level dict rather than an external JSON so
+that the presentation code has zero I/O on import.
+
+**Format-directive extensions.**  Beyond the standard set:
+
+  * ``%G`` — geological-unit name.
+  * ``%O`` — numeric offset ("Ma", "Ga", etc.) with the unit prefix.
+
+Default format used by `UnivMoment.__format__("ugeo:...")` when
+the caller supplies no explicit format string is ``"%G %O"``.
+
+**Not in scope.**  Civil-calendar formatting
+(`Moment_bPresent_Calendars`), R.D. arithmetic (`UnivMoment` /
+`CC*`), scale-source JSON persistence (kept out of the runtime
+code path).
+
+**Change history.**  See `CHANGELOG.md`.  If the GSA publishes a
+newer time-scale revision, rerun `main()` and cross-check the
+diff against `Tests/geological-time-scale.json` fixtures.
+"""
+
 from decimal import Decimal
 from .Constants_aCommon import Calendar
 from .UnivMoment import UnivMoment, UnivMomPrecision
@@ -880,10 +922,36 @@ GEOLOGICAL_EPOCHSandAGES = []
 
 class Present_Geological(UnivMoment.Presentation):
     """
-    Geological calendar representation of a UnivMoment.
+    Geological-time-scale presentation of a `UnivMoment`.
+
+    Only accepts moments whose precision is coarser than or equal to
+    YEAR (raising `ValueError` otherwise) because sub-year precision
+    is meaningless on a scale that names units in millions of years.
+    The `year` attribute is either `Decimal('-inf')` (beginning of
+    time) or the R.D. day divided by the Julian year length (365.25
+    days) and floored, giving a signed integer count of Julian years
+    from R.D. epoch.
+
+    The presentation dispatcher (`strftime` / `_format_segment`)
+    walks the `GEOLOGICAL_TIME_SCALE` dict and resolves the year
+    to the innermost enclosing named unit (Eon / Era / Period /
+    Epoch / Age) plus the numeric offset in the appropriate power
+    of ten (Ma / Ga).
     """
     # CONSTRUCTOR ############################################################################
     def __init__(self, moment: UnivMoment):
+        """
+        Construct a geological presentation of `moment`.
+
+        Args:
+            moment:  `UnivMoment` at YEAR precision or coarser.  The
+                `beginning_of_time()` sentinel maps to `-inf` year;
+                every other moment's `rd_day` is divided by 365.25
+                and floored to an integer year offset from R.D. epoch.
+
+        Raises:
+            `ValueError`:  `moment.precision` is finer than YEAR.
+        """
         if (UnivMoment.PREC_LEVEL[moment.precision] < UnivMoment.PREC_LEVEL[UnivMomPrecision.YEAR]):
             raise ValueError("Geological moments must have precision of at least year or coarser.")
         if moment == UnivMoment.beginning_of_time():
@@ -1050,7 +1118,7 @@ class Present_Geological(UnivMoment.Presentation):
             Special case: beginning_of_time (year = -Infinity) → "-Infinity"
             """
             if self.year.is_infinite():
-                return str(self.year)   # "-Infinity", matching %y behaviour
+                return str(self.year)   # "-Infinity", matching %y behavior
             effective_precision = self.precision
             if effective_precision == UnivMomPrecision.BILLION_YEARS and abs(self.year) < 1_000_000_000:
                 effective_precision = UnivMomPrecision.MILLION_YEARS

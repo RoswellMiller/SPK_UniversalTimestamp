@@ -1,11 +1,39 @@
 """
-SPK Universal Timestamp Package
+SPK Universal Timestamp Package — comprehensive multi-scale time system.
 
-Comprehensive multi-scale time system for knowledge bases:
-- Geological: Deep time scales (billions of years)
-- Astronomical: Julian Day Numbers, coordinate time
-- Scientific: High-precision measurements with uncertainty
-- Human Calendars: Cultural/religious calendar conversions
+**Purpose.**  Represent, convert, and format instants and durations
+across the full range from cosmological deep time (billion years)
+down to attoseconds (10⁻¹⁸ s), across Gregorian, Julian, Hebrew,
+Chinese, and geological time-scale conventions, on an R&D
+(Reingold & Dershowitz) Rata Die foundation.
+
+**Domains covered.**
+    * Geological: deep time scales (Ma / Ga).
+    * Astronomical: Julian Day Numbers, dynamical / universal time,
+      Beijing-meridian lunisolar calculations for the Chinese calendar.
+    * Scientific: 30-decimal `Decimal` precision, immutable
+      value-typed moments and durations.
+    * Human calendars: Gregorian, Julian, Hebrew, Chinese (1645-onwards).
+
+**Public surface (re-exported at package level).**
+    Core types:  `UnivMoment`, `UnivMomPrecision`, `UnivDuration`.
+    Calendars:   `Calendar` (enum), `Present_Gregorian`, `Present_Julian`,
+        `Present_Hebrew`, `Present_Chinese`, `Present_Geological`,
+        `Present_Calendars`.
+    R&D primitives: everything under `CC00`–`CC19` (see individual
+        module docstrings), astronomy helpers from
+        `CC14_Time_and_Astronomy`, spatial primitives from `Astro_Space`.
+    Constants:   `Constants_aCommon`, `Constants_Gregorian`,
+        `Constants_Julian`, `Constants_Hebrew`, `Constants_Chinese`.
+
+**Documentation.**
+    * `docs/USERS_MANUAL.md`  — runnable examples per calendar.
+    * `docs/Coding and Documenting Standards.md` — conventions this
+      codebase follows (module headers, R&D citations, docstring
+      contracts, git hygiene).
+    * `CHANGELOG.md`  — versioned change log.
+    * `docs/TODO_BACKLOG.md` — known issues (B-01 Chinese Appendix-C
+      off-by-one, B-02 `psoEarth.__ne__` bug).
 """
 
 __version__ = "2.0.3"

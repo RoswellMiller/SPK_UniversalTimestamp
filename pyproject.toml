@@ -138,5 +138,5 @@ warn_unreachable = true
 strict_equality = true
 
 [[tool.mypy.overrides]]
-module = "tests.*"
+module = "Tests.*"
 disallow_untyped_defs = false

@@ -1,3 +1,28 @@
+"""
+Constants_Hebrew — Hebrew-calendar month names, abbreviations, and
+nominal lengths keyed by ISO language code.
+
+**Purpose.**  Source of truth for `%B` / `%b` / `%m` formatting in
+`Moment_cPresent_Hebrew.Present_Hebrew._strftime_month_attr`.
+Marheshvan and Kislev carry inline ``# or 29`` / ``# or 30``
+comments because their actual length varies by year (deficient /
+regular / abundant); the calendrical code in `CC08_Hebrew` computes
+the correct value at runtime.
+
+**Public surface (star-exported via `__init__.py`).**
+    `hebrew_MONTH_ATTS` (dict keyed `[language][months.MEMBER.value]
+    -> {'name', 'abbrv', 'days'}`).
+
+**Languages covered.**  ``'en'``, ``'fr'``, ``'es'``, ``'de'``, ``'it'``.
+
+**Not in scope.**  Leap-year Adar handling (delegated to
+`CC08_Hebrew`).  The two Adar entries here (ADAR_I, ADAR_II) are
+only meaningful in leap years — in common years only ADAR is used
+and the presentation layer maps to it explicitly.
+
+**Change history.**  See `CHANGELOG.md`.
+"""
+
 from .CC08_Hebrew import months
 # CONSTANTS #########################################################################################
 hebrew_MONTH_ATTS = {
