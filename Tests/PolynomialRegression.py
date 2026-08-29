@@ -1,7 +1,8 @@
 import numpy as np
-from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
+from sklearn.preprocessing import PolynomialFeatures
+
 
 def discover_formula(x_data, y_data, z_data, degree=3):
     """Discover formula for z = f(x,y) using polynomial regression"""
@@ -87,9 +88,9 @@ def discover_fourier_formula(x_data, y_data, z_data, max_terms=3):
 def polynomial_regression(x_data, y_data, z_data, degree=3):
     """Fit a polynomial regression model to your 2D data"""
     import numpy as np
-    from sklearn.preprocessing import PolynomialFeatures
     from sklearn.linear_model import LinearRegression
     from sklearn.metrics import r2_score
+    from sklearn.preprocessing import PolynomialFeatures
     
     # Prepare input data
     X = np.array([[x, y] for x, y in zip(x_data, y_data)])

@@ -7,12 +7,12 @@ print("Testing newly added utility functions...")
 
 try:
     from SPK_UniversalTimestamp import (
-        get_default_min_time_compact,
-        get_default_max_time_compact,
-        get_default_min_time_minimal,
-        get_default_max_time_minimal,
+        UnivMoment,
         convert_timestamps_for_json,
-        UnivMoment
+        get_default_max_time_compact,
+        get_default_max_time_minimal,
+        get_default_min_time_compact,
+        get_default_min_time_minimal,
     )
     print("✅ All imports successful!")
     
@@ -56,6 +56,7 @@ except Exception as e:
 # Test showing all available functions
 print("\n4. Complete list of available utility functions:")
 import SPK_UniversalTimestamp
+
 for name in sorted(SPK_UniversalTimestamp.__all__):
     if callable(getattr(SPK_UniversalTimestamp, name, None)):
         obj = getattr(SPK_UniversalTimestamp, name)

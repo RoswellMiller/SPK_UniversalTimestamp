@@ -1,9 +1,12 @@
 
-import random
 import json
+import random
+from decimal import Decimal
+
 from SPK_UniversalTimestamp import Calendar, UnivMomPrecision
 from SPK_UniversalTimestamp.UnivMoment import UnivMoment
-from decimal import Decimal
+
+
 def main():
 
     calendars = [

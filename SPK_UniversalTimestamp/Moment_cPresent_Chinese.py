@@ -32,8 +32,8 @@ the failure text is generated here.
 from .CC19_Chinese_1645 import chinese_from_rd
 from .Constants_aCommon import Calendar
 from .Constants_Chinese import chinese_MONTH_ATTS
-from .UnivMoment import UnivMoment, UnivMomPrecision
 from .Moment_bPresent_Calendars import Present_Calendars
+from .UnivMoment import UnivMoment, UnivMomPrecision
 
 
 class Present_Chinese(Present_Calendars):

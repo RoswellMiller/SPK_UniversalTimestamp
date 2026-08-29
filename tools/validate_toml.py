@@ -1,5 +1,7 @@
-import tomllib  # built-in in Python 3.11+
 from pathlib import Path
+
+import tomllib  # built-in in Python 3.11+
+
 
 def validate_toml(path: str):
     file = Path(path)

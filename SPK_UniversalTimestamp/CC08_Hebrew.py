@@ -31,8 +31,10 @@ spans roughly pp. 87–101 in the R&D Ultimate Edition.
 """
 
 from enum import Enum
+
 from .CC00_Decimal_library import MAX, MIN
 from .CC01_Calendar_Basics import Epoch_rd
+
 
 class months(Enum):
     """

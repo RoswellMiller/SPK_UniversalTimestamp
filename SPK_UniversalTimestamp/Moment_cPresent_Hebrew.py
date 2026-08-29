@@ -20,8 +20,9 @@ name; this module just plumbs them together.
 from .CC08_Hebrew import hebrew_from_rd
 from .Constants_aCommon import Calendar
 from .Constants_Hebrew import hebrew_MONTH_ATTS
-from .UnivMoment import UnivMoment, UnivMomPrecision
 from .Moment_bPresent_Calendars import Present_Calendars
+from .UnivMoment import UnivMoment, UnivMomPrecision
+
 
 class Present_Hebrew(Present_Calendars):
     """

@@ -1,25 +1,37 @@
 from decimal import Decimal
+
 #import inspect
 from SPK_UniversalTimestamp.CC00_Decimal_library import to_roman_numeral
+
 #from SPK_UniversalTimestamp import UnivTimestampFactory
-
 from SPK_UniversalTimestamp.CC01_Calendar_Basics import Epoch_rd
-from SPK_UniversalTimestamp.CC02_Gregorian import rd_from_gregorian, gregorian_from_rd
+from SPK_UniversalTimestamp.CC02_Gregorian import gregorian_from_rd, rd_from_gregorian
 from SPK_UniversalTimestamp.CC03_Julian import rd_from_julian
-from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import season_in_gregorian, winter, spring, summer, autumn
-from SPK_UniversalTimestamp.CC19_Chinese_1645 import chinese_new_moon_on_or_after, solar_longitude, solar_longitude_after
-#from SPK_UniversalTimestamp.CC19_Chinese_1645 import chinese_from_rd, chinese_new_year_in_sui, rd_from_chinese
+from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import (
+    autumn,
+    season_in_gregorian,
+    spring,
+    summer,
+    winter,
+)
+from SPK_UniversalTimestamp.CC19_Chinese_1645 import (
+    chinese_new_moon_on_or_after,
+    solar_longitude,
+    solar_longitude_after,
+)
 
+#from SPK_UniversalTimestamp.CC19_Chinese_1645 import chinese_from_rd, chinese_new_year_in_sui, rd_from_chinese
 from SPK_UniversalTimestamp.Constants_aCommon import Calendar
 from SPK_UniversalTimestamp.Constants_Chinese import chinese_MONTHS
 from SPK_UniversalTimestamp.UnivMoment import UnivMoment
+
 
 class TestChineseAstronomy:
     """Test cases for UnivMoment class."""
     def setup_class(cls):
         # Set font for Chinese characters before creating figure
-        import matplotlib.font_manager as fm
         import matplotlib as mpl
+        import matplotlib.font_manager as fm
         
         # Try to use a font that supports Chinese characters
         # Priority list of fonts that support CJK characters

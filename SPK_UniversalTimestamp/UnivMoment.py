@@ -60,25 +60,35 @@ itself (delegated to `CC01`–`CC19`), duration algebra (`UnivDuration`).
 
 **Change history.**  See `CHANGELOG.md`.
 """
-import langcodes
 import re
+from abc import abstractmethod
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from decimal import Decimal, getcontext, ROUND_DOWN
+from decimal import ROUND_DOWN, Decimal, getcontext
 from enum import Enum
 from types import MappingProxyType
-from .CC00_Decimal_library import floor
-from dataclasses import dataclass, field
 from typing import ClassVar, Optional, Union
-from abc import abstractmethod
+
+import langcodes
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+from .CC00_Decimal_library import floor
 from .CC01_Calendar_Basics import Epoch_rd
-from .CC02_Gregorian import is_gregorian_leap_year, rd_from_gregorian, gregorian_from_rd
+from .CC02_Gregorian import gregorian_from_rd, is_gregorian_leap_year, rd_from_gregorian
 from .CC03_Julian import is_julian_leap_year, rd_from_julian
-from .CC08_Hebrew import rd_from_hebrew, last_day_of_hebrew_month, last_hebrew_month_of_year
-from .CC19_Chinese_1645 import rd_from_chinese, chinese_new_moon_before, chinese_new_moon_on_or_after
+from .CC08_Hebrew import (
+    last_day_of_hebrew_month,
+    last_hebrew_month_of_year,
+    rd_from_hebrew,
+)
+from .CC19_Chinese_1645 import (
+    chinese_new_moon_before,
+    chinese_new_moon_on_or_after,
+    rd_from_chinese,
+)
 from .Constants_aCommon import Calendar, CalendarAtts
 from .UnivDuration import UnivDuration
+
 
 # ---------------------------------------------------------------------------
 # Precision enum for UnivMoment — lives here (not in Constants_aCommon) so that
@@ -119,6 +129,7 @@ class UnivMomPrecision(Enum):
     ATTOSECOND     = "10\u207b\u00b9\u2078second"  # as
 from .Constants_Gregorian import gregorian_MONTH_ATTS
 from .Constants_Julian import julian_MONTH_ATTS
+
 #from .UnivMoment import UnivMoment
 # Set high precision Decimal computations
 getcontext().prec = 50

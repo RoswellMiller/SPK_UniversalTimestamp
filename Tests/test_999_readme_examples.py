@@ -1,8 +1,10 @@
-import pytest
-import re
 import os
-from io import StringIO
+import re
 from contextlib import redirect_stdout
+from io import StringIO
+
+import pytest
+
 
 class TestActualReadmeExamples:
     """

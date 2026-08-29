@@ -6,17 +6,18 @@ This script demonstrates the comprehensive multi-scale time system capabilities.
 """
 
 import datetime
-import sys
 import os
+import sys
 
 # Add the parent directory to Python path so we can import the package
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from SPK_UniversalTimestamp import (
+    GEOLOGICAL_EONS,
+    Calendar,
     UnivMoment,
-    Calendar, 
     UnivMomPrecision,
-    GEOLOGICAL_EONS
 )
+
 
 def main():
     """Demonstrate UniversalTimestamp functionality across time scales."""

@@ -29,7 +29,6 @@ a new key and cite the R&D page in a trailing comment.
 
 from decimal import Decimal
 
-
 # Table 1.2, p 17
 Epoch_rd = {
     'julian-day-number' : Decimal(-1_721_424.5),    

@@ -38,12 +38,10 @@ formatters and arithmetic; not part of the public API.
 """
 
 import re
-
 from dataclasses import dataclass, field
-from decimal import Decimal, ROUND_HALF_EVEN
+from decimal import ROUND_HALF_EVEN, Decimal
 from types import MappingProxyType
 from typing import ClassVar
-
 
 
 def _dur_level(dur: "UnivDuration") -> int:

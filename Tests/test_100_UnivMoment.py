@@ -6,6 +6,7 @@ from decimal import Decimal
 from SPK_UniversalTimestamp.Constants_aCommon import Calendar
 from SPK_UniversalTimestamp.UnivMoment import UnivMoment, UnivMomPrecision
 
+
 class Test_Moment_aUniversal: 
     """Test cases for UnivMoment class."""
     

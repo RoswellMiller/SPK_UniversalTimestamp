@@ -36,10 +36,11 @@ calendrical code paths that need more accuracy than `float` provides.
 changes to its public surface are rare and always version-bumped.
 """
 
-from typing import Callable
-from decimal import Decimal, getcontext
 import math
-import mpmath 
+from decimal import Decimal, getcontext
+from typing import Callable
+
+import mpmath
 
 ctx = getcontext()
 ctx.prec = 30  # set desired precision

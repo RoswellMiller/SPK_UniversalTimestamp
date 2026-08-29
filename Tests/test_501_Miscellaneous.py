@@ -2,9 +2,9 @@
 Comprehensive tests for the UnivMoment class.
 """
 import inspect
-from SPK_UniversalTimestamp.UnivMoment import UnivMomPrecision
-from SPK_UniversalTimestamp.UnivMoment  import UnivMoment
 from decimal import Decimal
+
+from SPK_UniversalTimestamp.UnivMoment import UnivMoment, UnivMomPrecision
 
 # Add the parent directory to Python path so we can import the package
 #sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))

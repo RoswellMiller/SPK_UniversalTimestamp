@@ -31,9 +31,10 @@ coupling (see `CC14_Time_and_Astronomy` for observer-time coupling).
 **Change history.**  See `CHANGELOG.md`.
 """
 
+from decimal import Decimal
+
 import pyproj
 from shapely.geometry import Point
-from decimal import Decimal
 
 _geod_earth = pyproj.Geod(ellps="WGS84")
 

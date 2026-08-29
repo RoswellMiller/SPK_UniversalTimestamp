@@ -1,19 +1,31 @@
 """
 Comprehensive tests for the UnivMoment class.
 """
+import json
 import os
 import sys
-import json
-from decimal import Decimal, ROUND_FLOOR
+from decimal import ROUND_FLOOR, Decimal
 
 from SPK_UniversalTimestamp.CC02_Gregorian import gregorian_from_rd
-from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import ephemeris_correction, equation_of_time, dynamical_from_universal
-from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import solar_longitude, solar_longitude_after, dms_from_degrees
-from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import hms_from_hours, universal_from_local, degrees_from_dms
-from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import AST, standard_from_local, location, direction
-#from .PolynomialRegression import polynomial_regression
+from SPK_UniversalTimestamp.CC14_Time_and_Astronomy import (
+    AST,
+    degrees_from_dms,
+    direction,
+    dms_from_degrees,
+    dynamical_from_universal,
+    ephemeris_correction,
+    equation_of_time,
+    hms_from_hours,
+    location,
+    solar_longitude,
+    solar_longitude_after,
+    standard_from_local,
+    universal_from_local,
+)
 
+#from .PolynomialRegression import polynomial_regression
 from SPK_UniversalTimestamp.UnivMoment import UnivMoment
+
 
 class TestTimeAndAstronomy:
     def setup_method(self):

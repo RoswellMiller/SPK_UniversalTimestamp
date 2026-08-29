@@ -30,6 +30,7 @@ presentation formatting (`Moment_cPresent_Julian`).
 
 from .CC01_Calendar_Basics import Epoch_rd
 
+
 # Calendrical Calculations Chapter 3
 def is_julian_leap_year(j_year: int) -> bool:
     """

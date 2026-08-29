@@ -49,9 +49,28 @@ Earth-centered and low-precision-astronomical-almanac-grade.
 """
 
 from decimal import Decimal
-from .CC00_Decimal_library import round, decimal_, sin, cos, tan, DEG2RAD, sign, PI, mod, mod_interval, MAX, MIN, floor 
+
 from .Astro_Space import psoEarth
-from .CC02_Gregorian import gregorian_date_difference, gregorian_year_from_rd, gregorian_new_year
+from .CC00_Decimal_library import (
+    DEG2RAD,
+    MAX,
+    MIN,
+    PI,
+    cos,
+    decimal_,
+    floor,
+    mod,
+    mod_interval,
+    round,
+    sign,
+    sin,
+    tan,
+)
+from .CC02_Gregorian import (
+    gregorian_date_difference,
+    gregorian_new_year,
+    gregorian_year_from_rd,
+)
 
 
 # Converts degrees, minutes, seconds to Decimal(degrees)

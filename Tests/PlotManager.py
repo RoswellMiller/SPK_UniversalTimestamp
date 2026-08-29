@@ -1,10 +1,11 @@
 import os
 from datetime import datetime
 from typing import Callable
- 
+
 import matplotlib.pyplot as plt
-from matplotlib.ticker import LinearLocator 
 import numpy as np
+from matplotlib.ticker import LinearLocator
+
 
 class PlotManager:
     """

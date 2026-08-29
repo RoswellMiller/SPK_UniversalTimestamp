@@ -31,8 +31,10 @@ are load-bearing citations and must never be removed.
 """
 
 from decimal import Decimal
+
 from .CC00_Decimal_library import floor, mod
 from .CC01_Calendar_Basics import Epoch_rd
+
 
 # "Calendrical Calculations" by Reingold and Dershowitz
 # p 59 (2.16)

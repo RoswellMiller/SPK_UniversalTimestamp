@@ -40,11 +40,11 @@ newer time-scale revision, rerun `main()` and cross-check the
 diff against `Tests/geological-time-scale.json` fixtures.
 """
 
+import bisect
 from decimal import Decimal
+
 from .Constants_aCommon import Calendar
 from .UnivMoment import UnivMoment, UnivMomPrecision
-
-import bisect
 
 GEOLOGICAL_TIME_SCALE = {
     "Source": "https://rock.geosociety.org/net/documents/gsa/timescale/timescl.pdf",

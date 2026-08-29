@@ -1,6 +1,5 @@
 import os
 
-
 Table_19_1 = [ 
     #ndx.  Chinese                     Japanese    English               solar-longitude
     #                                                                          starting-date, approximate
@@ -111,8 +110,8 @@ solar_terms_2025 = [
 ]   
 
 def main():
-    import json
     import csv
+    import json
     import os
 
     table = []

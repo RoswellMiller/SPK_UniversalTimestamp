@@ -1,6 +1,19 @@
 from decimal import Decimal
 
-from SPK_UniversalTimestamp.CC00_Decimal_library import DEG2RAD, sin, cos, tan, sqrt, floor, ceil, mod_adj, MAX, MIN, within_precision
+from SPK_UniversalTimestamp.CC00_Decimal_library import (
+    DEG2RAD,
+    MAX,
+    MIN,
+    ceil,
+    cos,
+    floor,
+    mod_adj,
+    sin,
+    sqrt,
+    tan,
+    within_precision,
+)
+
 
 class TestDecimalLibrary:
     

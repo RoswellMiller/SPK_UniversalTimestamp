@@ -51,12 +51,23 @@ an entry in the plan's change log.
 
 from decimal import Decimal
 
-from .CC00_Decimal_library import mod_adj, floor, ceil, MIN, round
+from .CC00_Decimal_library import MIN, ceil, floor, mod_adj, round
 from .CC01_Calendar_Basics import Epoch_rd
 from .CC02_Gregorian import gregorian_year_from_rd
-from .CC14_Time_and_Astronomy import solar_longitude, universal_from_standard, location, solar_longitude_after, standard_from_universal
-from .CC14_Time_and_Astronomy import estimate_prior_solar_longitude, new_moon_at_or_after, new_moon_before, mean_synodic_month, mean_tropical_year
-from .CC14_Time_and_Astronomy import winter
+from .CC14_Time_and_Astronomy import (
+    estimate_prior_solar_longitude,
+    location,
+    mean_synodic_month,
+    mean_tropical_year,
+    new_moon_at_or_after,
+    new_moon_before,
+    solar_longitude,
+    solar_longitude_after,
+    standard_from_universal,
+    universal_from_standard,
+    winter,
+)
+
 
 # page 306 (19.1)
 def current_major_solar_term(date : Decimal) -> int:
