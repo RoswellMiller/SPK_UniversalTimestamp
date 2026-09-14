@@ -20,12 +20,10 @@ Output/
 deprecated/
 
 # Raw upstream reference material — R&D chapter scans, ISO 19108,
-# any book excerpts.  Standards § 8.3 says these live in an
-# out-of-project DATA-SOURCES folder; until they are physically
-# moved off the project tree, keep them untracked here.
+# any book excerpts.  Standards § 8.3 puts these in an out-of-project
+# DATA-SOURCES folder, but the Markdown under docs/ cites them by name,
+# so they are tracked here until that move actually happens.
 Documentation/
-docs/**/*.pdf
-docs/**/*.PDF
 
 # Root-level scratch (underscore prefix convention, Standards § 8.1).
 # One-off diagnostics and probes live at the repo root as `_name.py`
